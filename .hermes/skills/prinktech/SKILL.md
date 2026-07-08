@@ -1,11 +1,19 @@
 ---
 name: prinktech
 category: project-specific
-tags: [nextjs, supabase, vps-deploy, dual-edit, prinktech]
+tags: [nextjs, supabase, vps-deploy, dual-edit, prinktech, ssh-sync]
 description: |
   Skill chuyên biệt cho dự án Website PrinK Tech (xưởng in UV DTF).
-  Hỗ trợ dual-edit: sửa code từ Local Windows + VPS Linux, sync 2 chiều, deploy Docker.
+  Hỗ trợ dual-edit: sửa code từ Local Windows + VPS Linux, sync 2 chiều qua Git SSH, deploy Docker.
   Bao gồm GitHub workflow, rsync sync, và các script deploy/prinktech.
+version: 1.1.0
+author: Hermes + Prinktech Team
+license: MIT
+platforms: [windows, linux]
+metadata:
+  hermes:
+    tags: [prinktech, nextjs, supabase, dual-edit, deploy]
+    related_skills: [hermes-agent-skill-authoring, plan, systematic-debugging]
 ---
 
 # 🖨️ PrinK Tech Website — Skill Chuyên Biệt
@@ -18,100 +26,107 @@ Next.js 16 + Supabase (schema `printing`) + Docker trên VPS `180.93.146.26:3019
 ```
 D:\16. Code\32-website-prinktech\
 ├── src/
-│   ├── app/               # App Router (pages, api routes, admin)
-│   │   ├── admin/         # /admin/website, /admin/viet-bai, /admin/don-hang
-│   │   ├── api/           # REST API endpoints
-│   │   ├── mau-1/2/3/     # 3 themes fullscreen
+│   ├── app/                  # App Router (pages, api routes, admin)
+│   │   ├── admin/            # /admin/website, /admin/viet-bai, /admin/don-hang
+│   │   ├── api/              # REST API endpoints
+│   │   ├── mau-1/2/3/        # 3 themes fullscreen
 │   │   └── ...
-│   ├── components/        # PricingCalculator, OrderForm, Gallery...
-│   └── lib/               # supabaseClient, pricing, adminAuth...
-├── public/                # logos, images, robots.txt
-├── migrations/            # SQL migration files
-├── deploy-local-to-vps.ps1   # Windows deploy script (PowerShell)
-├── deploy-vps-unified.sh     # VPS deploy script (bash)
+│   ├── components/           # PricingCalculator, OrderForm, Gallery...
+│   └── lib/                  # supabaseClient, pricing, adminAuth...
+├── public/                   # logos, images, robots.txt
+├── migrations/               # SQL migration files
+├── deploy-via-git.ps1        # Local deploy & push script (PowerShell)
+├── deploy-vps-git.sh         # VPS deploy & pull script (bash)
 ├── docker-compose.yml        # Container node:20 + shared network
-└── .env*                  # Supabase keys (KHÔNG commit)
+└── .env*                     # Supabase keys (KHÔNG commit)
 ```
 
-## 🔄 Dual-Edit Strategy (Local ↔ VPS)
+---
 
-### Mô hình khuyến nghị
+## 🔄 Dual-Edit Strategy (Local ↔ VPS) - Giải pháp chính
+
+### Mô hình hoạt động
 
 ```
 Local Windows (D:\16. Code\32-website-prinktech)
-        ↕  rsync / git push
+        ↕  git push / pull (SSH)
+GitHub (hainguyen1726/prinktech-website)
+        ↕  git pull / push (SSH)
 VPS Linux (/srv/website-prinktech)
-        ↕  docker rebuild
+        ↕  docker rebuild (deploy-vps-git.sh)
 Production (prinktech.netslive.com:3019)
 ```
 
-### 1. Setup GitHub (Đã hoàn tất ✅)
+---
 
-**Repository**: https://github.com/hainguyen1726/prinktech-website  
-**Remote**: `origin` → `https://github.com/hainguyen1726/prinktech-website.git`  
-**Branch**: `master` (đã push lần đầu)
+## 🔒 Quy tắc bắt buộc đối với AI Agent (Antigravity & Hermes)
 
-```bash
-# Kiểm tra remote
-git remote -v
-# origin  https://github.com/hainguyen1726/prinktech-website.git (fetch/push)
+### 1. Quy tắc hoạt động của Hermes (Trên VPS)
 
-# Push code mới
-git add .
-git commit -m "feat: mô tả thay đổi"
-git push origin master
-```
+Khi Hermes (hoặc bất kỳ AI nào chạy trực tiếp trên VPS) bắt đầu thực hiện chỉnh sửa:
 
-**Tạo repo lần đầu** (đã thực hiện qua `gh`):
-```bash
-gh repo create prinktech-website --public --source=. --remote=origin --push
-```
+1. **Đồng bộ code master:**
+   ```bash
+   cd /srv/website-prinktech
+   git checkout master
+   git pull origin master
+   ```
 
-### 2. Sync 2 chiều (Local ↔ VPS)
+2. **Tạo nhánh phát triển riêng (Nhánh an toàn):** Luôn tạo nhánh riêng để làm việc thay vì sửa trực tiếp trên `master`:
+   ```bash
+   git checkout -b dev/hermes-$(date +%Y%m%d-%H%M)
+   ```
 
-**Từ Local → VPS (sau khi sửa code):**
-```powershell
-# PowerShell (Windows)
-.\sync-to-vps.ps1
-```
+3. **Thực hiện chỉnh sửa và build thử nghiệm trên VPS:**
+   Sau khi chỉnh sửa xong, chạy script deploy để rebuild container Docker kiểm tra xem có lỗi compile Next.js/TypeScript không:
+   ```bash
+   bash deploy-vps-git.sh
+   ```
+   *Lưu ý: Bắt buộc phải chạy script deploy để rebuild container thì Next.js mới compile code mới (lệnh restart thông thường không có tác dụng).*
 
-**Từ VPS → Local (sau khi sửa trên VPS):**
-```bash
-# SSH vào VPS
-ssh root@180.93.146.26
-cd /srv/website-prinktech
-# Sau đó rsync ngược về local (xem script sync-from-vps.sh)
-```
+4. **Commit & Push lên nhánh riêng:**
+   ```bash
+   git add .
+   git commit -m "hermes: [mô tả ngắn gọn thay đổi]"
+   git push origin dev/hermes-$(date +%Y%m%d-%H%M)
+   ```
 
-### 3. Deploy Production
+---
 
-**Deploy từ Local (khuyến nghị):**
-```powershell
-powershell -ExecutionPolicy Bypass -File .\deploy-local-to-vps.ps1
-```
+### 2. Quy tắc hoạt động của Antigravity (Dưới Local)
 
-Script sẽ:
-1. Nén source (loại `node_modules`, `.next`, `.git`, `.env`)
-2. Upload `website-prinktech.tar.gz` lên VPS
-3. Trên VPS: giải nén → backup `.env` → rebuild Docker container `prinktech-website`
-4. Reload Caddy reverse proxy
+Khi Antigravity (hoặc bất kỳ AI nào dưới máy Local) muốn gộp code của VPS và deploy chính thức:
 
-**Xem logs:**
-```bash
-ssh root@180.93.146.26 "docker compose -f /srv/website-prinktech/docker-compose.yml logs web --tail=80 -f"
-```
+1. **Kéo code của Hermes về Local:**
+   ```bash
+   git fetch origin
+   git merge origin/dev/hermes-[tên-nhánh-của-hermes]
+   ```
 
-### 4. Scripts cần tạo
+2. **Push lên master của GitHub:**
+   ```bash
+   git push origin master
+   ```
 
-Tạo các file script sau trong thư mục gốc dự án:
+3. **Cập nhật lại VPS về master chuẩn:**
+   ```bash
+   ssh vps "cd /srv/website-prinktech && git checkout master && git pull origin master && bash deploy-vps-git.sh"
+   ```
 
-- `sync-to-vps.ps1` — Rsync Local → VPS (không qua tar)
-- `sync-from-vps.sh` — Rsync VPS → Local
-- `deploy-git.sh` — Deploy qua Git (nếu muốn)
+---
 
-## 🛠️ Lệnh phát triển
+## ⚙️ Cấu hình hạ tầng & Kết nối Supabase
 
-### Local
+- **Supabase**: Dùng chung `https://api-supabase.netslive.com` (schema `printing`)
+- **Tránh lỗi SSL Handshake (`DEPTH_ZERO_SELF_SIGNED_CERT`)**:
+  - Khi Next.js chạy ở server-side kết nối tới Supabase, **bắt buộc** sử dụng URL public (`SUPABASE_URL` hoặc `NEXT_PUBLIC_SUPABASE_URL`) trỏ tới domain chính thức (ví dụ: `https://api-supabase.netslive.com`).
+  - **KHÔNG** sử dụng URL nội bộ container (loopback / HTTP) có chứng chỉ tự ký (self-signed cert) như `http://supabase-kong:8000` vì Node.js phía server-side sẽ từ chối kết nối và ném lỗi `fetch failed` hoặc `DEPTH_ZERO_SELF_SIGNED_CERT`.
+
+---
+
+## 🛠️ Các Lệnh Thường Dùng (Copy-Paste)
+
+### Local Development
 ```bash
 npm run dev              # http://localhost:3000
 npm run build            # Production build
@@ -121,46 +136,26 @@ npm run lint             # ESLint
 
 ### VPS (SSH)
 ```bash
-# Vào container
-docker exec -it prinktech-website bash
-
-# Xem logs realtime
+# Xem logs container web realtime
 docker compose -f /srv/website-prinktech/docker-compose.yml logs -f web
 
-# Restart container
-docker compose -f /srv/website-prinktech/docker-compose.yml restart web
+# Rebuild container sau khi sửa code/pull code mới (Bắt buộc)
+bash deploy-vps-git.sh
+
+# Vào container
+docker exec -it prinktech-website bash
 ```
-
-## 🔐 Environment & Secrets
-
-- **Supabase**: Dùng chung `https://api-supabase.netslive.com` (schema `printing`)
-- **Keys**: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`
-- **VPS IP**: `180.93.146.26`
-- **Port**: `3019` (mapped từ container `3000`)
-- **Network**: `my_shared_network` (external, dùng chung với Caddy)
-
-**Lưu ý**: Không commit `.env*` files. Giữ bản backup trong `/srv/website-prinktech/.env.backup` trên VPS.
-
-## 📋 Best Practices
-
-1. **Luôn sync trước khi deploy** — Đảm bảo VPS có code mới nhất
-2. **Test local trước** — `npm run build` phải pass không lỗi
-3. **Backup .env** — Script deploy tự động backup `.env` → `.env.backup`
-4. **Git commit rõ ràng** — Dùng commit message có prefix: `feat:`, `fix:`, `refactor:`
-5. **Admin routes** — Bảo vệ bằng `/api/auth/login` (cookie-based)
-
-## 🆘 Troubleshooting
-
-| Vấn đề | Giải pháp |
-|--------|-----------|
-| Container không start | `docker logs prinktech-website` + check `.env` |
-| 502 Bad Gateway | Caddy chưa reload hoặc port 3019 conflict |
-| Code cũ sau deploy | Chạy lại `deploy-local-to-vps.ps1` hoặc check volume mount |
-| Supabase lỗi 401 | Kiểm tra `NEXT_PUBLIC_SUPABASE_*` trong docker-compose |
-| Build fail trên VPS | Chạy `npm run build` local trước khi deploy |
 
 ---
 
-**Tác giả skill**: Hermes Agent (Nous Research)  
+## 📋 Best Practices & Tránh Lỗi
+
+1. **Luôn pull trước khi sửa** — Tránh xung đột code.
+2. **Không commit `.env*` files** — Luôn exclude file cấu hình khi sync.
+3. **Đẩy code từ Local** — Dùng lệnh PowerShell `.\deploy-via-git.ps1 -CommitMsg "Mô tả"` để deploy tự động từ xa.
+
+---
+
+**Tác giả skill**: Hermes Agent + Antigravity  
 **Cập nhật**: 2026-07-08  
 **Dự án**: prinktech-website (Next.js UV DTF printing website)
