@@ -1,0 +1,13 @@
+node_modules
+.next
+.git
+.env
+.env.local
+.env.backup
+*.log
+*.tar.gz
+.DS_Store
+deploy-*.ps1
+deploy-*.sh
+sync-*.ps1
+sync-*.sh

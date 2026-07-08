@@ -1,26 +1,298 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Default: Theme Elegant (Clean & Elegant - Sáng) */
+  --background: #fdfbf7;
+  --foreground: #292524;
+  --card-bg: #ffffff;
+  --card-border: rgba(140, 98, 57, 0.22);
+  --block-bg: #f4efeb;
+  --accent: #8c6239;
+  --accent-rgb: 140, 98, 57;
+  --accent-glow: rgba(140, 98, 57, 0.08);
+  --accent-hover: #6d4a25;
+  --text-muted: #78716c;
+  --badge-radius: 0px;
+  --btn-radius: 0px;
+  --card-radius: 0px;
+  --font-family-heading: 'Playfair Display', Georgia, serif;
+  --font-family-body: 'Inter', system-ui, sans-serif;
+  --bg-pattern: radial-gradient(at 50% 0%, rgba(140, 98, 57, 0.03) 0px, transparent 65%);
+  --tech-grid-opacity: 0;
+}
+
+/* Theme Tech (Modern & Tech - Tối) */
+.theme-tech {
+  --background: #030712;
+  --foreground: #f8fafc;
+  --card-bg: rgba(17, 24, 39, 0.45);
+  --card-border: rgba(255, 255, 255, 0.06);
+  --block-bg: rgba(255, 255, 255, 0.03);
+  --accent: #0ea5e9;
+  --accent-rgb: 14, 165, 233;
+  --accent-glow: rgba(14, 165, 233, 0.12);
+  --accent-hover: #38bdf8;
+  --text-muted: #94a3b8;
+  --badge-radius: 0.5rem;
+  --btn-radius: 0.75rem;
+  --card-radius: 1rem;
+  --font-family-heading: 'Inter', system-ui, sans-serif;
+  --font-family-body: 'Inter', system-ui, sans-serif;
+  --bg-pattern: radial-gradient(at 0% 0%, rgba(14, 165, 233, 0.08) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.05) 0px, transparent 50%);
+  --tech-grid-opacity: 0.03;
+}
+
+/* Theme Creative & Vibrant (Tối) */
+.theme-creative {
+  --background: #080315;
+  --foreground: #fdfaff;
+  --card-bg: rgba(23, 15, 46, 0.5);
+  --card-border: rgba(255, 255, 255, 0.07);
+  --block-bg: rgba(255, 255, 255, 0.04);
+  --accent: #d946ef;
+  --accent-rgb: 217, 70, 239;
+  --accent-glow: rgba(217, 70, 239, 0.16);
+  --accent-hover: #ec4899;
+  --text-muted: #c084fc;
+  --badge-radius: 1rem;
+  --btn-radius: 9999px;
+  --card-radius: 1.5rem;
+  --font-family-heading: 'Outfit', system-ui, sans-serif;
+  --font-family-body: 'Outfit', system-ui, sans-serif;
+  --bg-pattern: radial-gradient(at 20% 20%, rgba(217, 70, 239, 0.1) 0px, transparent 40%),
+                radial-gradient(at 80% 80%, rgba(168, 85, 247, 0.1) 0px, transparent 40%);
+  --tech-grid-opacity: 0;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-card-bg: var(--card-bg);
+  --color-card-border: var(--card-border);
+  --color-block-bg: var(--block-bg);
+  --color-text-muted: var(--text-muted);
 }
 
 body {
-  background: var(--background);
+  background-color: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-family-body);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-family-heading);
+}
+
+/* Base custom classes */
+.glass-card {
+  background-color: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--card-radius);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.text-gradient {
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Custom side drawer scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+}
+.theme-elegant ::-webkit-scrollbar-thumb,
+body:not(.theme-tech):not(.theme-creative) ::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.08);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+.theme-elegant ::-webkit-scrollbar-thumb:hover,
+body:not(.theme-tech):not(.theme-creative) ::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.15);
+}
+
+/* Backdrops */
+.side-drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(4px);
+  z-index: 40;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.side-drawer-backdrop.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Drawer layout */
+.side-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  max-width: 500px;
+  background-color: #0b1120;
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+  z-index: 50;
+  box-shadow: -10px 0 40px rgba(0, 0, 0, 0.6);
+}
+
+.theme-elegant .side-drawer,
+body:not(.theme-tech):not(.theme-creative) .side-drawer {
+  background-color: #fdfbf7;
+  border-left: 1px solid rgba(140, 98, 57, 0.15);
+  box-shadow: -10px 0 30px rgba(140, 98, 57, 0.05);
+}
+
+/* ── Elegant Dark Header & Nav (Mặc định khi ở theme Elegant sáng) ── */
+header,
+nav {
+  background-color: #1c1917 !important; /* Stone 900 */
+  color: #e7e5e4 !important; /* Stone 200 */
+  border-color: #2c2520 !important; /* Stone 800 */
+}
+header a,
+nav a,
+header span,
+nav span,
+header div.text-foreground,
+nav div.text-foreground,
+header span.text-foreground,
+nav span.text-foreground {
+  color: #e7e5e4 !important; /* Stone 200 */
+}
+header a:hover,
+nav a:hover {
+  color: #ffffff !important;
+}
+
+/* ── Theme-adaptive Primary Buttons ── */
+.btn-primary {
+  background: #292524 !important; /* Stone 800 */
+  color: #fdfbf7 !important;
+  border: 1px solid rgba(140, 98, 57, 0.4) !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05) !important;
+  transition: all 0.2s ease !important;
+}
+.btn-primary:hover {
+  background: #3e3835 !important;
+  border-color: rgba(140, 98, 57, 0.6) !important;
+}
+
+/* ── Theme-adaptive Secondary Buttons ── */
+.btn-secondary {
+  background-color: #ffffff !important;
+  border: 1px solid rgba(140, 98, 57, 0.5) !important;
+  color: #8c6239 !important;
+  transition: all 0.2s ease !important;
+}
+.btn-secondary:hover {
+  background-color: #f5f2eb !important;
+  border-color: #8c6239 !important;
+}
+
+/* ── Override for Theme Tech (Tối) ── */
+.theme-tech header,
+.theme-tech nav {
+  background-color: rgba(3, 7, 18, 0.85) !important;
+  color: #f8fafc !important;
+  border-color: rgba(255, 255, 255, 0.06) !important;
+}
+.theme-tech header a,
+.theme-tech nav a,
+.theme-tech header span,
+.theme-tech nav span,
+.theme-tech header div.text-foreground,
+.theme-tech nav div.text-foreground,
+.theme-tech header span.text-foreground,
+.theme-tech nav span.text-foreground {
+  color: #94a3b8 !important;
+}
+.theme-tech header a:hover,
+.theme-tech nav a:hover {
+  color: #f8fafc !important;
+}
+.theme-tech .btn-primary {
+  background: linear-gradient(to right, var(--color-purple-600), var(--color-fuchsia-600)) !important;
+  color: white !important;
+  border: none !important;
+  box-shadow: 0 10px 15px -3px rgba(168, 85, 247, 0.25) !important;
+}
+.theme-tech .btn-primary:hover {
+  background: linear-gradient(to right, var(--color-purple-500), var(--color-fuchsia-500)) !important;
+}
+.theme-tech .btn-secondary {
+  background-color: rgba(255, 255, 255, 0.03) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  color: #e2e8f0 !important;
+}
+.theme-tech .btn-secondary:hover {
+  background-color: rgba(255, 255, 255, 0.06) !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+/* ── Override for Theme Creative (Tối) ── */
+.theme-creative header,
+.theme-creative nav {
+  background-color: rgba(8, 3, 21, 0.85) !important;
+  color: #fdfaff !important;
+  border-color: rgba(255, 255, 255, 0.07) !important;
+}
+.theme-creative header a,
+.theme-creative nav a,
+.theme-creative header span,
+.theme-creative nav span,
+.theme-creative header div.text-foreground,
+.theme-creative nav div.text-foreground,
+.theme-creative header span.text-foreground,
+.theme-creative nav span.text-foreground {
+  color: #c084fc !important;
+}
+.theme-creative header a:hover,
+.theme-creative nav a:hover {
+  color: #fdfaff !important;
+}
+.theme-creative .btn-primary {
+  background: linear-gradient(to right, #d946ef, #ec4899) !important;
+  color: white !important;
+  border: none !important;
+  box-shadow: 0 10px 15px -3px rgba(217, 70, 239, 0.25) !important;
+}
+.theme-creative .btn-primary:hover {
+  background: linear-gradient(to right, #e879f9, #f472b6) !important;
+}
+.theme-creative .btn-secondary {
+  background-color: rgba(255, 255, 255, 0.04) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  color: #fdfaff !important;
+}
+.theme-creative .btn-secondary:hover {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(255, 255, 255, 0.18) !important;
 }

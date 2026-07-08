@@ -1,0 +1,26 @@
+version: '3'
+
+name: prinktech-website
+
+services:
+  web:
+    container_name: prinktech-website
+    image: node:20
+    working_dir: /app
+    command: npm start
+    ports:
+      - "3019:3000"
+    volumes:
+      - ./:/app
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL}
+      - NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
+    restart: always
+    networks:
+      - my_shared_network
+
+networks:
+  my_shared_network:
+    external: true

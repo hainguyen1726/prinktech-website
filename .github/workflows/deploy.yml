@@ -1,0 +1,69 @@
+name: Deploy to VPS (Git-based)
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch: # Cho phép trigger thủ công từ GitHub UI
+
+env:
+  VPS_IP: "180.93.146.26"
+  VPS_USER: "root"
+  APP_DIR: "/srv/website-prinktech"
+  CONTAINER_NAME: "prinktech-website"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.VPS_SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H ${{ env.VPS_IP }} >> ~/.ssh/known_hosts
+
+      - name: Deploy to VPS via Git
+        run: |
+          ssh ${{ env.VPS_USER }}@${{ env.VPS_IP }} << 'EOF'
+            set -e
+
+            echo "📥 Pulling latest code from GitHub..."
+            cd ${{ env.APP_DIR }}
+
+            # Backup .env
+            if [ -f .env ]; then
+              cp .env .env.backup
+            fi
+
+            # Pull code
+            git fetch origin master
+            git reset --hard origin/master
+
+            echo "🐳 Restarting Docker container..."
+            docker compose -f docker-compose.yml restart web || true
+
+            # Kiểm tra container
+            sleep 3
+            if docker ps | grep -q ${{ env.CONTAINER_NAME }}; then
+              echo "✅ Container ${{ env.CONTAINER_NAME }} restarted successfully."
+            else
+              echo "⚠️ Container not found or failed to restart. Checking logs..."
+              docker compose -f docker-compose.yml logs --tail=30 web
+            fi
+          EOF
+
+      - name: Verify deployment
+        run: |
+          echo "🔍 Checking deployment status..."
+          ssh ${{ env.VPS_USER }}@${{ env.VPS_IP }} "docker ps | grep ${{ env.CONTAINER_NAME }} && echo 'Container is running' || echo 'Container issue'"
+
+      - name: Cleanup SSH key
+        if: always()
+        run: rm -f ~/.ssh/id_ed25519
