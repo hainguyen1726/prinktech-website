@@ -35,6 +35,13 @@ Lệnh `npm ci` bắt buộc tệp `package-lock.json` và `package.json` phải
    git push origin master
    ```
 
+### 💡 Giải pháp tối ưu vĩnh viễn cho file CI/CD Workflow (`ci.yml`):
+Nếu phiên bản Node/NPM ở máy ảo CI (thường là Node v20/v24 và npm v10) khác biệt so với máy Local (ví dụ: Node v23, npm v11), lệnh `npm ci` rất dễ bị crash do khác biệt cấu trúc lockfile giữa các hệ điều hành/phiên bản npm.
+- **Khắc phục**: Thay đổi bước cài đặt thư viện trong tệp cấu hình `.github/workflows/ci.yml`:
+  * **Cũ**: `run: npm ci`
+  * **Mới**: `run: npm install --legacy-peer-deps`
+  *Cách này giúp máy ảo CI tự động phân giải các thư viện tương thích nhất với môi trường chạy thực tế của nó.*
+
 ---
 
 ## 2. Lỗi Thiếu File Đóng Gói Next.js (`Cannot find module 'next/dist/compiled/babel-packages'`)
