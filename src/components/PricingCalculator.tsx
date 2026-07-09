@@ -1,8 +1,7 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import Link from 'next/link';
-import { Menu, X } from 'lucide-react';
 import {
   PRODUCTS,
   Product,
@@ -109,29 +108,7 @@ export default function PricingCalculator() {
   const [itemNote, setItemNote] = useState('');
   const [cart, setCart] = useState<CartItem[]>([]);
   const [printLoading, setPrintLoading] = useState(false);
-  const [activeTheme, setActiveTheme] = useState<'tech' | 'elegant'>('elegant');
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  // Load theme từ localStorage
-  useEffect(() => {
-    const savedTheme = localStorage.getItem('prinktech-theme') || 'elegant';
-    const finalTheme = savedTheme === 'creative' ? 'elegant' : savedTheme;
-    setActiveTheme(finalTheme as any);
-    
-    document.body.className = '';
-    if (finalTheme === 'tech') {
-      document.body.classList.add('theme-tech');
-    }
-  }, []);
-
-  const changeTheme = (theme: 'tech' | 'elegant') => {
-    setActiveTheme(theme);
-    localStorage.setItem('prinktech-theme', theme);
-    document.body.className = '';
-    if (theme === 'tech') {
-      document.body.classList.add('theme-tech');
-    }
-  };
 
   const qty = parseFloat(quantity) || 0;
   const unitPrice = getUnitPrice(selectedProduct, qty);
@@ -296,394 +273,254 @@ export default function PricingCalculator() {
   const isInvalid = qty < selectedProduct.minQty || unitPrice === 0;
 
   return (
-    <>
-      {/* ── Main layout ── */}
-      <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
+    <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-6 items-start">
 
-        {/* ── Nav bar đầy đủ ── */}
-        <header className="sticky top-0 z-50 border-b border-card-border bg-background/85 backdrop-blur-xl">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
-            <div className="flex items-center gap-3 flex-shrink-0">
-              <Link href="/" aria-label="Về trang chủ PrinK Tech">
-                <img src="/logo-horizontal.png" alt="PrinK Tech" className="h-9 object-contain" />
-              </Link>
-            </div>
+      {/* ── LEFT: Configurator ── */}
+      <div className="space-y-6">
 
-            <div className="hidden md:flex items-center gap-6 text-[13px] font-semibold">
-              <Link href="/" className="hover:text-white transition-colors">Trang chủ</Link>
-              <Link href="/san-pham" className="hover:text-white transition-colors">Sản phẩm</Link>
-              <Link href="/thu-vien-anh" className="hover:text-white transition-colors">Thư viện ảnh</Link>
-              <Link href="/bao-gia" className="text-[var(--accent)] hover:text-[var(--accent-hover)] font-black transition-colors">Tính giá</Link>
-              <Link href="/tra-cuu" className="hover:text-white transition-colors">Tra cứu đơn</Link>
-              <Link href="/dat-hang" className="hover:text-white transition-colors">Đặt hàng</Link>
-            </div>
-
-            <div className="flex items-center gap-3">
-              {/* Theme Switcher */}
-              <div className="hidden sm:flex items-center gap-1 bg-black/10 border border-card-border rounded-lg p-1 backdrop-blur-sm">
-                <button
-                  onClick={() => changeTheme('tech')}
-                  className={`px-2.5 py-1 rounded text-[11px] font-bold tracking-wide transition-all cursor-pointer ${
-                    activeTheme === 'tech'
-                      ? 'bg-purple-650 text-white shadow-md'
-                      : 'text-text-muted hover:text-foreground'
-                  }`}
-                >
-                  Tối
-                </button>
-                <button
-                  onClick={() => changeTheme('elegant')}
-                  className={`px-2.5 py-1 rounded text-[11px] font-bold tracking-wide transition-all cursor-pointer ${
-                    activeTheme === 'elegant'
-                      ? 'bg-amber-700 text-white shadow-md'
-                      : 'text-text-muted hover:text-foreground'
-                  }`}
-                >
-                  Sáng
-                </button>
-              </div>
-
-              <Link
-                href="/dat-hang"
-                className="px-4 py-1.5 rounded-xl text-sm font-bold btn-primary"
-              >
-                Đặt hàng
-              </Link>
-
-              {/* Hamburger button */}
-              <button
-                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="md:hidden p-2 rounded-lg border border-card-border hover:bg-card-border/20 transition-all text-foreground focus:outline-none"
-                aria-label="Menu"
-              >
-                {mobileMenuOpen ? <X size={16} /> : <Menu size={16} />}
-              </button>
-            </div>
-          </div>
-        </header>
-
-        {/* Mobile Menu Drawer Overlay */}
-        {mobileMenuOpen && (
-          <div className="md:hidden fixed inset-0 z-40 bg-background/98 backdrop-blur-md flex flex-col justify-center items-center gap-6 animate-fadeIn transition-all duration-300">
-            {/* Close button inside mobile menu */}
-            <button
-              onClick={() => setMobileMenuOpen(false)}
-              className="absolute top-4 right-4 p-2 rounded-lg border border-card-border hover:bg-card-border/20 transition-all text-foreground"
-              aria-label="Đóng menu"
-            >
-              <X size={20} />
-            </button>
-
-            <nav className="flex flex-col items-center gap-5 text-base font-bold text-foreground">
-              <Link href="/" onClick={() => setMobileMenuOpen(false)} className="hover:text-[var(--accent)] transition-colors py-1">Trang chủ</Link>
-              <Link href="/san-pham" onClick={() => setMobileMenuOpen(false)} className="hover:text-[var(--accent)] transition-colors py-1">Sản phẩm</Link>
-              <Link href="/thu-vien-anh" onClick={() => setMobileMenuOpen(false)} className="hover:text-[var(--accent)] transition-colors py-1">Thư viện ảnh</Link>
-              <Link href="/bao-gia" onClick={() => setMobileMenuOpen(false)} className="hover:text-[var(--accent)] transition-colors py-1">Tính giá</Link>
-              <Link href="/tra-cuu" onClick={() => setMobileMenuOpen(false)} className="hover:text-[var(--accent)] transition-colors py-1">Tra cứu đơn</Link>
-              <Link href="/dat-hang" onClick={() => setMobileMenuOpen(false)} className="hover:text-[var(--accent)] transition-colors py-1">Đặt hàng</Link>
-            </nav>
-
-            {/* Theme switcher on mobile */}
-            <div className="flex items-center gap-1 bg-black/10 border border-card-border rounded-lg p-1 mt-4">
-              <button
-                onClick={() => { changeTheme('tech'); setMobileMenuOpen(false); }}
-                className={`px-3 py-1.5 rounded text-xs font-bold tracking-wide transition-all ${
-                  activeTheme === 'tech' ? 'bg-purple-650 text-white shadow-md' : 'text-text-muted hover:text-foreground'
-                }`}
-              >
-                Tối
-              </button>
-              <button
-                onClick={() => { changeTheme('elegant'); setMobileMenuOpen(false); }}
-                className={`px-3 py-1.5 rounded text-xs font-bold tracking-wide transition-all ${
-                  activeTheme === 'elegant' ? 'bg-amber-700 text-white shadow-md' : 'text-text-muted hover:text-foreground'
-                }`}
-              >
-                Sáng
-              </button>
-            </div>
-          </div>
-        )}
-
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
-          {/* ── Page title ── */}
-          <div className="mb-8">
-            <h1 className="text-3xl sm:text-4xl font-black text-foreground">
-              Tính giá{' '}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-fuchsia-500">
-                in UV DTF 3D
-              </span>
-            </h1>
-            <p className="text-text-muted mt-2 text-sm">
-              Chọn sản phẩm → nhập số lượng → thêm vào giỏ → xuất báo giá PDF
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-6 items-start">
-
-            {/* ── LEFT: Configurator ── */}
-            <div className="space-y-6">
-
-              {/* Product selector */}
-              <div className="rounded-2xl border border-card-border bg-card-bg p-5 shadow-sm">
-                <h2 className="text-xs font-bold text-text-muted uppercase tracking-wider mb-4">
-                  1 — Chọn loại sản phẩm
-                </h2>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                  {PRODUCTS.map(p => (
-                    <ProductCard
-                      key={p.type}
-                      product={p}
-                      active={selectedProduct.type === p.type}
-                      onClick={() => {
-                        setSelectedProduct(p);
-                        setQuantity(String(p.minQty));
-                      }}
-                    />
-                  ))}
-                </div>
-              </div>
-
-              {/* Quantity + Price */}
-              <div className="rounded-2xl border border-card-border bg-card-bg p-5 shadow-sm">
-                <h2 className="text-xs font-bold text-text-muted uppercase tracking-wider mb-4">
-                  2 — Nhập số lượng
-                </h2>
-
-                <div className="flex flex-col sm:flex-row gap-4">
-                  <div className="flex-1">
-                    <label className="block text-xs font-semibold text-text-muted mb-1.5">
-                      Số lượng ({selectedProduct.unitLabel})
-                    </label>
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => setQuantity(v => String(Math.max(selectedProduct.minQty, parseFloat(v || '0') - (selectedProduct.unit === 'mét' ? 0.5 : (selectedProduct.unit === 'tờ' ? 1 : 50)))))}
-                        className="w-9 h-9 rounded-xl border border-card-border bg-block-bg text-foreground hover:bg-[var(--accent)]/20 hover:border-[var(--accent)]/45 transition-all flex items-center justify-center text-lg font-bold cursor-pointer"
-                      >−</button>
-                      <input
-                        type="number"
-                        min={selectedProduct.minQty}
-                        step={selectedProduct.unit === 'mét' ? 0.5 : (selectedProduct.unit === 'tờ' ? 1 : 50)}
-                        value={quantity}
-                        onChange={e => setQuantity(e.target.value)}
-                        className="flex-1 h-9 rounded-xl border border-card-border bg-block-bg text-center text-foreground font-bold text-sm focus:outline-none focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 transition-all"
-                      />
-                      <button
-                        onClick={() => setQuantity(v => String(parseFloat(v || '0') + (selectedProduct.unit === 'mét' ? 0.5 : (selectedProduct.unit === 'tờ' ? 1 : 50))))}
-                        className="w-9 h-9 rounded-xl border border-card-border bg-block-bg text-foreground hover:bg-[var(--accent)]/20 hover:border-[var(--accent)]/45 transition-all flex items-center justify-center text-lg font-bold cursor-pointer"
-                      >+</button>
-                    </div>
-                    {selectedProduct.minQty > 0 && (
-                      <p className="text-xs text-text-muted/80 mt-1">Tối thiểu: {selectedProduct.minQty} {selectedProduct.unitLabel}</p>
-                    )}
-                  </div>
-
-                  <div className="flex-1">
-                    <label className="block text-xs font-semibold text-text-muted mb-1.5">Ghi chú (tùy chọn)</label>
-                    <input
-                      type="text"
-                      value={itemNote}
-                      onChange={e => setItemNote(e.target.value)}
-                      placeholder="VD: màu đặc biệt, kích thước..."
-                      className="w-full h-9 px-3 rounded-xl border border-card-border bg-block-bg text-foreground text-sm placeholder-text-muted/40 focus:outline-none focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 transition-all"
-                    />
-                  </div>
-                </div>
-
-                {/* Tier indicator */}
-                <div className="mt-4 flex flex-wrap gap-2">
-                  <TierBadge product={selectedProduct} qty={qty} />
-                </div>
-
-                {/* Price preview */}
-                <div className="mt-4 p-4 rounded-xl bg-[var(--accent-glow)] border border-[var(--accent)]/25">
-                  <div className="flex items-center justify-between">
-                    <span className="text-text-muted text-sm font-medium">Thành tiền dự tính:</span>
-                    <div className="text-right">
-                      {unitPrice > 0 ? (
-                        <>
-                          <p className="text-2xl font-black text-foreground tabular-nums">
-                            {formatCurrency(subtotal)}
-                          </p>
-                          <p className="text-xs text-text-muted">
-                            {qty} {selectedProduct.unitLabel} × {formatCurrency(unitPrice)}
-                          </p>
-                        </>
-                      ) : (
-                        <p className="text-text-muted text-sm">Liên hệ báo giá</p>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Add button */}
-                <button
-                  onClick={addToCart}
-                  disabled={isInvalid}
-                  className="mt-4 w-full h-11 rounded-xl font-bold text-sm transition-all duration-200 cursor-pointer
-                    bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-500 hover:to-fuchsia-500
-                    text-white shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40
-                    disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none"
-                >
-                  + Thêm vào báo giá
-                </button>
-              </div>
-
-              {/* Tier table */}
-              <div className="rounded-2xl border border-card-border bg-card-bg p-5 shadow-sm">
-                <h2 className="text-xs font-bold text-text-muted uppercase tracking-wider mb-4">
-                  Bảng giá bậc thang — {selectedProduct.shortLabel}
-                </h2>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="border-b border-card-border">
-                        <th className="text-left pb-2.5 text-xs text-text-muted font-bold">Số lượng</th>
-                        <th className="text-right pb-2.5 text-xs text-text-muted font-bold">Đơn giá</th>
-                        <th className="text-right pb-2.5 text-xs text-text-muted font-bold">Trạng thái</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {selectedProduct.tiers.map((tier, i) => {
-                        const isActive = getActiveTier(selectedProduct, qty)?.min === tier.min;
-                        return (
-                          <tr
-                            key={i}
-                            className={`border-b border-card-border/40 last:border-0 transition-colors ${isActive ? 'bg-[var(--accent-glow)]' : i % 2 === 1 ? 'bg-block-bg/30' : ''}`}
-                          >
-                            <td className={`py-2.5 pr-4 ${isActive ? 'text-[var(--accent)] font-bold' : 'text-text-muted font-medium'}`}>
-                              {tier.label}
-                            </td>
-                            <td className={`py-2.5 text-right tabular-nums ${isActive ? 'text-foreground font-black' : 'text-foreground/80 font-semibold'}`}>
-                              {tier.price > 0 ? `${formatCurrency(tier.price)}/${selectedProduct.unitLabel}` : '—'}
-                            </td>
-                            <td className="py-2.5 text-right">
-                              {isActive ? (
-                                <span className="text-xs px-2.5 py-0.5 rounded-full bg-[var(--accent)]/20 text-[var(--accent)] border border-[var(--accent)]/30 font-semibold">
-                                  Đang áp dụng
-                                </span>
-                              ) : null}
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-                {selectedProduct.note && (
-                  <p className="mt-3 text-xs text-text-muted italic">* {selectedProduct.note}</p>
-                )}
-              </div>
-            </div>
-
-            {/* ── RIGHT: Cart / Quote ── */}
-            <div className="lg:sticky lg:top-20 space-y-4">
-              <div className="rounded-2xl border border-card-border bg-card-bg p-5 shadow-sm">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xs font-bold text-text-muted uppercase tracking-wider">
-                    Báo giá của bạn
-                  </h2>
-                  {cart.length > 0 && (
-                    <button
-                      onClick={() => setCart([])}
-                      className="text-xs text-text-muted hover:text-red-500 font-bold transition-colors cursor-pointer"
-                    >
-                      Xoá tất cả
-                    </button>
-                  )}
-                </div>
-
-                {cart.length === 0 ? (
-                  <div className="py-10 text-center">
-                    <p className="text-3xl mb-2">🧾</p>
-                    <p className="text-text-muted text-sm font-medium">Chưa có sản phẩm nào</p>
-                    <p className="text-text-muted/70 text-xs mt-1">Thêm sản phẩm từ bên trái</p>
-                  </div>
-                ) : (
-                  <>
-                    <div className="space-y-0">
-                      {cart.map(item => (
-                        <CartRow key={item.id} item={item} onRemove={removeItem} />
-                      ))}
-                    </div>
-
-                    {/* Totals */}
-                    <div className="mt-4 pt-4 border-t border-card-border space-y-2">
-                      <div className="flex justify-between text-sm">
-                        <span className="text-text-muted font-medium">Tạm tính</span>
-                        <span className="text-foreground font-bold tabular-nums">{formatCurrency(cartSubtotal)}</span>
-                      </div>
-                      <div className="flex justify-between text-sm">
-                        <span className="text-text-muted font-medium">Phí vận chuyển</span>
-                        {freeShip ? (
-                          <span className="text-green-500 font-semibold">Miễn phí 🎉</span>
-                        ) : (
-                          <span className="text-foreground font-semibold tabular-nums">{cartSubtotal > 0 ? formatCurrency(shippingFee) : '—'}</span>
-                        )}
-                      </div>
-                      {!freeShip && cartSubtotal > 0 && (
-                        <p className="text-xs text-amber-600 bg-amber-500/10 border border-amber-500/20 rounded-lg px-3 py-2 font-medium">
-                          Thêm {formatCurrency(FREE_SHIP_THRESHOLD - cartSubtotal)} nữa để được miễn ship 🚀
-                        </p>
-                      )}
-                      <div className="flex justify-between pt-2 border-t border-card-border">
-                        <span className="font-bold text-foreground">Tổng cộng</span>
-                        <span className="font-black text-lg text-[var(--accent)] tabular-nums">
-                          {formatCurrency(total)}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Actions */}
-                    <div className="mt-4 space-y-2.5">
-                      <button
-                        onClick={handlePrint}
-                        disabled={printLoading}
-                        className="w-full h-10 rounded-xl text-sm font-bold cursor-pointer
-                          bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-500 hover:to-fuchsia-500
-                          text-white shadow-md shadow-purple-500/20 transition-all disabled:opacity-60"
-                      >
-                        {printLoading ? 'Đang xuất...' : '⬇ Xuất báo giá PDF'}
-                      </button>
-                      <Link
-                        href={{
-                          pathname: '/dat-hang',
-                          query: { quote: encodeURIComponent(JSON.stringify(cart)) },
-                        }}
-                        className="w-full h-10 rounded-xl text-sm font-bold border border-[var(--accent)]/40
-                          text-[var(--accent)] hover:bg-[var(--accent)]/10 transition-all flex items-center justify-center"
-                      >
-                        Đặt hàng ngay →
-                      </Link>
-                    </div>
-                  </>
-                )}
-              </div>
-
-              {/* Free ship notice */}
-              <div className="rounded-xl border border-green-500/30 bg-green-550/5 p-3.5 flex items-start gap-2.5 shadow-sm">
-                <span className="text-xl shrink-0">🚀</span>
-                <div>
-                  <p className="text-xs font-bold text-green-600">
-                    MIỄN PHÍ VẬN CHUYỂN TOÀN QUỐC
-                  </p>
-                  <p className="text-xs text-text-muted mt-0.5 leading-relaxed">
-                    Đơn hàng từ {formatCurrency(FREE_SHIP_THRESHOLD)} · COD toàn quốc · Giao trong 24h
-                  </p>
-                </div>
-              </div>
-
-              {/* Contact */}
-              <div className="rounded-xl border border-card-border bg-block-bg p-3.5 text-xs text-text-muted space-y-1 shadow-sm">
-                <p className="text-foreground font-bold">Cần hỗ trợ tư vấn?</p>
-                <p>📞 Hotline / Zalo: <a href="tel:0822968412" className="text-[var(--accent)] font-bold hover:underline">0822.968.412</a></p>
-                <p className="text-[10px] text-text-muted/80">Giá chưa bao gồm VAT 8%</p>
-              </div>
-            </div>
+        {/* Product selector */}
+        <div className="rounded-2xl border border-card-border bg-card-bg p-5 shadow-sm">
+          <h2 className="text-xs font-bold text-text-muted uppercase tracking-wider mb-4">
+            1 — Chọn loại sản phẩm
+          </h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            {PRODUCTS.map(p => (
+              <ProductCard
+                key={p.type}
+                product={p}
+                active={selectedProduct.type === p.type}
+                onClick={() => {
+                  setSelectedProduct(p);
+                  setQuantity(String(p.minQty));
+                }}
+              />
+            ))}
           </div>
         </div>
+
+        {/* Quantity + Price */}
+        <div className="rounded-2xl border border-card-border bg-card-bg p-5 shadow-sm">
+          <h2 className="text-xs font-bold text-text-muted uppercase tracking-wider mb-4">
+            2 — Nhập số lượng
+          </h2>
+          <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center">
+            <div className="flex-1">
+              <label htmlFor="quantity-input" className="sr-only">Số lượng</label>
+              <div className="relative">
+                <input
+                  id="quantity-input"
+                  type="number"
+                  min={selectedProduct.minQty}
+                  value={quantity}
+                  onChange={e => setQuantity(e.target.value)}
+                  className="w-full h-11 px-4 rounded-xl border border-card-border bg-block-bg text-foreground font-semibold focus:outline-none focus:border-[var(--accent)]"
+                />
+                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-text-muted uppercase">
+                  {selectedProduct.unitLabel}
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3 bg-block-bg px-4 h-11 rounded-xl border border-card-border shrink-0">
+              <span className="text-xs font-medium text-text-muted">Đơn giá:</span>
+              <span className="text-sm font-bold text-foreground tabular-nums">
+                {unitPrice > 0 ? `${formatCurrency(unitPrice)}/${selectedProduct.unitLabel}` : '—'}
+              </span>
+            </div>
+          </div>
+
+          {/* Tier badge */}
+          <div className="mt-3.5 flex flex-wrap gap-2 items-center">
+            <TierBadge product={selectedProduct} qty={qty} />
+            {qty < selectedProduct.minQty && (
+              <span className="text-xs text-red-500 font-medium">
+                ⚠️ Tối thiểu {selectedProduct.minQty} {selectedProduct.unitLabel}
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Note & Add to cart */}
+        <div className="rounded-2xl border border-card-border bg-card-bg p-5 shadow-sm">
+          <h2 className="text-xs font-bold text-text-muted uppercase tracking-wider mb-4">
+            3 — Ghi chú & Thêm vào báo giá
+          </h2>
+          <div className="space-y-4">
+            <div>
+              <label htmlFor="item-note" className="sr-only">Ghi chú cho mẫu in</label>
+              <input
+                id="item-note"
+                type="text"
+                value={itemNote}
+                onChange={e => setItemNote(e.target.value)}
+                placeholder="Ví dụ: Decal 3D dán cốc giữ nhiệt, nhũ vàng, cắt sẵn..."
+                className="w-full h-11 px-4 rounded-xl border border-card-border bg-block-bg text-sm text-foreground focus:outline-none focus:border-[var(--accent)]"
+              />
+            </div>
+            <button
+              onClick={addToCart}
+              disabled={isInvalid}
+              className="w-full h-11 rounded-xl text-sm font-bold bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white shadow-md shadow-[var(--accent)]/15 transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+            >
+              ➕ Thêm vào danh sách báo giá
+            </button>
+          </div>
+        </div>
+
+        {/* Tier table */}
+        <div className="rounded-2xl border border-card-border bg-card-bg p-5 shadow-sm">
+          <h2 className="text-xs font-bold text-text-muted uppercase tracking-wider mb-4">
+            Bảng giá bậc thang — {selectedProduct.shortLabel}
+          </h2>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-card-border">
+                  <th className="text-left pb-2.5 text-xs text-text-muted font-bold">Số lượng</th>
+                  <th className="text-right pb-2.5 text-xs text-text-muted font-bold">Đơn giá</th>
+                  <th className="text-right pb-2.5 text-xs text-text-muted font-bold">Trạng thái</th>
+                </tr>
+              </thead>
+              <tbody>
+                {selectedProduct.tiers.map((tier, i) => {
+                  const isActive = getActiveTier(selectedProduct, qty)?.min === tier.min;
+                  return (
+                    <tr
+                      key={i}
+                      className={`border-b border-card-border/40 last:border-0 transition-colors ${isActive ? 'bg-[var(--accent-glow)]' : i % 2 === 1 ? 'bg-block-bg/30' : ''}`}
+                    >
+                      <td className={`py-2.5 pr-4 ${isActive ? 'text-[var(--accent)] font-bold' : 'text-text-muted font-medium'}`}>
+                        {tier.label}
+                      </td>
+                      <td className={`py-2.5 text-right tabular-nums ${isActive ? 'text-foreground font-black' : 'text-foreground/80 font-semibold'}`}>
+                        {tier.price > 0 ? `${formatCurrency(tier.price)}/${selectedProduct.unitLabel}` : '—'}
+                      </td>
+                      <td className="py-2.5 text-right">
+                        {isActive ? (
+                          <span className="text-xs px-2.5 py-0.5 rounded-full bg-[var(--accent)]/20 text-[var(--accent)] border border-[var(--accent)]/30 font-semibold">
+                            Đang áp dụng
+                          </span>
+                        ) : null}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+          {selectedProduct.note && (
+            <p className="mt-3 text-xs text-text-muted italic">* {selectedProduct.note}</p>
+          )}
+        </div>
+
       </div>
-    </>
+
+      {/* ── RIGHT: Summary Cart ── */}
+      <div className="lg:sticky lg:top-20 space-y-6">
+        <div className="rounded-2xl border border-card-border bg-card-bg p-5 shadow-sm">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xs font-bold text-text-muted uppercase tracking-wider">
+              Báo giá của bạn ({cart.length})
+            </h2>
+            {cart.length > 0 && (
+              <button
+                onClick={() => setCart([])}
+                className="text-xs text-text-muted hover:text-red-500 font-bold transition-colors cursor-pointer"
+              >
+                Xoá tất cả
+              </button>
+            )}
+          </div>
+
+          {cart.length === 0 ? (
+            <div className="py-10 text-center">
+              <p className="text-3xl mb-2">📋</p>
+              <p className="text-text-muted text-sm font-medium">Chưa có sản phẩm nào</p>
+              <p className="text-text-muted/70 text-xs mt-1">Thêm sản phẩm từ bên trái</p>
+            </div>
+          ) : (
+            <>
+              <div className="max-h-[300px] overflow-y-auto pr-1">
+                {cart.map(item => (
+                  <CartRow key={item.id} item={item} onRemove={removeItem} />
+                ))}
+              </div>
+
+              {/* Totals */}
+              <div className="mt-4 pt-4 border-t border-card-border space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-text-muted font-medium">Tạm tính</span>
+                  <span className="text-foreground font-bold tabular-nums">{formatCurrency(cartSubtotal)}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-text-muted font-medium">Phí vận chuyển</span>
+                  {freeShip ? (
+                    <span className="text-green-500 font-semibold">Miễn phí 🎉</span>
+                  ) : (
+                    <span className="text-foreground font-semibold tabular-nums">{cartSubtotal > 0 ? formatCurrency(shippingFee) : '—'}</span>
+                  )}
+                </div>
+                {!freeShip && cartSubtotal > 0 && (
+                  <p className="text-xs text-amber-600 bg-amber-500/10 border border-amber-500/20 rounded-lg px-3 py-2 font-medium">
+                    Thêm {formatCurrency(FREE_SHIP_THRESHOLD - cartSubtotal)} nữa để được miễn ship 🚀
+                  </p>
+                )}
+                <div className="flex justify-between pt-2 border-t border-card-border">
+                  <span className="font-bold text-foreground">Tổng cộng</span>
+                  <span className="font-black text-lg text-[var(--accent)] tabular-nums">
+                    {formatCurrency(total)}
+                  </span>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="mt-4 space-y-2.5">
+                <button
+                  onClick={handlePrint}
+                  disabled={printLoading}
+                  className="w-full h-10 rounded-xl text-sm font-bold cursor-pointer
+                    bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-500 hover:to-fuchsia-500
+                    text-white shadow-md shadow-purple-500/20 transition-all disabled:opacity-60"
+                >
+                  {printLoading ? 'Đang xuất...' : '⬇ Xuất báo giá PDF'}
+                </button>
+                <Link
+                  href={{
+                    pathname: '/dat-hang',
+                    query: { quote: encodeURIComponent(JSON.stringify(cart)) },
+                  }}
+                  className="w-full h-10 rounded-xl text-sm font-bold border border-[var(--accent)]/40
+                    text-[var(--accent)] hover:bg-[var(--accent)]/10 transition-all flex items-center justify-center"
+                >
+                  Đặt hàng ngay →
+                </Link>
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* Free ship notice */}
+        <div className="rounded-xl border border-green-500/30 bg-green-550/5 p-3.5 flex items-start gap-2.5 shadow-sm">
+          <span className="text-xl shrink-0">🚀</span>
+          <div>
+            <p className="text-xs font-bold text-green-600">
+              MIỄN PHÍ VẬN CHUYỂN TOÀN QUỐC
+            </p>
+            <p className="text-xs text-text-muted mt-0.5 leading-relaxed">
+              Đơn hàng từ {formatCurrency(FREE_SHIP_THRESHOLD)} · COD toàn quốc · Giao trong 24h
+            </p>
+          </div>
+        </div>
+
+        {/* Contact */}
+        <div className="rounded-xl border border-card-border bg-block-bg p-3.5 text-xs text-text-muted space-y-1 shadow-sm">
+          <p className="text-foreground font-bold">Cần hỗ trợ tư vấn?</p>
+          <p>📞 Hotline / Zalo: <a href="tel:0822968412" className="text-[var(--accent)] font-bold hover:underline">0822.968.412</a></p>
+          <p className="text-[10px] text-text-muted/80">Giá chưa bao gồm VAT 8%</p>
+        </div>
+      </div>
+
+    </div>
   );
 }
 
