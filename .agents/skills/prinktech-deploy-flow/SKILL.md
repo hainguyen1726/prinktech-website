@@ -5,6 +5,10 @@ description: Hướng dẫn đồng bộ mã nguồn dự án Prinktech Website 
 
 # 🚀 Prinktech Website Deployment & Synchronization Protocol (Sandbox Mode)
 
+> [!IMPORTANT]
+> **BẮT BUỘC THỰC HIỆN ĐẦU TIÊN TRONG MỌI PHIÊN LÀM VIỆC (SESSION)**: 
+> AI Agent (Antigravity ở Local hoặc Hermes trên VPS) trước khi thực hiện bất kỳ thao tác đọc hoặc chỉnh sửa code nào, **bắt buộc** phải chạy lệnh `git status` và `git pull` để kiểm tra và đồng bộ hoàn toàn mã nguồn giữa Local, VPS và GitHub, tránh tuyệt đối xung đột và lệch code (Code Drift).
+
 Tài liệu này định nghĩa quy trình làm việc và giao thức đồng bộ mã nguồn giữa Local (PC), GitHub, và Hermes Agent trên VPS nhằm đảm bảo an toàn tuyệt đối cho môi trường chạy thực tế của người dùng, phân tách rõ ràng vai trò Production và Dev Workspace.
 
 ---

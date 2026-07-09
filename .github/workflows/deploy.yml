@@ -44,21 +44,8 @@ jobs:
               cp .env .env.backup
             fi
 
-            # Pull code
-            git fetch origin master
-            git reset --hard origin/master
-
-            echo "🐳 Restarting Docker container..."
-            docker compose -f docker-compose.yml restart web || true
-
-            # Kiểm tra container
-            sleep 3
-            if docker ps | grep -q ${{ env.CONTAINER_NAME }}; then
-              echo "✅ Container ${{ env.CONTAINER_NAME }} restarted successfully."
-            else
-              echo "⚠️ Container not found or failed to restart. Checking logs..."
-              docker compose -f docker-compose.yml logs --tail=30 web
-            fi
+            # Run unified deploy script to pull code, build Next.js and recreate container
+            bash deploy-vps-git.sh
           EOF
 
       - name: Verify deployment

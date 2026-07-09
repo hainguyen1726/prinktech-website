@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import PriceTable from '@/components/PriceTable';
 import PricingCalculator from '@/components/PricingCalculator';
 
@@ -13,16 +14,16 @@ export default function BaoGiaPage() {
     <div className="min-h-screen bg-[#080d1a] text-slate-200">
       <header className="border-b border-slate-800/60 bg-[#080d1a]/90 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 md:px-6 py-4 flex items-center justify-between">
-          <a href="/" aria-label="Về trang chủ PrinK Tech">
+          <Link href="/" aria-label="Về trang chủ PrinK Tech">
             <img src="/logo-horizontal.png" alt="PrinK Tech" className="h-9 object-contain" />
-          </a>
-          <a href="/" className="text-xs text-slate-400 hover:text-sky-400 transition-colors">← Trang chủ</a>
+          </Link>
+          <Link href="/" className="text-xs text-slate-400 hover:text-sky-400 transition-colors">← Trang chủ</Link>
         </div>
       </header>
 
       <main className="max-w-7xl mx-auto px-4 md:px-6 py-10 md:py-14">
         <nav className="mb-8 text-xs text-slate-500 flex items-center gap-2">
-          <a href="/" className="hover:text-sky-400 transition-colors">Trang chủ</a>
+          <Link href="/" className="hover:text-sky-400 transition-colors">Trang chủ</Link>
           <span>/</span>
           <span className="text-slate-300">Bảng giá & Tính giá</span>
         </nav>
