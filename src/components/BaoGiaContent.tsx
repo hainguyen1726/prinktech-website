@@ -208,123 +208,163 @@ export default function BaoGiaContent() {
         {/* Pricing table */}
         <div className="mb-12">
           <div className="overflow-x-auto rounded-2xl border border-card-border bg-card-bg shadow-sm">
-            <table className="w-full text-sm">
+            <table className="w-full text-sm border-collapse border border-card-border">
               <thead>
-                <tr className="border-b border-card-border bg-block-bg/50 text-foreground text-left">
-                  <th className="px-6 py-4 font-bold">Sản phẩm</th>
-                  <th className="text-center px-4 py-4 font-bold w-20">ĐVT</th>
-                  <th className="px-6 py-4 font-bold">Bảng giá bậc thang (Số lượng → Đơn giá)</th>
-                  <th className="px-6 py-4 font-bold text-right">Ghi chú</th>
+                <tr className="bg-block-bg/50 text-foreground text-left">
+                  <th className="px-4 md:px-6 py-4 font-bold border border-card-border">Sản phẩm</th>
+                  <th className="text-center px-3 py-4 font-bold w-20 border border-card-border">ĐVT</th>
+                  <th className="px-4 md:px-6 py-4 font-bold border border-card-border">Số lượng</th>
+                  <th className="px-4 md:px-6 py-4 font-bold border border-card-border">Đơn giá (VNĐ)</th>
+                  <th className="px-4 md:px-6 py-4 font-bold text-right border border-card-border">Ghi chú</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-card-border/40 text-foreground/90">
-                {/* Mét dài cuộn */}
-                <tr className="bg-[var(--accent-glow)]/40 hover:bg-[var(--accent-glow)]/60 transition-colors">
-                  <td className="px-6 py-4">
-                    <span className="font-bold text-foreground">In cuộn mét dài (Khổ 58cm)</span>
-                    <span className="block text-[11px] text-text-muted mt-0.5">Film cuộn 60cm, vùng in rộng 58cm ghép mẫu tự do</span>
+                {/* In tờ A4 */}
+                <tr className="hover:bg-block-bg/20 transition-colors">
+                  <td rowSpan={3} className="px-4 md:px-6 py-4 font-bold text-foreground border border-card-border align-middle">
+                    In tờ A4 (20×28cm)
+                    <span className="block text-[10px] font-normal text-text-muted mt-0.5">Khổ A4 tự dàn trang mẫu in tự do</span>
                   </td>
-                  <td className="px-4 py-4 text-center text-text-muted font-semibold">mét</td>
-                  <td className="px-6 py-4">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="font-black text-[var(--accent)] text-base">Đồng giá 145.000đ/m</span>
-                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-red-500 text-white font-extrabold tracking-wide uppercase animate-pulse">
-                        KHUYẾN MẠI
-                      </span>
-                    </div>
-                    <span className="block text-[11px] text-amber-600 dark:text-amber-400 font-medium mt-0.5">
-                      Áp dụng từ 10/07/2026 đến 31/07/2027 cho mọi số lượng
-                    </span>
+                  <td rowSpan={3} className="px-3 py-4 text-center text-text-muted font-semibold border border-card-border align-middle">
+                    tờ
                   </td>
-                  <td className="px-6 py-4 text-xs text-text-muted text-right font-medium">Khuyên dùng cho đơn hàng lớn</td>
+                  <td className="px-4 md:px-6 py-3 border border-card-border">1–4</td>
+                  <td className="px-4 md:px-6 py-3 font-semibold text-foreground border border-card-border tabular-nums">45.000</td>
+                  <td rowSpan={3} className="px-4 md:px-6 py-4 text-xs text-text-muted text-right font-medium border border-card-border align-middle">
+                    ~10 tờ tương đương 1 mét dài
+                  </td>
+                </tr>
+                <tr className="hover:bg-block-bg/20 transition-colors">
+                  <td className="px-4 md:px-6 py-3 border border-card-border">5–49</td>
+                  <td className="px-4 md:px-6 py-3 font-semibold text-foreground border border-card-border tabular-nums">39.000</td>
+                </tr>
+                <tr className="hover:bg-block-bg/20 transition-colors">
+                  <td className="px-4 md:px-6 py-3 border border-card-border">≥ 50</td>
+                  <td className="px-4 md:px-6 py-3 font-semibold text-foreground border border-card-border tabular-nums">28.000</td>
                 </tr>
 
-                {/* Tờ A4 */}
-                <tr className="hover:bg-block-bg/25 transition-colors">
-                  <td className="px-6 py-4">
-                    <span className="font-bold text-foreground">In tờ A4</span>
-                    <span className="block text-[11px] text-text-muted mt-0.5">Khổ 20×28cm, tự dàn trang ghép mẫu tùy thích</span>
+                {/* In tờ A3 */}
+                <tr className="hover:bg-block-bg/20 transition-colors">
+                  <td rowSpan={3} className="px-4 md:px-6 py-4 font-bold text-foreground border border-card-border align-middle">
+                    In tờ A3 (29×40cm)
+                    <span className="block text-[10px] font-normal text-text-muted mt-0.5">Khổ A3 lớn gấp đôi khổ A4</span>
                   </td>
-                  <td className="px-4 py-4 text-center text-text-muted font-semibold">tờ</td>
-                  <td className="px-6 py-4 text-xs sm:text-sm">
-                    <div className="grid grid-cols-3 gap-2 max-w-sm">
-                      <div>1–4 tờ: <span className="font-bold text-foreground">45.000đ</span></div>
-                      <div>5–49 tờ: <span className="font-bold text-foreground">39.000đ</span></div>
-                      <div>≥50 tờ: <span className="font-bold text-foreground">28.000đ</span></div>
-                    </div>
+                  <td rowSpan={3} className="px-3 py-4 text-center text-text-muted font-semibold border border-card-border align-middle">
+                    tờ
                   </td>
-                  <td className="px-6 py-4 text-xs text-text-muted text-right font-medium">~10 tờ tương đương 1 mét</td>
+                  <td className="px-4 md:px-6 py-3 border border-card-border">1–4</td>
+                  <td className="px-4 md:px-6 py-3 font-semibold text-foreground border border-card-border tabular-nums">80.000</td>
+                  <td rowSpan={3} className="px-4 md:px-6 py-4 text-xs text-text-muted text-right font-medium border border-card-border align-middle">
+                    ~5 tờ tương đương 1 mét dài
+                  </td>
                 </tr>
-
-                {/* Tờ A3 */}
-                <tr className="hover:bg-block-bg/25 transition-colors">
-                  <td className="px-6 py-4">
-                    <span className="font-bold text-foreground">In tờ A3</span>
-                    <span className="block text-[11px] text-text-muted mt-0.5">Khổ 29×40cm, nhân đôi diện tích in A4</span>
-                  </td>
-                  <td className="px-4 py-4 text-center text-text-muted font-semibold">tờ</td>
-                  <td className="px-6 py-4 text-xs sm:text-sm">
-                    <div className="grid grid-cols-3 gap-2 max-w-sm">
-                      <div>1–4 tờ: <span className="font-bold text-foreground">80.000đ</span></div>
-                      <div>5–49 tờ: <span className="font-bold text-foreground">65.000đ</span></div>
-                      <div>≥50 tờ: <span className="font-bold text-foreground">50.000đ</span></div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 text-xs text-text-muted text-right font-medium">~5 tờ tương đương 1 mét</td>
+                <tr className="hover:bg-block-bg/20 transition-colors">
+                  <td className="px-4 md:px-6 py-3 border border-card-border">5–49</td>
+                  <td className="px-4 md:px-6 py-3 font-semibold text-foreground border border-card-border tabular-nums">65.000</td>
+                </tr>
+                <tr className="hover:bg-block-bg/20 transition-colors">
+                  <td className="px-4 md:px-6 py-3 border border-card-border">≥ 50</td>
+                  <td className="px-4 md:px-6 py-3 font-semibold text-foreground border border-card-border tabular-nums">50.000</td>
                 </tr>
 
                 {/* Tem nhỏ */}
-                <tr className="hover:bg-block-bg/25 transition-colors">
-                  <td className="px-6 py-4">
-                    <span className="font-bold text-foreground">Tem nhỏ (≤3×3cm)</span>
-                    <span className="block text-[11px] text-text-muted mt-0.5">Tem nhãn tròn, vuông, cắt bế sẵn chỉ việc bóc dán</span>
+                <tr className="hover:bg-block-bg/20 transition-colors">
+                  <td rowSpan={4} className="px-4 md:px-6 py-4 font-bold text-foreground border border-card-border align-middle">
+                    Tem nhỏ (&lt; 3×3cm) – Cắt bế sẵn
+                    <span className="block text-[10px] font-normal text-text-muted mt-0.5">Tem dán nắp chai, nhãn phụ logo nhỏ</span>
                   </td>
-                  <td className="px-4 py-4 text-center text-text-muted font-semibold">chiếc</td>
-                  <td className="px-6 py-4 text-xs sm:text-sm">
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                      <div>20–49c: <span className="font-bold text-foreground">2.500đ</span></div>
-                      <div>50–100c: <span className="font-bold text-foreground">1.600đ</span></div>
-                      <div>200–999c: <span className="font-bold text-foreground">1.100đ</span></div>
-                      <div>≥1000c: <span className="font-bold text-foreground">500đ</span></div>
-                    </div>
+                  <td rowSpan={4} className="px-3 py-4 text-center text-text-muted font-semibold border border-card-border align-middle">
+                    chiếc
                   </td>
-                  <td className="px-6 py-4 text-xs text-text-muted text-right font-medium">MOQ: tối thiểu 20 chiếc</td>
+                  <td className="px-4 md:px-6 py-3 border border-card-border">20–49</td>
+                  <td className="px-4 md:px-6 py-3 font-semibold text-foreground border border-card-border tabular-nums">2.500</td>
+                  <td rowSpan={4} className="px-4 md:px-6 py-4 text-xs text-text-muted text-right font-medium border border-card-border align-middle">
+                    MOQ tối thiểu 20 chiếc
+                  </td>
+                </tr>
+                <tr className="hover:bg-block-bg/20 transition-colors">
+                  <td className="px-4 md:px-6 py-3 border border-card-border">50–100</td>
+                  <td className="px-4 md:px-6 py-3 font-semibold text-foreground border border-card-border tabular-nums">1.600</td>
+                </tr>
+                <tr className="hover:bg-block-bg/20 transition-colors">
+                  <td className="px-4 md:px-6 py-3 border border-card-border">200–999</td>
+                  <td className="px-4 md:px-6 py-3 font-semibold text-foreground border border-card-border tabular-nums">1.100</td>
+                </tr>
+                <tr className="hover:bg-block-bg/20 transition-colors">
+                  <td className="px-4 md:px-6 py-3 border border-card-border">≥ 1.000</td>
+                  <td className="px-4 md:px-6 py-3 font-semibold text-foreground border border-card-border tabular-nums">500</td>
                 </tr>
 
                 {/* Tem trung bình */}
-                <tr className="hover:bg-block-bg/25 transition-colors">
-                  <td className="px-6 py-4">
-                    <span className="font-bold text-foreground">Tem trung bình (4×4–5×5cm)</span>
-                    <span className="block text-[11px] text-text-muted mt-0.5">Kích thước vừa dán cốc giữ nhiệt, hộp quà tặng</span>
+                <tr className="hover:bg-block-bg/20 transition-colors">
+                  <td rowSpan={4} className="px-4 md:px-6 py-4 font-bold text-foreground border border-card-border align-middle">
+                    Tem trung bình (4×4–5×5cm) – Cắt bế sẵn
+                    <span className="block text-[10px] font-normal text-text-muted mt-0.5">Vừa dán cốc giữ nhiệt, chai lọ thủy tinh</span>
                   </td>
-                  <td className="px-4 py-4 text-center text-text-muted font-semibold">chiếc</td>
-                  <td className="px-6 py-4 text-xs sm:text-sm">
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                      <div>20–49c: <span className="font-bold text-foreground">4.000đ</span></div>
-                      <div>50–199c: <span className="font-bold text-foreground">2.800đ</span></div>
-                      <div>200–999c: <span className="font-bold text-foreground">1.900đ</span></div>
-                      <div>≥1000c: <span className="font-bold text-foreground">1.300đ</span></div>
-                    </div>
+                  <td rowSpan={4} className="px-3 py-4 text-center text-text-muted font-semibold border border-card-border align-middle">
+                    chiếc
                   </td>
-                  <td className="px-6 py-4 text-xs text-text-muted text-right font-medium">MOQ: tối thiểu 20 chiếc</td>
+                  <td className="px-4 md:px-6 py-3 border border-card-border">20–49</td>
+                  <td className="px-4 md:px-6 py-3 font-semibold text-foreground border border-card-border tabular-nums">4.000</td>
+                  <td rowSpan={4} className="px-4 md:px-6 py-4 text-xs text-text-muted text-right font-medium border border-card-border align-middle">
+                    MOQ tối thiểu 20 chiếc
+                  </td>
+                </tr>
+                <tr className="hover:bg-block-bg/20 transition-colors">
+                  <td className="px-4 md:px-6 py-3 border border-card-border">50–199</td>
+                  <td className="px-4 md:px-6 py-3 font-semibold text-foreground border border-card-border tabular-nums">2.800</td>
+                </tr>
+                <tr className="hover:bg-block-bg/20 transition-colors">
+                  <td className="px-4 md:px-6 py-3 border border-card-border">200–999</td>
+                  <td className="px-4 md:px-6 py-3 font-semibold text-foreground border border-card-border tabular-nums">1.900</td>
+                </tr>
+                <tr className="hover:bg-block-bg/20 transition-colors">
+                  <td className="px-4 md:px-6 py-3 border border-card-border">≥ 1.000</td>
+                  <td className="px-4 md:px-6 py-3 font-semibold text-foreground border border-card-border tabular-nums">1.300</td>
                 </tr>
 
                 {/* Tem lớn */}
-                <tr className="hover:bg-block-bg/25 transition-colors">
-                  <td className="px-6 py-4">
-                    <span className="font-bold text-foreground">Tem lớn (6×6–8×8cm)</span>
-                    <span className="block text-[11px] text-text-muted mt-0.5">Thích hợp dán nón bảo hiểm, cửa kính, thùng máy</span>
+                <tr className="hover:bg-block-bg/20 transition-colors">
+                  <td rowSpan={4} className="px-4 md:px-6 py-4 font-bold text-foreground border border-card-border align-middle">
+                    Tem lớn (6×6–8×8cm) – Cắt bế sẵn
+                    <span className="block text-[10px] font-normal text-text-muted mt-0.5">Phù hợp dán nón bảo hiểm, xe máy, laptop</span>
                   </td>
-                  <td className="px-4 py-4 text-center text-text-muted font-semibold">chiếc</td>
-                  <td className="px-6 py-4 text-xs sm:text-sm">
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                      <div>20–49c: <span className="font-bold text-foreground">7.000đ</span></div>
-                      <div>50–199c: <span className="font-bold text-foreground">4.800đ</span></div>
-                      <div>200–999c: <span className="font-bold text-foreground">3.200đ</span></div>
-                      <div>≥1000c: <span className="font-bold text-foreground">2.400đ</span></div>
-                    </div>
+                  <td rowSpan={4} className="px-3 py-4 text-center text-text-muted font-semibold border border-card-border align-middle">
+                    chiếc
                   </td>
-                  <td className="px-6 py-4 text-xs text-text-muted text-right font-medium">MOQ: tối thiểu 20 chiếc</td>
+                  <td className="px-4 md:px-6 py-3 border border-card-border">20–49</td>
+                  <td className="px-4 md:px-6 py-3 font-semibold text-foreground border border-card-border tabular-nums">7.000</td>
+                  <td rowSpan={4} className="px-4 md:px-6 py-4 text-xs text-text-muted text-right font-medium border border-card-border align-middle">
+                    MOQ tối thiểu 20 chiếc
+                  </td>
+                </tr>
+                <tr className="hover:bg-block-bg/20 transition-colors">
+                  <td className="px-4 md:px-6 py-3 border border-card-border">50–199</td>
+                  <td className="px-4 md:px-6 py-3 font-semibold text-foreground border border-card-border tabular-nums">4.800</td>
+                </tr>
+                <tr className="hover:bg-block-bg/20 transition-colors">
+                  <td className="px-4 md:px-6 py-3 border border-card-border">200–999</td>
+                  <td className="px-4 md:px-6 py-3 font-semibold text-foreground border border-card-border tabular-nums">3.200</td>
+                </tr>
+                <tr className="hover:bg-block-bg/20 transition-colors">
+                  <td className="px-4 md:px-6 py-3 border border-card-border">≥ 1.000</td>
+                  <td className="px-4 md:px-6 py-3 font-semibold text-foreground border border-card-border tabular-nums">2.400</td>
+                </tr>
+
+                {/* In theo mét dài */}
+                <tr className="bg-[var(--accent-glow)]/40 hover:bg-[var(--accent-glow)]/60 transition-colors">
+                  <td className="px-4 md:px-6 py-4 font-bold text-foreground border border-card-border align-middle">
+                    In theo mét dài (Khổ 60cm)
+                    <span className="block text-[10px] font-normal text-text-muted mt-0.5">Film cuộn in tràn khổ bế mẫu tự do</span>
+                  </td>
+                  <td className="px-3 py-4 text-center text-text-muted font-semibold border border-card-border align-middle">
+                    mét
+                  </td>
+                  <td className="px-4 md:px-6 py-4 border border-card-border align-middle">Mọi số lượng</td>
+                  <td className="px-4 md:px-6 py-4 font-black text-[var(--accent)] border border-card-border align-middle tabular-nums">145.000</td>
+                  <td className="px-4 md:px-6 py-4 text-xs text-amber-600 dark:text-amber-400 text-right font-bold border border-card-border align-middle">
+                    Khuyến mại từ 10/07/2026 đến 31/07/2027
+                  </td>
                 </tr>
               </tbody>
             </table>
