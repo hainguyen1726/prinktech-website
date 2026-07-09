@@ -70,6 +70,9 @@ docker run --rm \
     node:20 \
     npm install --include=dev --no-audit --no-fund --legacy-peer-deps
 
+info "Đang dọn dẹp cache Next.js cũ (.next)..."
+rm -rf .next
+
 info "Đang build Next.js (chế độ Production)..."
 docker run --rm \
     -v "$APP_DIR:/app" \

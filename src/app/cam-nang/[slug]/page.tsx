@@ -190,7 +190,7 @@ export default async function CamNangDetailPage({
           {/* Nội dung bài viết */}
           {post.content ? (
             <div
-              className="prose dark:prose-invert max-w-none prose-headings:text-foreground prose-a:text-sky-400 prose-img:rounded-xl text-foreground/90"
+              className="prose prose-sm md:prose-base dark:prose-invert max-w-none prose-headings:text-foreground prose-a:text-sky-400 prose-img:rounded-xl text-foreground/90"
               dangerouslySetInnerHTML={{ __html: post.content }}
             />
           ) : (
