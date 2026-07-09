@@ -193,16 +193,33 @@ export default function BaoGiaContent() {
         </div>
 
         {/* Page Title */}
-        <div className="mb-8">
-          <h1 className="text-3xl md:text-4xl font-black tracking-tight text-foreground">
-            Bảng giá in{' '}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-500 via-fuchsia-500 to-pink-500">
-              UV DTF 3D
-            </span>
-          </h1>
-          <p className="text-text-muted mt-2 text-sm">
-            Cập nhật ngày 09/07/2026 • Giá đã bao gồm thuế VAT
-          </p>
+        <div className="mb-8 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+          <div>
+            <h1 className="text-3xl md:text-4xl font-black tracking-tight text-foreground">
+              Bảng giá in{' '}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-500 via-fuchsia-500 to-pink-500">
+                UV DTF 3D
+              </span>
+            </h1>
+            <p className="text-text-muted mt-2 text-sm">
+              Cập nhật ngày 09/07/2026 • Giá đã bao gồm thuế VAT
+            </p>
+          </div>
+          <div className="flex-shrink-0">
+            <a
+              href="#calculator"
+              onClick={(e) => {
+                e.preventDefault();
+                const el = document.getElementById('calculator');
+                if (el) {
+                  el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+              }}
+              className="inline-flex items-center gap-2 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white font-black px-6 py-3 rounded-2xl text-sm shadow-lg shadow-orange-500/25 hover:shadow-orange-500/40 transition-all duration-300 transform hover:-translate-y-0.5 cursor-pointer focus:outline-none"
+            >
+              🧮 Tạo bảng tính giá chi tiết →
+            </a>
+          </div>
         </div>
 
         {/* Pricing table */}
