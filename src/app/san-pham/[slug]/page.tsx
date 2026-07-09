@@ -199,6 +199,22 @@ export default async function SanPhamDetailPage({
                 </div>
               )}
 
+
+              {/* Khuyến mại In theo mét dài - Áp dụng từ 10/07/2026 đến 31/07/2027 */}
+              {(product.name.toLowerCase().includes('mét dài') || product.name.toLowerCase().includes('met dai') || slug.includes('met-dai') || slug.includes('met_dai')) && (
+                <div className="bg-gradient-to-r from-orange-500 to-red-500 text-white p-5 rounded-2xl shadow-lg">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-2xl">🎉</span>
+                    <span className="font-bold text-lg">KHUYẾN MẠI ĐẶC BIỆT</span>
+                  </div>
+                  <div className="space-y-1.5">
+                    <p className="text-sm line-through opacity-75">Giá cũ: 150.000 - 400.000đ/m</p>
+                    <p className="text-xl font-black">ĐỒNG GIÁ <span className="text-yellow-300">145.000đ/m</span> cho mọi số lượng!</p>
+                    <p className="text-xs opacity-90">📅 Áp dụng từ <strong>10/07/2026</strong> đến hết <strong>31/07/2027</strong></p>
+                  </div>
+                  <p className="text-xs mt-2 opacity-80">💡 In UV DTF khổ 60cm - Decal, tem nhãn, bảng hiệu...</p>
+                </div>
+              )}
               {product.description && (
                 <p className="text-sm text-slate-400 leading-relaxed">{product.description}</p>
               )}
