@@ -27,7 +27,7 @@ Dự án website xưởng in UV DTF PrinK Tech (`prinktech.netslive.com`).
 
 1. **Production (Web chạy chính thức - Cổng 3019):**
    - **Đường dẫn**: `/srv/website-prinktech/`
-   - **Quy tắc**: Đây là thư mục bất biến chạy thực tế cho người dùng. **CẤM KỴ: AI Agent không được chỉnh sửa hoặc pull trực tiếp tại đây**.
+   - **Quy tắc**: Đây là thư mục chạy thực tế cho người dùng. **AI Agent không tự ý can thiệp hoặc sửa code trực tiếp tại đây, TRỪ KHI được người dùng yêu cầu hoặc cấp quyền trực tiếp để chạy script deploy (`deploy-vps-git.sh`).**
 
 2. **Dev Workspace (Nơi làm việc của Hermes):**
    - **Đường dẫn**: `/home/hermes/workspaces/website-prinktech/`

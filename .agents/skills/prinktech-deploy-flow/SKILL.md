@@ -19,7 +19,7 @@ Tài liệu này định nghĩa quy trình làm việc và giao thức đồng b
 
 1. **Production (Môi trường chạy thực tế - Cổng 3019):**
    - **Đường dẫn thư mục**: `/srv/website-prinktech/`
-   - **Quy tắc**: Đây là môi trường bất biến, chạy web chính thức cho người dùng. **AI Agent tuyệt đối không can thiệp hoặc sửa code trực tiếp tại đây**. Môi trường này chỉ nhận code sạch từ nhánh chính `master` đã được kiểm duyệt và deploy.
+   - **Quy tắc**: Đây là môi trường chạy web chính thức cho người dùng. **AI Agent không tự ý can thiệp hoặc sửa code trực tiếp tại đây TRỪ KHI được người dùng yêu cầu hoặc cấp quyền trực tiếp**. Môi trường này nhận code sạch từ nhánh chính master đã được kiểm duyệt và deploy.
 
 2. **Dev Workspace (Môi trường phát triển của Hermes):**
    - **Đường dẫn thư mục**: `/home/hermes/workspaces/website-prinktech/`
@@ -115,5 +115,5 @@ ssh root@180.93.146.26 "docker compose -f /srv/website-prinktech/docker-compose.
 ## ⚠️ Lưu ý quan trọng
 
 1. **KHÔNG bao giờ** commit `.env`, `.env.local`, credentials vào Git.
-2. **CẤM KỴ**: Tuyệt đối không dùng Hermes để pull/build trực tiếp trên thư mục Production `/srv/website-prinktech/`.
+2. **CẤM KỴ & NGOẠI LỆ**: AI Agent (như Hermes) không tự ý pull/build trực tiếp trên thư mục Production `/srv/website-prinktech/` nhằm tránh downtime, **TRỪ KHI** có sự chỉ định hoặc yêu cầu trực tiếp từ người dùng.
 3. **BẮT BUỘC** chạy `npm run build` tại Dev Workspace trước khi push.
