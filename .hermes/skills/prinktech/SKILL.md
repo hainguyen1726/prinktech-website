@@ -37,6 +37,10 @@ Dự án website xưởng in UV DTF PrinK Tech (`prinktech.netslive.com`).
 
 ## 🔒 2. Quy tắc hoạt động bắt buộc đối với Hermes Agent
 
+> [!IMPORTANT]
+> **BẮT BUỘC THỰC HIỆN ĐẦU TIÊN TRONG MỌI PHIÊN LÀM VIỆC (SESSION)**:
+> Trước khi thực hiện bất kỳ thao tác đọc hoặc chỉnh sửa code nào, **bắt buộc** phải chạy lệnh `git status` và `git pull origin master` để đồng bộ hoàn toàn mã nguồn mới nhất từ GitHub về Dev Workspace, tránh tuyệt đối tình trạng code đè lên nhau.
+
 Khi bạn nhận nhiệm vụ sửa code hoặc phát triển tính năng trên VPS:
 
 1. **Di chuyển vào đúng Dev Workspace:**
