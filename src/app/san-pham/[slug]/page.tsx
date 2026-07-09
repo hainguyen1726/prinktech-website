@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import Script from 'next/script';
 import Header from '@/components/Header';
+import { Home } from 'lucide-react';
 
 const BASE_URL = 'https://prinktech.netslive.com';
 
@@ -146,12 +147,19 @@ export default async function SanPhamDetailPage({
 
         <main className="max-w-5xl mx-auto px-4 md:px-6 py-12">
           {/* Breadcrumb */}
-          <nav aria-label="Breadcrumb" className="mb-8 text-xs text-slate-500 flex items-center gap-1.5">
-            <Link href="/" className="hover:text-sky-400 transition-colors">Trang chủ</Link>
-            <span>/</span>
-            <Link href="/#products" className="hover:text-sky-400 transition-colors">Sản phẩm</Link>
-            <span>/</span>
-            <span className="text-slate-300 truncate max-w-[200px]">{product.name}</span>
+          <nav aria-label="Breadcrumb" className="mb-8 flex flex-wrap items-center gap-2 text-xs font-semibold text-foreground/50 bg-foreground/5 px-4 py-2.5 rounded-xl border border-card-border/30 w-fit">
+            <Link href="/" className="flex items-center gap-1.5 hover:text-[var(--accent)] transition-colors">
+              <Home size={13} />
+              <span>Trang chủ</span>
+            </Link>
+            <span className="text-foreground/20 font-light">/</span>
+            <Link href="/#products" className="hover:text-[var(--accent)] transition-colors">
+              Sản phẩm
+            </Link>
+            <span className="text-foreground/20 font-light">/</span>
+            <span className="text-foreground/80 truncate max-w-[240px] md:max-w-xs font-medium" title={product.name}>
+              {product.name}
+            </span>
           </nav>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-start">
@@ -178,7 +186,7 @@ export default async function SanPhamDetailPage({
                 </span>
               )}
 
-              <h1 className="text-2xl md:text-3xl font-black text-white leading-tight">
+              <h1 className="text-2xl md:text-3xl font-black text-foreground leading-tight">
                 {product.name}
               </h1>
 
@@ -205,7 +213,7 @@ export default async function SanPhamDetailPage({
                 </div>
               )}
               {product.description && (
-                <p className="text-sm text-slate-400 leading-relaxed">{product.description}</p>
+                <p className="text-sm text-foreground/80 leading-relaxed">{product.description}</p>
               )}
 
               <div className="space-y-2 text-xs text-slate-500">

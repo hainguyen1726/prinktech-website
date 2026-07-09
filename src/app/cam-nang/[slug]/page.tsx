@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import Script from 'next/script';
 import Header from '@/components/Header';
+import { Home } from 'lucide-react';
 
 const BASE_URL = 'https://prinktech.netslive.com';
 
@@ -140,12 +141,19 @@ export default async function CamNangDetailPage({
         {/* Bài viết */}
         <main className="max-w-4xl mx-auto px-4 md:px-6 py-12">
           {/* Breadcrumb */}
-          <nav aria-label="Breadcrumb" className="mb-6 text-xs text-slate-500 flex items-center gap-1.5">
-            <Link href="/" className="hover:text-sky-400 transition-colors">Trang chủ</Link>
-            <span>/</span>
-            <Link href="/#blog" className="hover:text-sky-400 transition-colors">Cẩm nang</Link>
-            <span>/</span>
-            <span className="text-slate-300 truncate max-w-[200px]">{post.title}</span>
+          <nav aria-label="Breadcrumb" className="mb-8 flex flex-wrap items-center gap-2 text-xs font-semibold text-foreground/50 bg-foreground/5 px-4 py-2.5 rounded-xl border border-card-border/30 w-fit">
+            <Link href="/" className="flex items-center gap-1.5 hover:text-[var(--accent)] transition-colors">
+              <Home size={13} />
+              <span>Trang chủ</span>
+            </Link>
+            <span className="text-foreground/20 font-light">/</span>
+            <Link href="/#blog" className="hover:text-[var(--accent)] transition-colors">
+              Cẩm nang
+            </Link>
+            <span className="text-foreground/20 font-light">/</span>
+            <span className="text-foreground/80 truncate max-w-[240px] md:max-w-xs font-medium" title={post.title}>
+              {post.title}
+            </span>
           </nav>
 
           {/* Cover image */}
@@ -160,7 +168,7 @@ export default async function CamNangDetailPage({
           )}
 
           {/* Tiêu đề & meta */}
-          <h1 className="text-2xl md:text-4xl font-black text-white leading-tight mb-3">
+          <h1 className="text-2xl md:text-4xl font-black text-foreground leading-tight mb-3">
             {post.title}
           </h1>
           <div className="flex items-center gap-3 text-[11px] text-slate-500 mb-6">
@@ -174,7 +182,7 @@ export default async function CamNangDetailPage({
           </div>
 
           {post.summary && (
-            <p className="text-base text-slate-300 leading-relaxed border-l-4 border-sky-500/50 pl-4 mb-8 italic">
+            <p className="text-base text-foreground/80 leading-relaxed border-l-4 border-sky-500/50 pl-4 mb-8 italic">
               {post.summary}
             </p>
           )}
@@ -182,7 +190,7 @@ export default async function CamNangDetailPage({
           {/* Nội dung bài viết */}
           {post.content ? (
             <div
-              className="prose prose-invert prose-slate max-w-none prose-headings:text-white prose-a:text-sky-400 prose-img:rounded-xl"
+              className="prose dark:prose-invert max-w-none prose-headings:text-foreground prose-a:text-sky-400 prose-img:rounded-xl text-foreground/90"
               dangerouslySetInnerHTML={{ __html: post.content }}
             />
           ) : (
