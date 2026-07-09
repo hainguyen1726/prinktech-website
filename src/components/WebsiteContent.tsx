@@ -310,27 +310,27 @@ export default function WebsiteContent({ initialTheme, hideSwitcher = false }: W
                 const cfg = isMet ? {
                   label: 'In theo Mét dài',
                   badge: 'Cuộn 60cm',
-                  desc: 'In cuộn liên tục theo mét, khổ 60cm rộng. Phù hợp decal dài, logo băng chuyền, nhãn cuộn số lượng lớn.',
-                  img: 'https://images.unsplash.com/photo-1586953208448-b95a79798f07?w=500&auto=format&fit=crop&q=80',
-                  imgAlt: 'In tem UV DTF theo mét dài cuộn',
+                  desc: 'In cuộn liên tục khổ 60cm. Tem chuyển nổi 3D không viền nền, bám cực tốt trên chai lọ, ly cốc sần hay nón bảo hiểm.',
+                  img: '/images/product_met_dai.png',
+                  imgAlt: 'In tem UV DTF theo mét dài cuộn 60cm thực tế tại xưởng PrinK Tech',
                 } : isA4 ? {
                   label: 'In tờ A4 (20×28cm)',
                   badge: 'UV DTF Nổi 3D',
-                  desc: 'Tờ A4 cắt sẵn, đã bế tem rời. Phù hợp tem nhãn sản phẩm, logo thương hiệu, sticker cá nhân hóa.',
-                  img: 'https://images.unsplash.com/photo-1626785774573-4b799315345d?w=500&auto=format&fit=crop&q=80',
-                  imgAlt: 'In tem UV DTF tờ A4 nổi 3D',
+                  desc: 'Khổ A4 cắt sẵn chứa nhiều logo. Công nghệ dán chuyển không viền decal nền, dán xong chỉ bám lại phần mực & keo nổi.',
+                  img: '/images/product_to_a4.png',
+                  imgAlt: 'Tờ tem nhãn in UV DTF A4 20x28cm nổi 3D không viền PrinK Tech',
                 } : isA3 ? {
                   label: 'In tờ A3 (29×40cm)',
                   badge: 'UV DTF Nổi 3D',
-                  desc: 'Tờ A3 cắt sẵn khổ lớn. Phù hợp tem lớn, decal trang trí, nhãn hộp sản phẩm, poster nhỏ dán cứng.',
-                  img: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=500&auto=format&fit=crop&q=80',
-                  imgAlt: 'In tem UV DTF tờ A3 khổ lớn',
+                  desc: 'Khổ A3 chứa nhiều logo lớn. Keo dính bám chắc, phủ bóng gương nổi 3D sang trọng dán trực tiếp lên hộp quà, hộp cứng.',
+                  img: '/images/product_to_a3.png',
+                  imgAlt: 'In tem UV DTF tờ A3 29x40cm nổi 3D nhiều logo thương hiệu PrinK Tech',
                 } : {
                   label: 'Tem nhỏ (≤3×3cm)',
                   badge: 'Cắt bế sẵn',
-                  desc: 'Tem đã cắt bế rời từng chiếc ≤3×3cm. Phù hợp tem logo, niêm phong hộp, sticker nhỏ số lượng lớn.',
-                  img: 'https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=500&auto=format&fit=crop&q=80',
-                  imgAlt: 'Tem nhỏ UV DTF cắt bế sẵn',
+                  desc: 'Tem nhỏ cắt sẵn rời từng cái. Dán chuyển nổi 3D không viền, kháng nước 100% chuyên dùng dán ly thủy tinh, đồ gốm sứ.',
+                  img: '/images/product_tem_nho.jpg',
+                  imgAlt: 'Tem nhỏ UV DTF cắt bế sẵn dưới 3x3cm chibi xe đua không viền PrinK Tech',
                 };
 
                 return (

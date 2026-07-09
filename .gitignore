@@ -39,3 +39,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local scripts (one-time db seeds/updates)
+insert-*.mjs
+update-*.mjs
+update-*.cjs
+print-*.mjs
+check-posts.mjs
