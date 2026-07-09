@@ -1,11 +1,12 @@
 // Pricing config cho PrinK Tech UV DTF 3D
 // Dùng chung cho calculator, order form, và báo giá
+// Cập nhật: 09/07/2026 - Giá mới + Khuyến mại 145k/m (10/07/2026 - 31/07/2027)
 
 export type ProductType = 'cuon' | 'a4' | 'a3' | 'tem-nho' | 'tem-tb' | 'tem-lon';
 
 export type TierPrice = {
   min: number;
-  max: number | null; // null = không giới hạn
+  max: number | null;
   price: number;
   label: string;
 };
@@ -21,6 +22,11 @@ export type Product = {
   description: string;
   tiers: TierPrice[];
   note?: string;
+  promotion?: {
+    startDate: string;
+    endDate: string;
+    message: string;
+  };
 };
 
 export const PRODUCTS: Product[] = [
@@ -34,14 +40,14 @@ export const PRODUCTS: Product[] = [
     icon: '🧵',
     description: 'Khách tự ghép file, xưởng in theo mét dài khổ rộng 60cm',
     tiers: [
-      { min: 0,    max: 2,    price: 290000, label: 'Dưới 2 mét' },
-      { min: 2,    max: 5,    price: 250000, label: 'Từ 2 – 5 mét' },
-      { min: 5,    max: 15,   price: 220000, label: 'Từ 6 – 15 mét' },
-      { min: 15,   max: 50,   price: 190000, label: 'Từ 16 – 50 mét' },
-      { min: 50,   max: 100,  price: 175000, label: 'Từ 51 – 100 mét' },
-      { min: 100,  max: null, price: 0,      label: 'Trên 100 mét — Liên hệ' },
+      { min: 0, max: null, price: 145000, label: 'Đồng giá 145.000đ/m' },
     ],
     note: 'Ghép file vào khổ 58cm (film 60cm). Khoảng cách bế tối thiểu 5mm.',
+    promotion: {
+      startDate: '2026-07-10',
+      endDate: '2027-07-31',
+      message: '🎉 KHUYẾN MẠI ĐẶC BIỆT (10/07/2026 - 31/07/2027): Đồng giá 145.000đ/m cho mọi số lượng!',
+    },
   },
   {
     type: 'a4',
@@ -53,9 +59,9 @@ export const PRODUCTS: Product[] = [
     icon: '📄',
     description: 'In sẵn theo tờ A4, xưởng dàn trang tối ưu',
     tiers: [
-      { min: 1,   max: 5,    price: 55000, label: 'Lẻ (1 – 5 tờ)' },
-      { min: 5,   max: 50,   price: 35000, label: 'Sỉ (6 – 50 tờ)' },
-      { min: 50,  max: null, price: 25000, label: 'Sỉ lớn (trên 50 tờ)' },
+      { min: 1, max: 4, price: 45000, label: '1 – 4 tờ' },
+      { min: 5, max: 49, price: 39000, label: '5 – 49 tờ' },
+      { min: 50, max: null, price: 28000, label: '≥ 50 tờ' },
     ],
     note: '1 mét cuộn 60cm xếp được ~10 tờ A4',
   },
@@ -69,9 +75,9 @@ export const PRODUCTS: Product[] = [
     icon: '🗒️',
     description: 'In sẵn theo tờ A3 kích thước lớn',
     tiers: [
-      { min: 1,   max: 5,    price: 99000, label: 'Lẻ (1 – 5 tờ)' },
-      { min: 5,   max: 50,   price: 65000, label: 'Sỉ (6 – 50 tờ)' },
-      { min: 50,  max: null, price: 48000, label: 'Sỉ lớn (trên 50 tờ)' },
+      { min: 1, max: 4, price: 80000, label: '1 – 4 tờ' },
+      { min: 5, max: 49, price: 65000, label: '5 – 49 tờ' },
+      { min: 50, max: null, price: 50000, label: '≥ 50 tờ' },
     ],
     note: '1 mét cuộn 60cm xếp được ~5 tờ A3',
   },
@@ -85,10 +91,10 @@ export const PRODUCTS: Product[] = [
     icon: '🏷️',
     description: 'Tem nhỏ cắt bế sẵn từng con, kích thước ≤3×3cm',
     tiers: [
-      { min: 20,   max: 50,   price: 3000, label: '20 – 49 chiếc' },
-      { min: 50,   max: 200,  price: 1800, label: '50 – 199 chiếc' },
-      { min: 200,  max: 1000, price: 1200, label: '200 – 999 chiếc' },
-      { min: 1000, max: null, price: 800,  label: 'Từ 1.000 chiếc' },
+      { min: 20, max: 49, price: 2500, label: '20 – 49 chiếc' },
+      { min: 50, max: 100, price: 1600, label: '50 – 100 chiếc' },
+      { min: 200, max: 999, price: 1100, label: '200 – 999 chiếc' },
+      { min: 1000, max: null, price: 500, label: '≥ 1.000 chiếc' },
     ],
     note: 'MOQ tối thiểu 20 chiếc. Giá / 1 chiếc tem đã bế sẵn.',
   },
@@ -102,9 +108,9 @@ export const PRODUCTS: Product[] = [
     icon: '✨',
     description: 'Tem đã bế sẵn kích thước 4×4cm đến 5×5cm — nổi 3D đẹp',
     tiers: [
-      { min: 20,   max: 50,   price: 4000, label: '20 – 49 chiếc' },
-      { min: 50,   max: 200,  price: 2800, label: '50 – 199 chiếc' },
-      { min: 200,  max: 1000, price: 1900, label: '200 – 999 chiếc' },
+      { min: 20, max: 50, price: 4000, label: '20 – 49 chiếc' },
+      { min: 50, max: 200, price: 2800, label: '50 – 199 chiếc' },
+      { min: 200, max: 1000, price: 1900, label: '200 – 999 chiếc' },
       { min: 1000, max: null, price: 1300, label: 'Từ 1.000 chiếc' },
     ],
     note: 'Độ gờ nổi 3D sờ gân rõ, sướng tay. MOQ 20 chiếc.',
@@ -119,9 +125,9 @@ export const PRODUCTS: Product[] = [
     icon: '🌟',
     description: 'Tem kích thước lớn 6–8cm, đẹp trên mũ bảo hiểm và vali',
     tiers: [
-      { min: 20,   max: 50,   price: 7000, label: '20 – 49 chiếc' },
-      { min: 50,   max: 200,  price: 4800, label: '50 – 199 chiếc' },
-      { min: 200,  max: 1000, price: 3200, label: '200 – 999 chiếc' },
+      { min: 20, max: 50, price: 7000, label: '20 – 49 chiếc' },
+      { min: 50, max: 200, price: 4800, label: '50 – 199 chiếc' },
+      { min: 200, max: 1000, price: 3200, label: '200 – 999 chiếc' },
       { min: 1000, max: null, price: 2400, label: 'Từ 1.000 chiếc' },
     ],
     note: 'Đẹp trên mũ bảo hiểm, vali, bình giữ nhiệt. MOQ 20 chiếc.',
