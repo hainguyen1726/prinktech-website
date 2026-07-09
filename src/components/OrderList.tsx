@@ -166,10 +166,22 @@ export default function OrderList() {
             </div>
 
             <Link
-              href="/bao-gia"
-              className="px-4 py-1.5 rounded-xl text-sm font-semibold border border-card-border text-text-muted hover:bg-block-bg transition-all"
+              href="/admin/website"
+              className="px-3.5 py-1.5 rounded-xl text-xs font-bold border border-card-border text-foreground hover:bg-block-bg hover:text-[var(--accent)] transition-all cursor-pointer"
             >
-              Trang tính giá
+              🖥️ Quản lý Website
+            </Link>
+            <Link
+              href="/admin/viet-bai"
+              className="px-3.5 py-1.5 rounded-xl text-xs font-bold border border-card-border text-foreground hover:bg-block-bg hover:text-[var(--accent)] transition-all cursor-pointer"
+            >
+              ✍️ Viết bài mới
+            </Link>
+            <Link
+              href="/bao-gia"
+              className="hidden sm:inline-block px-3.5 py-1.5 rounded-xl text-xs font-bold border border-card-border text-text-muted hover:bg-block-bg transition-all"
+            >
+              Báo giá
             </Link>
           </div>
         </div>

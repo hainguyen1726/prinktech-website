@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { 
   FileText, Layers, Calculator, PhoneCall, Plus, Edit2, Trash2, Save, LogOut, Globe,
   CheckCircle, Loader2, X, PlusCircle, ArrowUpRight, Check, RefreshCw, AlertCircle, Video,
-  BarChart
+  BarChart, ShoppingBag, PenTool
 } from 'lucide-react';
 
 interface Product {
@@ -613,6 +613,15 @@ export default function AdminWebsitePage() {
         {/* Sidebar Nav */}
         <aside className="w-full lg:w-60 shrink-0">
           <div className="glass-card p-4 space-y-1 bg-slate-950/20">
+            <Link
+              href="/admin/don-hang"
+              className="w-full flex items-center gap-2.5 px-4 py-3 rounded-lg text-xs font-bold text-left text-slate-400 hover:text-slate-200 hover:bg-slate-900/30 border border-transparent transition cursor-pointer"
+            >
+              <ShoppingBag size={16} className="text-emerald-400" /> Quản lý Đơn hàng
+            </Link>
+
+            <span className="block h-px bg-slate-800/80 my-2"></span>
+
             <button
               onClick={() => setActiveTab('posts')}
               className={`w-full flex items-center gap-2.5 px-4 py-3 rounded-lg text-xs font-bold text-left transition cursor-pointer ${
@@ -623,6 +632,14 @@ export default function AdminWebsitePage() {
             >
               <FileText size={16} /> Quản lý Bài viết
             </button>
+
+            <Link
+              href="/admin/viet-bai"
+              className="w-full flex items-center gap-2.5 px-4 py-3 rounded-lg text-xs font-bold text-left text-slate-400 hover:text-slate-200 hover:bg-slate-900/30 border border-transparent transition cursor-pointer"
+            >
+              <PenTool size={16} className="text-amber-400" /> Viết bài (Công cụ SEO)
+            </Link>
+
             <button
               onClick={() => setActiveTab('products')}
               className={`w-full flex items-center gap-2.5 px-4 py-3 rounded-lg text-xs font-bold text-left transition cursor-pointer ${
@@ -686,14 +703,14 @@ export default function AdminWebsitePage() {
                   <h3 className="font-bold text-base text-white">Quản lý Bài viết / Cẩm nang in ấn</h3>
                   <p className="text-[10px] text-slate-500 mt-1">Viết các cẩm nang, hướng dẫn dán tem nhãn UV DTF thường & nổi.</p>
                 </div>
-                <button
-                  onClick={handleNewPost}
+                <Link
+                  href="/admin/viet-bai"
                   className="px-4 py-2 bg-sky-500 hover:bg-sky-400 text-slate-950 font-black text-xs rounded-lg transition flex items-center gap-1.5 cursor-pointer"
                 >
                   <Plus size={14} /> Viết bài mới
-                </button>
+                </Link>
               </div>
-
+ 
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse text-xs">
                   <thead>
@@ -723,9 +740,9 @@ export default function AdminWebsitePage() {
                         <td className="p-3 text-slate-400">{post.author}</td>
                         <td className="p-3 text-slate-500">{new Date(post.created_at).toLocaleDateString('vi-VN')}</td>
                         <td className="p-3 text-right flex justify-end gap-2">
-                          <button onClick={() => handleEditPost(post)} className="p-1.5 bg-slate-800 hover:bg-sky-500/10 text-slate-300 hover:text-sky-400 rounded transition cursor-pointer">
+                          <Link href={`/admin/viet-bai?id=${post.id}`} className="p-1.5 bg-slate-800 hover:bg-sky-500/10 text-slate-300 hover:text-sky-400 rounded transition cursor-pointer flex items-center justify-center">
                             <Edit2 size={12} />
-                          </button>
+                          </Link>
                           <button onClick={() => handleDeletePost(post.id)} className="p-1.5 bg-slate-800 hover:bg-rose-500/10 text-slate-300 hover:text-rose-400 rounded transition cursor-pointer">
                             <Trash2 size={12} />
                           </button>
