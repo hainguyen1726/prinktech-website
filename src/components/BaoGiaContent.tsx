@@ -231,7 +231,7 @@ export default function BaoGiaContent() {
                   <th className="px-4 md:px-6 py-4 font-bold border border-card-border">Sản phẩm</th>
                   <th className="text-center px-3 py-4 font-bold w-20 border border-card-border">ĐVT</th>
                   <th className="px-4 md:px-6 py-4 font-bold border border-card-border">Số lượng</th>
-                  <th className="px-4 md:px-6 py-4 font-bold border border-card-border">Đơn giá (VNĐ)</th>
+                  <th className="px-4 md:px-6 py-4 font-bold border border-card-border text-right">Đơn giá (VNĐ)</th>
                   <th className="px-4 md:px-6 py-4 font-bold text-right border border-card-border">Ghi chú</th>
                 </tr>
               </thead>
@@ -246,18 +246,18 @@ export default function BaoGiaContent() {
                     tờ
                   </td>
                   <td className="px-4 md:px-6 py-3 border border-card-border">1–4</td>
-                  <td className="px-4 md:px-6 py-3 font-semibold text-foreground border border-card-border tabular-nums">45.000</td>
+                  <td className="px-4 md:px-6 py-3 font-semibold text-foreground border border-card-border tabular-nums text-right">45.000</td>
                   <td rowSpan={3} className="px-4 md:px-6 py-4 text-xs text-text-muted text-right font-medium border border-card-border align-middle">
                     ~10 tờ tương đương 1 mét dài
                   </td>
                 </tr>
                 <tr className="hover:bg-block-bg/20 transition-colors">
                   <td className="px-4 md:px-6 py-3 border border-card-border">5–49</td>
-                  <td className="px-4 md:px-6 py-3 font-semibold text-foreground border border-card-border tabular-nums">39.000</td>
+                  <td className="px-4 md:px-6 py-3 font-semibold text-foreground border border-card-border tabular-nums text-right">39.000</td>
                 </tr>
                 <tr className="hover:bg-block-bg/20 transition-colors">
                   <td className="px-4 md:px-6 py-3 border border-card-border">≥ 50</td>
-                  <td className="px-4 md:px-6 py-3 font-semibold text-foreground border border-card-border tabular-nums">28.000</td>
+                  <td className="px-4 md:px-6 py-3 font-semibold text-foreground border border-card-border tabular-nums text-right">28.000</td>
                 </tr>
 
                 {/* In tờ A3 */}
@@ -270,18 +270,18 @@ export default function BaoGiaContent() {
                     tờ
                   </td>
                   <td className="px-4 md:px-6 py-3 border border-card-border">1–4</td>
-                  <td className="px-4 md:px-6 py-3 font-semibold text-foreground border border-card-border tabular-nums">80.000</td>
+                  <td className="px-4 md:px-6 py-3 font-semibold text-foreground border border-card-border tabular-nums text-right">80.000</td>
                   <td rowSpan={3} className="px-4 md:px-6 py-4 text-xs text-text-muted text-right font-medium border border-card-border align-middle">
                     ~5 tờ tương đương 1 mét dài
                   </td>
                 </tr>
                 <tr className="hover:bg-block-bg/20 transition-colors">
                   <td className="px-4 md:px-6 py-3 border border-card-border">5–49</td>
-                  <td className="px-4 md:px-6 py-3 font-semibold text-foreground border border-card-border tabular-nums">65.000</td>
+                  <td className="px-4 md:px-6 py-3 font-semibold text-foreground border border-card-border tabular-nums text-right">65.000</td>
                 </tr>
                 <tr className="hover:bg-block-bg/20 transition-colors">
                   <td className="px-4 md:px-6 py-3 border border-card-border">≥ 50</td>
-                  <td className="px-4 md:px-6 py-3 font-semibold text-foreground border border-card-border tabular-nums">50.000</td>
+                  <td className="px-4 md:px-6 py-3 font-semibold text-foreground border border-card-border tabular-nums text-right">50.000</td>
                 </tr>
 
                 {/* Tem nhỏ */}
@@ -294,22 +294,22 @@ export default function BaoGiaContent() {
                     chiếc
                   </td>
                   <td className="px-4 md:px-6 py-3 border border-card-border">20–49</td>
-                  <td className="px-4 md:px-6 py-3 font-semibold text-foreground border border-card-border tabular-nums">2.500</td>
+                  <td className="px-4 md:px-6 py-3 font-semibold text-foreground border border-card-border tabular-nums text-right">2.500</td>
                   <td rowSpan={4} className="px-4 md:px-6 py-4 text-xs text-text-muted text-right font-medium border border-card-border align-middle">
                     MOQ tối thiểu 20 chiếc
                   </td>
                 </tr>
                 <tr className="hover:bg-block-bg/20 transition-colors">
                   <td className="px-4 md:px-6 py-3 border border-card-border">50–100</td>
-                  <td className="px-4 md:px-6 py-3 font-semibold text-foreground border border-card-border tabular-nums">1.600</td>
+                  <td className="px-4 md:px-6 py-3 font-semibold text-foreground border border-card-border tabular-nums text-right">1.600</td>
                 </tr>
                 <tr className="hover:bg-block-bg/20 transition-colors">
                   <td className="px-4 md:px-6 py-3 border border-card-border">200–999</td>
-                  <td className="px-4 md:px-6 py-3 font-semibold text-foreground border border-card-border tabular-nums">1.100</td>
+                  <td className="px-4 md:px-6 py-3 font-semibold text-foreground border border-card-border tabular-nums text-right">1.100</td>
                 </tr>
                 <tr className="hover:bg-block-bg/20 transition-colors">
                   <td className="px-4 md:px-6 py-3 border border-card-border">≥ 1.000</td>
-                  <td className="px-4 md:px-6 py-3 font-semibold text-foreground border border-card-border tabular-nums">500</td>
+                  <td className="px-4 md:px-6 py-3 font-semibold text-foreground border border-card-border tabular-nums text-right">500</td>
                 </tr>
 
                 {/* Tem trung bình */}
@@ -322,22 +322,22 @@ export default function BaoGiaContent() {
                     chiếc
                   </td>
                   <td className="px-4 md:px-6 py-3 border border-card-border">20–49</td>
-                  <td className="px-4 md:px-6 py-3 font-semibold text-foreground border border-card-border tabular-nums">4.000</td>
+                  <td className="px-4 md:px-6 py-3 font-semibold text-foreground border border-card-border tabular-nums text-right">4.000</td>
                   <td rowSpan={4} className="px-4 md:px-6 py-4 text-xs text-text-muted text-right font-medium border border-card-border align-middle">
                     MOQ tối thiểu 20 chiếc
                   </td>
                 </tr>
                 <tr className="hover:bg-block-bg/20 transition-colors">
                   <td className="px-4 md:px-6 py-3 border border-card-border">50–199</td>
-                  <td className="px-4 md:px-6 py-3 font-semibold text-foreground border border-card-border tabular-nums">2.800</td>
+                  <td className="px-4 md:px-6 py-3 font-semibold text-foreground border border-card-border tabular-nums text-right">2.800</td>
                 </tr>
                 <tr className="hover:bg-block-bg/20 transition-colors">
                   <td className="px-4 md:px-6 py-3 border border-card-border">200–999</td>
-                  <td className="px-4 md:px-6 py-3 font-semibold text-foreground border border-card-border tabular-nums">1.900</td>
+                  <td className="px-4 md:px-6 py-3 font-semibold text-foreground border border-card-border tabular-nums text-right">1.900</td>
                 </tr>
                 <tr className="hover:bg-block-bg/20 transition-colors">
                   <td className="px-4 md:px-6 py-3 border border-card-border">≥ 1.000</td>
-                  <td className="px-4 md:px-6 py-3 font-semibold text-foreground border border-card-border tabular-nums">1.300</td>
+                  <td className="px-4 md:px-6 py-3 font-semibold text-foreground border border-card-border tabular-nums text-right">1.300</td>
                 </tr>
 
                 {/* Tem lớn */}
@@ -350,22 +350,22 @@ export default function BaoGiaContent() {
                     chiếc
                   </td>
                   <td className="px-4 md:px-6 py-3 border border-card-border">20–49</td>
-                  <td className="px-4 md:px-6 py-3 font-semibold text-foreground border border-card-border tabular-nums">7.000</td>
+                  <td className="px-4 md:px-6 py-3 font-semibold text-foreground border border-card-border tabular-nums text-right">7.000</td>
                   <td rowSpan={4} className="px-4 md:px-6 py-4 text-xs text-text-muted text-right font-medium border border-card-border align-middle">
                     MOQ tối thiểu 20 chiếc
                   </td>
                 </tr>
                 <tr className="hover:bg-block-bg/20 transition-colors">
                   <td className="px-4 md:px-6 py-3 border border-card-border">50–199</td>
-                  <td className="px-4 md:px-6 py-3 font-semibold text-foreground border border-card-border tabular-nums">4.800</td>
+                  <td className="px-4 md:px-6 py-3 font-semibold text-foreground border border-card-border tabular-nums text-right">4.800</td>
                 </tr>
                 <tr className="hover:bg-block-bg/20 transition-colors">
                   <td className="px-4 md:px-6 py-3 border border-card-border">200–999</td>
-                  <td className="px-4 md:px-6 py-3 font-semibold text-foreground border border-card-border tabular-nums">3.200</td>
+                  <td className="px-4 md:px-6 py-3 font-semibold text-foreground border border-card-border tabular-nums text-right">3.200</td>
                 </tr>
                 <tr className="hover:bg-block-bg/20 transition-colors">
                   <td className="px-4 md:px-6 py-3 border border-card-border">≥ 1.000</td>
-                  <td className="px-4 md:px-6 py-3 font-semibold text-foreground border border-card-border tabular-nums">2.400</td>
+                  <td className="px-4 md:px-6 py-3 font-semibold text-foreground border border-card-border tabular-nums text-right">2.400</td>
                 </tr>
 
                 {/* In theo mét dài */}
@@ -378,7 +378,7 @@ export default function BaoGiaContent() {
                     mét
                   </td>
                   <td className="px-4 md:px-6 py-4 border border-card-border align-middle">Mọi số lượng</td>
-                  <td className="px-4 md:px-6 py-4 font-black text-[var(--accent)] border border-card-border align-middle tabular-nums">145.000</td>
+                  <td className="px-4 md:px-6 py-4 font-black text-[var(--accent)] border border-card-border align-middle tabular-nums text-right">145.000</td>
                   <td className="px-4 md:px-6 py-4 text-xs text-amber-600 dark:text-amber-400 text-right font-bold border border-card-border align-middle">
                     Khuyến mại từ 10/07/2026 đến 31/07/2027
                   </td>
