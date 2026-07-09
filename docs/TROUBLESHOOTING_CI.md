@@ -133,3 +133,54 @@ TypeError: nextVitals is not iterable
 
    export default eslintConfig;
    ```
+
+---
+
+## 5. Lỗi SSH Key khi kết nối tới VPS từ GitHub Actions (`Load key ...: error in libcrypto` hoặc `Permission denied`)
+
+### 🔴 Triệu chứng
+Khi tiến trình deploy tự động lên VPS qua Git thực thi SSH, hệ thống báo lỗi không tải được khóa hoặc bị từ chối quyền truy cập:
+```text
+Load key "/home/runner/.ssh/id_rsa": error in libcrypto
+Permission denied, please try again.
+root@180.93.146.26: Permission denied (publickey,password).
+```
+
+### 🔍 Nguyên nhân
+- **Newline format (CRLF vs LF)**: Khóa SSH Private Key được sao chép/tạo từ môi trường Windows thường sử dụng ký tự kết thúc dòng là CRLF (`\r\n`). Khi đưa vào GitHub Secrets và ghi ra tệp tin trên máy ảo Ubuntu (CI Runner), OpenSSH/libcrypto không chấp nhận CRLF cho các dòng PEM/khóa bảo mật và ném ra lỗi `error in libcrypto`.
+- **Mã hóa không chuẩn**: Khi pipe trực tiếp nội dung khóa từ PowerShell bằng `echo` hoặc chuyển hướng pipe thông thường, PowerShell có thể tự động chuyển đổi mã hóa chuỗi sang UTF-16, gây hỏng cấu trúc văn bản thô của tệp khóa.
+
+### 🟢 Cách khắc phục (Chuẩn hóa và đẩy key đúng cách)
+Sử dụng một kịch bản Node.js để tự động chuẩn hóa định dạng dòng của file khóa về LF (`\n`) và UTF-8 chuẩn rồi đẩy lên GitHub Secrets bằng GitHub CLI (`gh`):
+
+1. **Chạy đoạn mã chuẩn hóa & cập nhật secret:**
+   Tạo file `set_secret.js` cục bộ:
+   ```javascript
+   const fs = require('fs');
+   const { execSync } = require('child_process');
+
+   const keyPath = 'C:\\Users\\Admin\\.ssh\\id_rsa'; // Đường dẫn tới file key cục bộ
+   let key = fs.readFileSync(keyPath, 'utf8');
+
+   // Chuẩn hóa tất cả các dòng kết thúc sang LF (\n)
+   key = key.replace(/\r\n/g, '\n').trim() + '\n';
+
+   // Ghi ra file tạm dạng UTF-8 không BOM
+   fs.writeFileSync('temp_key.txt', key, 'utf8');
+
+   // Set secret bằng gh CLI
+   execSync('gh secret set VPS_SSH_PRIVATE_KEY < temp_key.txt', { stdio: 'inherit', shell: 'cmd.exe' });
+   fs.unlinkSync('temp_key.txt');
+   ```
+2. **Cập nhật cách ghi khóa trong Workflow:**
+   Trong tệp cấu hình `.github/workflows/deploy.yml`, chuyển sang dùng cấu trúc block `cat << 'EOF'` để ghi khóa an toàn tránh các ký tự escape của bash:
+   ```yaml
+         - name: Setup SSH key
+           run: |
+             mkdir -p ~/.ssh
+             cat << 'EOF' > ~/.ssh/id_rsa
+             ${{ secrets.VPS_SSH_PRIVATE_KEY }}
+             EOF
+             chmod 600 ~/.ssh/id_rsa
+             ssh-keyscan -H ${{ env.VPS_IP }} >> ~/.ssh/known_hosts
+   ```
