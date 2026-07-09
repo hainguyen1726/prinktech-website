@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Award, ChevronRight, MessageCircle, Eye, ArrowRight } from 'lucide-react';
 import { formatCurrency } from '@/lib/pricing';
+import Header from '@/components/Header';
 
 interface Product {
   id: string;
@@ -24,27 +25,30 @@ const CATEGORY_LABELS: Record<string, string> = {
 };
 
 export default function ProductListContent({ products }: { products: Product[] }) {
-  const [activeTheme, setActiveTheme] = useState<'tech' | 'elegant'>('elegant');
+  const [activeTheme, setActiveTheme] = useState<'tech' | 'creative' | 'elegant'>('elegant');
   const [activeTab, setActiveTab] = useState<string>('all');
 
   // Load theme từ localStorage
   useEffect(() => {
     const savedTheme = localStorage.getItem('prinktech-theme') || 'elegant';
-    const finalTheme = savedTheme === 'creative' ? 'elegant' : savedTheme;
-    setActiveTheme(finalTheme as any);
+    setActiveTheme(savedTheme as any);
     
     document.body.className = '';
-    if (finalTheme === 'tech') {
+    if (savedTheme === 'tech') {
       document.body.classList.add('theme-tech');
+    } else if (savedTheme === 'creative') {
+      document.body.classList.add('theme-creative');
     }
   }, []);
 
-  const changeTheme = (theme: 'tech' | 'elegant') => {
+  const changeTheme = (theme: 'tech' | 'creative' | 'elegant') => {
     setActiveTheme(theme);
     localStorage.setItem('prinktech-theme', theme);
     document.body.className = '';
     if (theme === 'tech') {
       document.body.classList.add('theme-tech');
+    } else if (theme === 'creative') {
+      document.body.classList.add('theme-creative');
     }
   };
 
@@ -54,57 +58,7 @@ export default function ProductListContent({ products }: { products: Product[] }
     <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
       
       {/* ── STICKY HEADER ── */}
-      <header className="sticky top-0 z-50 border-b border-card-border bg-background/85 backdrop-blur-xl">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <Link href="/" aria-label="Về trang chủ PrinK Tech">
-              <img src="/logo-horizontal.png" alt="PrinK Tech" className="h-9 object-contain" />
-            </Link>
-          </div>
-
-          <div className="hidden md:flex items-center gap-6 text-[13px] font-semibold">
-            <Link href="/" className="hover:text-white transition-colors">Trang chủ</Link>
-            <Link href="/san-pham" className="text-[var(--accent)] hover:text-[var(--accent-hover)] font-black transition-colors">Sản phẩm</Link>
-            <Link href="/thu-vien-anh" className="hover:text-white transition-colors">Thư viện ảnh</Link>
-            <Link href="/bao-gia" className="hover:text-white transition-colors">Tính giá</Link>
-            <Link href="/tra-cuu" className="hover:text-white transition-colors">Tra cứu đơn</Link>
-            <Link href="/dat-hang" className="hover:text-white transition-colors">Đặt hàng</Link>
-          </div>
-
-          <div className="flex items-center gap-3">
-            {/* Theme Switcher */}
-            <div className="flex items-center gap-1 bg-black/10 border border-card-border rounded-lg p-1 backdrop-blur-sm">
-              <button
-                onClick={() => changeTheme('tech')}
-                className={`px-2.5 py-1 rounded text-[11px] font-bold tracking-wide transition-all cursor-pointer ${
-                  activeTheme === 'tech'
-                    ? 'bg-purple-650 text-white shadow-md'
-                    : 'text-text-muted hover:text-foreground'
-                }`}
-              >
-                Tối
-              </button>
-              <button
-                onClick={() => changeTheme('elegant')}
-                className={`px-2.5 py-1 rounded text-[11px] font-bold tracking-wide transition-all cursor-pointer ${
-                  activeTheme === 'elegant'
-                    ? 'bg-amber-700 text-white shadow-md'
-                    : 'text-text-muted hover:text-foreground'
-                }`}
-              >
-                Sáng
-              </button>
-            </div>
-
-            <Link
-              href="/dat-hang"
-              className="px-4 py-1.5 rounded-xl text-sm font-bold btn-primary"
-            >
-              Đặt hàng
-            </Link>
-          </div>
-        </div>
-      </header>
+      <Header activeTheme={activeTheme} setActiveTheme={changeTheme} />
 
       {/* ── HERO BANNER ── */}
       <section className="py-12 px-6 border-b border-card-border/50 relative z-10 w-full overflow-hidden bg-block-bg/25">

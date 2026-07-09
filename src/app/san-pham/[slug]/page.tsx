@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import Script from 'next/script';
+import Header from '@/components/Header';
 
 const BASE_URL = 'https://prinktech.netslive.com';
 
@@ -139,21 +140,9 @@ export default async function SanPhamDetailPage({
         dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }}
       />
 
-      <div className="min-h-screen bg-[#080d1a] text-slate-200">
-        {/* Header */}
-        <header className="border-b border-slate-800/60 bg-[#080d1a]/90 backdrop-blur-md sticky top-0 z-50">
-          <div className="max-w-5xl mx-auto px-4 md:px-6 py-4 flex items-center justify-between">
-            <Link href="/" aria-label="Về trang chủ PrinK Tech">
-              <img src="/logo-horizontal.png" alt="PrinK Tech" className="h-9 object-contain" />
-            </Link>
-            <Link
-              href="/#products"
-              className="text-xs text-slate-400 hover:text-sky-400 transition-colors"
-            >
-              ← Sản phẩm
-            </Link>
-          </div>
-        </header>
+      <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
+        {/* Header điều hướng */}
+        <Header />
 
         <main className="max-w-5xl mx-auto px-4 md:px-6 py-12">
           {/* Breadcrumb */}

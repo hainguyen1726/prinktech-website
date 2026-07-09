@@ -3,7 +3,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { Menu, X } from 'lucide-react';
+import { X } from 'lucide-react';
+import Header from '@/components/Header';
 import {
   PRODUCTS,
   Product,
@@ -203,27 +204,29 @@ export default function OrderForm() {
   });
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState<{ success: boolean; order_number?: string; error?: string } | null>(null);
-  const [activeTheme, setActiveTheme] = useState<'tech' | 'elegant'>('elegant');
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [activeTheme, setActiveTheme] = useState<'tech' | 'creative' | 'elegant'>('elegant');
 
   // Load theme từ localStorage
   useEffect(() => {
     const savedTheme = localStorage.getItem('prinktech-theme') || 'elegant';
-    const finalTheme = savedTheme === 'creative' ? 'elegant' : savedTheme;
-    setActiveTheme(finalTheme as any);
+    setActiveTheme(savedTheme as any);
     
     document.body.className = '';
-    if (finalTheme === 'tech') {
+    if (savedTheme === 'tech') {
       document.body.classList.add('theme-tech');
+    } else if (savedTheme === 'creative') {
+      document.body.classList.add('theme-creative');
     }
   }, []);
 
-  const changeTheme = (theme: 'tech' | 'elegant') => {
+  const changeTheme = (theme: 'tech' | 'creative' | 'elegant') => {
     setActiveTheme(theme);
     localStorage.setItem('prinktech-theme', theme);
     document.body.className = '';
     if (theme === 'tech') {
       document.body.classList.add('theme-tech');
+    } else if (theme === 'creative') {
+      document.body.classList.add('theme-creative');
     }
   };
 
@@ -511,109 +514,7 @@ export default function OrderForm() {
     <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
 
       {/* ── Nav bar đầy đủ ── */}
-      <header className="sticky top-0 z-50 border-b border-card-border bg-background/85 backdrop-blur-xl">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3 flex-shrink-0">
-            <Link href="/" aria-label="Về trang chủ PrinK Tech">
-              <img src="/logo-horizontal.png" alt="PrinK Tech" className="h-9 object-contain" />
-            </Link>
-          </div>
-
-          <div className="hidden md:flex items-center gap-6 text-[13px] font-semibold">
-            <Link href="/" className="hover:text-white transition-colors">Trang chủ</Link>
-            <Link href="/san-pham" className="hover:text-white transition-colors">Sản phẩm</Link>
-            <Link href="/thu-vien-anh" className="hover:text-white transition-colors">Thư viện ảnh</Link>
-            <Link href="/bao-gia" className="hover:text-white transition-colors">Tính giá</Link>
-            <Link href="/tra-cuu" className="hover:text-white transition-colors">Tra cứu đơn</Link>
-            <Link href="/dat-hang" className="text-[var(--accent)] hover:text-[var(--accent-hover)] font-black transition-colors">Đặt hàng</Link>
-          </div>
-
-          <div className="flex items-center gap-3">
-            {/* Theme Switcher */}
-            <div className="hidden sm:flex items-center gap-1 bg-black/10 border border-card-border rounded-lg p-1 backdrop-blur-sm">
-              <button
-                onClick={() => changeTheme('tech')}
-                className={`px-2.5 py-1 rounded text-[11px] font-bold tracking-wide transition-all cursor-pointer ${
-                  activeTheme === 'tech'
-                    ? 'bg-purple-650 text-white shadow-md'
-                    : 'text-text-muted hover:text-foreground'
-                }`}
-              >
-                Tối
-              </button>
-              <button
-                onClick={() => changeTheme('elegant')}
-                className={`px-2.5 py-1 rounded text-[11px] font-bold tracking-wide transition-all cursor-pointer ${
-                  activeTheme === 'elegant'
-                    ? 'bg-amber-700 text-white shadow-md'
-                    : 'text-text-muted hover:text-foreground'
-                }`}
-              >
-                Sáng
-              </button>
-            </div>
-
-            <Link
-              href="/dat-hang"
-              className="px-4 py-1.5 rounded-xl text-sm font-bold btn-primary"
-            >
-              Đặt hàng
-            </Link>
-
-            {/* Hamburger button */}
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-2 rounded-lg border border-card-border hover:bg-card-border/20 transition-all text-foreground focus:outline-none"
-              aria-label="Menu"
-            >
-              {mobileMenuOpen ? <X size={16} /> : <Menu size={16} />}
-            </button>
-          </div>
-        </div>
-      </header>
-
-      {/* Mobile Menu Drawer Overlay */}
-      {mobileMenuOpen && (
-        <div className="md:hidden fixed inset-0 z-40 bg-background/98 backdrop-blur-md flex flex-col justify-center items-center gap-6 animate-fadeIn transition-all duration-300">
-          {/* Close button inside mobile menu */}
-          <button
-            onClick={() => setMobileMenuOpen(false)}
-            className="absolute top-4 right-4 p-2 rounded-lg border border-card-border hover:bg-card-border/20 transition-all text-foreground"
-            aria-label="Đóng menu"
-          >
-            <X size={20} />
-          </button>
-
-          <nav className="flex flex-col items-center gap-5 text-base font-bold text-foreground">
-            <Link href="/" onClick={() => setMobileMenuOpen(false)} className="hover:text-[var(--accent)] transition-colors py-1">Trang chủ</Link>
-            <Link href="/san-pham" onClick={() => setMobileMenuOpen(false)} className="hover:text-[var(--accent)] transition-colors py-1">Sản phẩm</Link>
-            <Link href="/thu-vien-anh" onClick={() => setMobileMenuOpen(false)} className="hover:text-[var(--accent)] transition-colors py-1">Thư viện ảnh</Link>
-            <Link href="/bao-gia" onClick={() => setMobileMenuOpen(false)} className="hover:text-[var(--accent)] transition-colors py-1">Tính giá</Link>
-            <Link href="/tra-cuu" onClick={() => setMobileMenuOpen(false)} className="hover:text-[var(--accent)] transition-colors py-1">Tra cứu đơn</Link>
-            <Link href="/dat-hang" onClick={() => setMobileMenuOpen(false)} className="hover:text-[var(--accent)] transition-colors py-1">Đặt hàng</Link>
-          </nav>
-
-          {/* Theme switcher on mobile */}
-          <div className="flex items-center gap-1 bg-black/10 border border-card-border rounded-lg p-1 mt-4">
-            <button
-              onClick={() => { changeTheme('tech'); setMobileMenuOpen(false); }}
-              className={`px-3 py-1.5 rounded text-xs font-bold tracking-wide transition-all ${
-                activeTheme === 'tech' ? 'bg-purple-650 text-white shadow-md' : 'text-text-muted hover:text-foreground'
-              }`}
-            >
-              Tối
-            </button>
-            <button
-              onClick={() => { changeTheme('elegant'); setMobileMenuOpen(false); }}
-              className={`px-3 py-1.5 rounded text-xs font-bold tracking-wide transition-all ${
-                activeTheme === 'elegant' ? 'bg-amber-700 text-white shadow-md' : 'text-text-muted hover:text-foreground'
-              }`}
-            >
-              Sáng
-            </button>
-          </div>
-        </div>
-      )}
+      <Header activeTheme={activeTheme} setActiveTheme={changeTheme} />
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
         <div className="mb-8">
