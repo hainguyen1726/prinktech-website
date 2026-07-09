@@ -54,7 +54,8 @@ function main() {
   logInfo('Đang chạy ESLint sửa lỗi format tự động...');
   const lintPassed = runStep('ESLint Auto-Fix', lintCommand);
   if (!lintPassed) {
-    logWarning('ESLint phát hiện có lỗi không thể tự sửa. Vui lòng kiểm tra log ở trên và sửa thủ công.');
+    logError('ESLint phát hiện có lỗi nghiêm trọng không thể tự sửa! Quá trình kiểm tra thất bại.');
+    process.exit(1);
   }
 
   // Bước 2: Kiểm tra kiểu TypeScript
