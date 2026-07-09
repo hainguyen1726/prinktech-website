@@ -97,3 +97,39 @@ Bọc tiền tố lệnh bằng **`npx`** trực tiếp trong cấu hình script
   }
 ```
 *(Cấu trúc này hoạt động hoàn hảo 100% trên cả Windows, Linux và môi trường VPS mà không cần quyền Administrator để tạo symlink).*
+
+---
+
+## 4. Lỗi Phân Giải ESM trong ESLint (`TypeError: nextVitals is not iterable` hoặc `Cannot find module .../eslint-config-next/...`)
+
+### 🔴 Triệu chứng
+Khi chạy `next lint` hoặc `npm run lint` trên máy ảo CI (sử dụng Node v22+), hệ thống báo lỗi không phân giải được module con của config hoặc báo lỗi kiểu dữ liệu:
+```text
+Error [ERR_MODULE_NOT_FOUND]: Cannot find module '.../node_modules/eslint-config-next/core-web-vitals'
+TypeError: nextVitals is not iterable
+```
+
+### 🔍 Nguyên nhân
+- Từ Node.js v22 trở lên, thuật toán phân giải module ESM của Node.js trở nên cực kỳ nghiêm ngặt đối với các file cấu hình có đuôi mở rộng `.config.mjs`. Nó không cho phép import các package con CommonJS (không có phần mở rộng `.js` rõ ràng hoặc không có exports khai báo).
+- Cú pháp spread operator (`...nextVitals`) bị crash do package `eslint-config-next` thực tế export default ra một **Object** CommonJS thông thường, không phải là một config Array (Iterable) nên không thể dùng cú pháp spread.
+
+### 🟢 Cách khắc phục (Đổi sang cấu hình FlatCompat chuẩn Next.js 15)
+1. **Cài đặt adapter tương thích ngược cho Flat Config:**
+   ```bash
+   npm install @eslint/eslintrc --save-dev
+   ```
+2. **Ghi đè nội dung file `eslint.config.mjs` theo chuẩn FlatCompat của Next.js 15:**
+   ```javascript
+   import { FlatCompat } from "@eslint/eslintrc";
+
+   const compat = new FlatCompat({
+     // import.meta.dirname khả dụng từ Node.js >= 20.11.0
+     baseDirectory: import.meta.dirname,
+   });
+
+   const eslintConfig = [
+     ...compat.extends("next/core-web-vitals", "next/typescript"),
+   ];
+
+   export default eslintConfig;
+   ```
