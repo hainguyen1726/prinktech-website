@@ -85,6 +85,21 @@ Khi bạn nhận nhiệm vụ sửa code hoặc phát triển tính năng trên 
 
 ---
 
+## ⚠️ 3. Bài học kinh nghiệm & Phòng tránh lỗi biên dịch (Đặc biệt quan trọng)
+
+> [!WARNING]
+> **LUẬT BIÊN DỊCH NEXT.JS (KHÔNG DÙNG THẺ `<a>` CHO TRANG NỘI BỘ)**:
+> - **Lỗi đã xảy ra**: Sử dụng thẻ `<a>` để điều hướng đến các trang nội bộ (ví dụ: `<a href="/">` hoặc `<a href="/bao-gia">`) sẽ khiến Next.js ném lỗi nghiêm trọng trong bước chạy Linter (`no-html-link-for-pages`) và làm sập toàn bộ tiến trình Build Production.
+> - **Khắc phục**: Luôn luôn sử dụng `<Link href="...">` từ `next/link` cho mọi liên kết nội bộ trong website. Thẻ `<a>` chỉ dùng cho liên kết ngoài (ví dụ: sang facebook, youtube hoặc domain bên ngoài).
+
+> [!NOTE]
+> **CƠ CHẾ DEPLOY TỰ ĐỘNG & BẢO VỆ THƯ MỤC `.git`**:
+> - Thư mục chạy thực tế `/srv/website-prinktech` trên VPS hiện đã được khởi tạo thành một Git Repository hoàn chỉnh để kéo code từ nhánh `master` thông qua `deploy-vps-git.sh`.
+> - Script dọn dẹp hệ thống `deploy-vps-unified.sh` đã được thiết lập loại trừ thư mục `.git` (`! -name ".git"`) để tránh tình trạng xóa nhầm Repo Git của VPS khi triển khai từ local PC.
+> - GitHub Action đã được cấu hình tự động SSH vào VPS và chạy toàn bộ script `deploy-vps-git.sh` (chứ không chỉ restart container) mỗi khi có push mới lên `master`.
+
+---
+
 ## 🛠️ Các Lệnh Thường Dùng (Copy-Paste)
 
 ### Kiểm tra build cục bộ tại Dev Workspace
