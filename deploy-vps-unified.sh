@@ -69,7 +69,7 @@ fi
 # Xóa folder cũ (giữ lại backups)
 info "Dọn dẹp thư mục ứng dụng cũ..."
 if [ -d "$APP_DIR" ]; then
-    find "$APP_DIR" -mindepth 1 -maxdepth 1 ! -name "*.backup" ! -name "*.env*" -exec rm -rf {} + 2>/dev/null || true
+    find "$APP_DIR" -mindepth 1 -maxdepth 1 ! -name "*.backup" ! -name "*.env*" ! -name ".git" -exec rm -rf {} + 2>/dev/null || true
 fi
 
 mkdir -p "$APP_DIR"
