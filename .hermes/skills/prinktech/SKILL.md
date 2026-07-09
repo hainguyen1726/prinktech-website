@@ -61,13 +61,15 @@ Khi bạn nhận nhiệm vụ sửa code hoặc phát triển tính năng trên 
    - Trang chi tiết sản phẩm: `src/app/san-pham/[slug]/page.tsx`
    - Component tính giá: `src/components/PricingCalculator.tsx`
 
-5. **Build thử nghiệm cục bộ (Bắt buộc):** Chạy lệnh build Next.js ngay trên host tại Dev Workspace để kiểm tra lỗi biên dịch TypeScript/Lint:
+5. **Chạy kiểm tra & Tự sửa lỗi bắt buộc (Pre-push check):**
+   Sau khi sửa code xong, bạn bắt buộc phải chạy script kiểm tra và tự động sửa lỗi tại Dev Workspace:
    ```bash
-   npm run build
+   bash check-and-fix.sh
    ```
-   *Quá trình build Next.js bắt buộc phải Compile thành công 100% trước khi đẩy code.*
+   - Script này sẽ tự động sửa các lỗi format nhỏ (`eslint --fix`), sau đó chạy kiểm tra kiểu TypeScript (`tsc --noEmit`) và chạy build Next.js.
+   - **Bắt buộc**: Quá trình kiểm tra phải VƯỢT QUA 100%. Nếu phát hiện lỗi (như lỗi TypeScript hay build), bạn phải đọc kĩ log lỗi, tự động sửa code lỗi và chạy lại kiểm tra cho đến khi thành công. **Cấm tuyệt đối việc đẩy code lỗi lên GitHub**.
 
-6. **Commit và đẩy lên GitHub:**
+6. **Commit và đẩy lên GitHub (sau khi kiểm tra thành công):**
    ```bash
    git add .
    git commit -m "hermes: [mô tả thay đổi]"

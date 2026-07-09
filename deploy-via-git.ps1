@@ -33,6 +33,20 @@ function Error($msg) {
 }
 
 # ============================================
+# 0. CHẠY KIỂM TRA & TỰ ĐỘNG SỬA LỖI
+# ============================================
+Step "0️⃣  KIỂM TRA CHẤT LƯỢNG MÃ NGUỒN"
+
+Write-Host "🔍 Đang chạy kiểm tra Lint, TypeScript & Build..." -ForegroundColor Cyan
+node check-and-fix.js
+
+if ($LASTEXITCODE -ne 0) {
+    Error "Kiểm tra mã nguồn thất bại! Tiến trình push và deploy bị HỦY để tránh lỗi trên VPS Production."
+}
+
+Success "Mã nguồn sạch. Đủ điều kiện deploy."
+
+# ============================================
 # 1. COMMIT & PUSH TO GITHUB FROM LOCAL
 # ============================================
 Step "1️⃣  COMMIT & PUSH LÊN GITHUB"

@@ -45,13 +45,15 @@ Khi Hermes Agent nhận nhiệm vụ sửa code hoặc phát triển tính năng
    git checkout -b dev/hermes-feature-A
    ```
 
-4. **Sửa code và Build thử nghiệm:** Sửa code xong bắt buộc phải chạy lệnh build tại Dev Workspace để kiểm tra lỗi TypeScript/Lint trên host:
+4. **Chạy kiểm tra & Tự sửa lỗi bắt buộc (Pre-push check):**
+   Sau khi sửa code xong, bắt buộc phải chạy script kiểm tra và tự động sửa lỗi tại Dev Workspace:
    ```bash
-   npm run build
+   bash check-and-fix.sh
    ```
-   *(Đảm bảo quá trình build thành công 100% trước khi đẩy code).*
+   - Script này sẽ tự động sửa các lỗi format nhỏ (`eslint --fix`), sau đó chạy kiểm tra kiểu TypeScript (`tsc --noEmit`) và chạy build Next.js.
+   - **Bắt buộc**: Quá trình kiểm tra phải VƯỢT QUA 100%. Nếu phát hiện lỗi (như lỗi TypeScript hay build), Hermes phải đọc kĩ log lỗi, tự động sửa code lỗi và chạy lại kiểm tra cho đến khi thành công. **Cấm tuyệt đối việc đẩy code lỗi lên GitHub**.
 
-5. **Đẩy lên GitHub:**
+5. **Đẩy code lên GitHub (sau khi kiểm tra thành công):**
    ```bash
    git add .
    git commit -m "hermes: [mô tả ngắn gọn thay đổi]"
