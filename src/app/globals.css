@@ -876,3 +876,69 @@ body.admin-panel {
   border-radius: 4px !important;
 }
 
+/* ── TYPOGRAPHY & ARTICLE CONTRAST RULES ── */
+/* Tiêu chuẩn hiển thị bảng và độ tương phản trong bài viết cẩm nang / sản phẩm */
+.prose table {
+  width: 100% !important;
+  margin-top: 1.5em !important;
+  margin-bottom: 1.5em !important;
+  border-collapse: collapse !important;
+}
+
+/* Ép buộc chữ trắng/sáng trên nền tiêu đề th tối (Đồng bộ theo 3 Theme) */
+.prose table thead th,
+.prose table th {
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+  background-color: #1c1917 !important; /* Theme Elegant (Mặc định): Nền đá tối */
+}
+.theme-tech .prose table thead th,
+.theme-tech .prose table th {
+  background-color: #111827 !important; /* Theme Tech: Nền Slate tối */
+}
+.theme-creative .prose table thead th,
+.theme-creative .prose table th {
+  background-color: #170f2e !important; /* Theme Creative: Nền tím tối */
+}
+
+
+/* Đảm bảo text luôn sáng/trắng trên các phần tử có màu nền tối bất kỳ trong bài viết */
+.prose [class*="bg-slate-"],
+.prose [class*="bg-stone-"],
+.prose [class*="bg-zinc-"],
+.prose [class*="bg-gray-"],
+.prose [class*="bg-blue-"],
+.prose [class*="bg-indigo-"],
+.prose [class*="bg-black"],
+.prose [class*="bg-neutral-"],
+.prose [style*="background-color: rgb("],
+.prose [style*="background-color:rgb("] {
+  color: #ffffff !important;
+}
+
+/* Đảm bảo text liên kết vẫn nổi bật và đọc được */
+.prose [class*="bg-"] a,
+.prose [style*="background-color"] a {
+  color: #38bdf8 !important; /* sky-400 */
+  text-decoration: underline !important;
+}
+
+/* Đường viền bảng sạch sẽ */
+.prose table, 
+.prose th, 
+.prose td {
+  border: 1px solid rgba(140, 98, 57, 0.15) !important;
+}
+.theme-tech .prose table,
+.theme-tech .prose th,
+.theme-tech .prose td {
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+.theme-creative .prose table,
+.theme-creative .prose th,
+.theme-creative .prose td {
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+
