@@ -592,7 +592,7 @@ export default function AdminWebsitePage() {
       {/* Top Header */}
       <header className="glass-card rounded-none border-0 border-b border-slate-200 py-4 px-6 sticky top-0 z-30 bg-white/90 backdrop-blur-md flex justify-between items-center w-full">
         <div className="flex items-center gap-3">
-          <img src="/logo-horizontal.png" alt="PrinK Tech" className="h-10 object-contain" />
+          <img src="/logo-horizontal-dark-text.png" alt="PrinK Tech" className="h-10 object-contain" />
           <span className="h-4 w-px bg-slate-200"></span>
           <h2 className="font-bold text-sm tracking-wider text-slate-800 uppercase">Quản trị Website PrinK Tech</h2>
         </div>
