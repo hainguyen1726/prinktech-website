@@ -92,7 +92,8 @@ function CartRow({
         </span>
         <button
           onClick={() => onRemove(item.id)}
-          className="w-6 h-6 rounded-full flex items-center justify-center text-slate-500 hover:text-red-400 hover:bg-red-400/10 transition-colors opacity-100 md:opacity-0 md:group-hover:opacity-100 cursor-pointer"
+          className="w-10 h-10 rounded-full flex items-center justify-center text-slate-500 hover:text-red-400 hover:bg-red-400/10 transition-colors opacity-100 md:opacity-0 md:group-hover:opacity-100 cursor-pointer shrink-0"
+          aria-label="Xoá sản phẩm khỏi báo giá"
         >
           ✕
         </button>
@@ -182,7 +183,7 @@ export default function PricingCalculator() {
             <div style="border-left:2px solid #e2e8f0;padding-left:14px;margin-left:4px">
               <p style="font-size:9px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:3px">Đơn vị phát hành</p>
               <p style="font-weight:900;font-size:12px;color:#1e293b">XƯỞNG IN UV DTF – PRINK TECH</p>
-              <p style="font-size:10px;color:#64748b;margin-top:2px">Hotline / Zalo: <strong style="color:#1e293b">0822.968.412</strong></p>
+              <p style="font-size:10px;color:#64748b;margin-top:2px">Zalo (Ưu tiên) / Hotline: <strong style="color:#1e293b">0822.968.412</strong></p>
               <p style="font-size:10px;color:#64748b">Email: gmkt2303@gmail.com</p>
             </div>
           </div>
@@ -475,15 +476,20 @@ export default function PricingCalculator() {
 
               {/* Actions */}
               <div className="mt-4 space-y-2.5">
-                <button
-                  onClick={handlePrint}
-                  disabled={printLoading}
-                  className="w-full h-10 rounded-xl text-sm font-bold cursor-pointer
-                    bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-500 hover:to-fuchsia-500
-                    text-white shadow-md shadow-purple-500/20 transition-all disabled:opacity-60"
-                >
-                  {printLoading ? 'Đang xuất...' : '⬇ Xuất báo giá PDF'}
-                </button>
+                <div>
+                  <button
+                    onClick={handlePrint}
+                    disabled={printLoading}
+                    className="w-full h-10 rounded-xl text-sm font-bold cursor-pointer
+                      bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-500 hover:to-fuchsia-500
+                      text-white shadow-md shadow-purple-500/20 transition-all disabled:opacity-60 animate-pulse"
+                  >
+                    {printLoading ? 'Đang xuất...' : '⬇ Xuất báo giá PDF'}
+                  </button>
+                  <p className="text-[10px] text-amber-500 text-center italic mt-1.5 md:hidden">
+                    * Lưu ý di động: Hãy cho phép hiển thị popup/cửa sổ bật lên để xem bản PDF.
+                  </p>
+                </div>
                 <Link
                   href={{
                     pathname: '/dat-hang',
@@ -515,7 +521,8 @@ export default function PricingCalculator() {
         {/* Contact */}
         <div className="rounded-xl border border-card-border bg-block-bg p-3.5 text-xs text-text-muted space-y-1 shadow-sm">
           <p className="text-foreground font-bold">Cần hỗ trợ tư vấn?</p>
-          <p>📞 Hotline / Zalo: <a href="tel:0822968412" className="text-[var(--accent)] font-bold hover:underline">0822.968.412</a></p>
+          <p>💬 Zalo (Ưu tiên): <a href="https://zalo.me/0822968412" target="_blank" rel="noopener noreferrer" className="text-[var(--accent)] font-bold hover:underline">0822.968.412</a></p>
+          <p>📞 Hotline: <a href="tel:0822968412" className="text-slate-500 font-bold hover:underline">0822.968.412</a> (Gọi khi cần gấp)</p>
           <p className="text-[10px] text-text-muted/80">Giá chưa bao gồm VAT 8%</p>
         </div>
       </div>

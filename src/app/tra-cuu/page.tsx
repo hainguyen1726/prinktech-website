@@ -401,8 +401,8 @@ function TraCuuContent() {
                   <div className="space-y-4">
                     <h3 className="text-xs uppercase font-bold text-text-muted tracking-wider">Hành trình sản xuất & Giao hàng</h3>
                     
-                    {/* Progress Bar */}
-                    <div className="relative pt-4 pb-8">
+                    {/* Progress Bar - Desktop */}
+                    <div className="hidden md:block relative pt-4 pb-8">
                       <div className="absolute top-7 left-0 right-0 h-1 bg-card-border/50 rounded-full" />
                       <div 
                         className="absolute top-7 left-0 h-1 bg-gradient-to-r from-purple-500 to-fuchsia-500 rounded-full transition-all duration-500" 
@@ -435,6 +435,40 @@ function TraCuuContent() {
                           );
                         })}
                       </div>
+                    </div>
+
+                    {/* Progress Timeline - Mobile (Vertical) */}
+                    <div className="md:hidden relative pl-6 border-l-2 border-card-border/60 space-y-6 py-2 ml-3">
+                      {STATUS_STEPS.map((step, idx) => {
+                        const isCompleted = idx <= statusIndex;
+                        const isActive = idx === statusIndex;
+
+                        return (
+                          <div key={step.key} className="relative flex items-start gap-4">
+                            {/* Point circle */}
+                            <div className={`absolute -left-[35px] top-0.5 w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-bold z-10 border transition-all duration-300
+                              ${isActive 
+                                ? 'bg-gradient-to-br from-purple-500 to-fuchsia-500 text-white border-transparent scale-110 shadow shadow-purple-500/30' 
+                                : isCompleted 
+                                  ? 'bg-purple-650/10 text-purple-400 border-purple-500/35' 
+                                  : 'bg-background text-text-muted/40 border-card-border/60'
+                              }`}
+                            >
+                              {isCompleted && !isActive ? '✓' : idx + 1}
+                            </div>
+                            
+                            {/* Text content */}
+                            <div className="min-w-0 flex-1">
+                              <h4 className={`text-xs font-bold ${isActive ? 'text-foreground' : isCompleted ? 'text-text-muted' : 'text-text-muted/40'}`}>
+                                {step.label}
+                              </h4>
+                              <p className={`text-[11px] mt-0.5 leading-normal ${isActive ? 'text-text-muted' : 'text-text-muted/40'}`}>
+                                {step.desc}
+                              </p>
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 )}

@@ -133,12 +133,42 @@ export default async function SanPhamDetailPage({
     }),
   };
 
+  const breadcrumbSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    'itemListElement': [
+      {
+        '@type': 'ListItem',
+        'position': 1,
+        'name': 'Trang chủ',
+        'item': BASE_URL,
+      },
+      {
+        '@type': 'ListItem',
+        'position': 2,
+        'name': 'Sản phẩm',
+        'item': `${BASE_URL}/#products`,
+      },
+      {
+        '@type': 'ListItem',
+        'position': 3,
+        'name': product.name,
+        'item': `${BASE_URL}/san-pham/${slug}`,
+      },
+    ],
+  };
+
   return (
     <>
       <Script
         id="schema-product"
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }}
+      />
+      <Script
+        id="schema-breadcrumb"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
       />
 
       <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
@@ -234,18 +264,18 @@ export default async function SanPhamDetailPage({
               {/* CTA */}
               <div className="flex flex-wrap gap-3 pt-2">
                 <a
-                  href="tel:0822968412"
-                  className="flex items-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-white font-bold px-5 py-3 rounded-xl text-sm transition shadow-lg shadow-emerald-500/20"
-                >
-                  📞 Gọi báo giá ngay
-                </a>
-                <a
                   href="https://zalo.me/0822968412"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-2 border border-slate-700 hover:border-slate-600 bg-slate-900/60 text-slate-200 font-bold px-5 py-3 rounded-xl text-sm transition"
+                  className="flex items-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-white font-bold px-5 py-3 rounded-xl text-sm transition shadow-lg shadow-emerald-500/20"
                 >
-                  💬 Chat Zalo
+                  💬 Chat Zalo báo giá ngay
+                </a>
+                <a
+                  href="tel:0822968412"
+                  className="flex items-center gap-2 border border-slate-700 hover:border-slate-600 bg-slate-900/60 text-slate-300 font-bold px-5 py-3 rounded-xl text-sm transition"
+                >
+                  📞 Hotline khi cần gấp
                 </a>
               </div>
             </div>

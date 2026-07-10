@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Phone, Menu, X } from 'lucide-react';
+import { Phone, Menu, X, MessageCircle } from 'lucide-react';
 
 interface HeaderProps {
   activeTheme?: 'tech' | 'creative' | 'elegant';
@@ -169,31 +169,35 @@ export default function Header({ activeTheme: propTheme, setActiveTheme: propSet
               </div>
             )}
 
-            {/* Phone CTA */}
+            {/* Phone CTA -> Zalo CTA */}
             <a
-              href="tel:0822968412"
+              href="https://zalo.me/0822968412"
+              target="_blank"
+              rel="noopener noreferrer"
               className="hidden md:flex items-center gap-1.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-bold py-2 px-3.5 rounded-lg text-xs shadow-md transition focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
-              aria-label="Gọi điện 0822968412"
+              aria-label="Chat Zalo 0822968412"
             >
-              <Phone size={12} /> 0822.968.412
+              <MessageCircle size={12} /> Zalo: 0822.968.412
             </a>
 
-            {/* Mobile phone icon */}
+            {/* Mobile Zalo icon */}
             <a
-              href="tel:0822968412"
+              href="https://zalo.me/0822968412"
+              target="_blank"
+              rel="noopener noreferrer"
               className="md:hidden flex items-center justify-center w-9 h-9 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg transition"
-              aria-label="Gọi điện"
+              aria-label="Chat Zalo"
             >
-              <Phone size={14} />
+              <MessageCircle size={14} />
             </a>
 
             {/* Hamburger button */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="lg:hidden p-2 rounded-lg border border-[var(--card-border)] hover:bg-card-border/20 transition-all text-[var(--foreground)] focus:outline-none cursor-pointer"
+              className="lg:hidden p-2.5 rounded-lg border border-[var(--card-border)] hover:bg-card-border/20 transition-all text-[var(--foreground)] focus:outline-none cursor-pointer"
               aria-label="Menu"
             >
-              {mobileMenuOpen ? <X size={16} /> : <Menu size={16} />}
+              {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
           </div>
         </div>
@@ -207,10 +211,10 @@ export default function Header({ activeTheme: propTheme, setActiveTheme: propSet
         <div className="lg:hidden fixed inset-0 z-45 bg-[var(--background)]/98 backdrop-blur-md flex flex-col justify-center items-center gap-6 animate-fadeIn transition-all duration-300">
           <button
             onClick={() => setMobileMenuOpen(false)}
-            className="absolute top-4 right-4 p-2 rounded-lg border border-[var(--card-border)] hover:bg-card-border/20 transition-all text-[var(--foreground)] focus:outline-none cursor-pointer"
+            className="absolute top-4 right-4 p-2.5 rounded-lg border border-[var(--card-border)] hover:bg-card-border/20 transition-all text-[var(--foreground)] focus:outline-none cursor-pointer"
             aria-label="Đóng Menu"
           >
-            <X size={18} />
+            <X size={22} />
           </button>
 
           {navLinks.map((link) => {

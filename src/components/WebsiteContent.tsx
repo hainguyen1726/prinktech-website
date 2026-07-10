@@ -58,19 +58,30 @@ interface PriceItem {
 interface WebsiteContentProps {
   initialTheme: 'tech' | 'creative' | 'elegant';
   hideSwitcher?: boolean;
+  initialProducts?: Product[];
+  initialPosts?: Post[];
+  initialVideos?: Video[];
+  initialPriceItems?: PriceItem[];
 }
 
-export default function WebsiteContent({ initialTheme, hideSwitcher = false }: WebsiteContentProps) {
+export default function WebsiteContent({
+  initialTheme,
+  hideSwitcher = false,
+  initialProducts = [],
+  initialPosts = [],
+  initialVideos = [],
+  initialPriceItems = [],
+}: WebsiteContentProps) {
   const [activeTheme, setActiveTheme] = useState<'tech' | 'creative' | 'elegant'>(initialTheme);
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  // Backend data states
-  const [products, setProducts] = useState<Product[]>([]);
-  const [posts, setPosts] = useState<Post[]>([]);
-  const [priceItems, setPriceItems] = useState<PriceItem[]>([]);
-  const [videos, setVideos] = useState<Video[]>([]);
-  const [loading, setLoading] = useState(true);
+  // Backend data states - Khởi tạo từ server props để tăng tốc độ FCP và tối ưu SEO
+  const [products, setProducts] = useState<Product[]>(initialProducts);
+  const [posts, setPosts] = useState<Post[]>(initialPosts);
+  const [priceItems, setPriceItems] = useState<PriceItem[]>(initialPriceItems);
+  const [videos, setVideos] = useState<Video[]>(initialVideos);
+  const [loading, setLoading] = useState(initialProducts.length === 0 && initialPosts.length === 0);
 
   // Universal Video Player modal state (YouTube / Facebook Reels / TikTok)
   const [activeVideo, setActiveVideo] = useState<{ embedUrl: string; platform: string } | null>(null);
@@ -107,46 +118,55 @@ export default function WebsiteContent({ initialTheme, hideSwitcher = false }: W
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Fetch backend data
+  // Fetch backend data (Chỉ fetch samples manifest và fallback client-side nếu server props trống)
   useEffect(() => {
     async function fetchData() {
       try {
-        const [prodRes, postRes, priceRes, videoRes, sampleRes] = await Promise.all([
-          fetch('/api/web/products'),
-          fetch('/api/web/posts'),
-          fetch('/api/web/price-items'),
-          fetch('/api/web/videos'),
-          fetch('/images/samples/manifest.json').catch(() => null), // Catch lỗi nếu file chưa được load
-        ]);
-
-        if (prodRes.ok) {
-          const data = await prodRes.json();
-          setProducts(data.products || []);
-        }
-        if (postRes.ok) {
-          const data = await postRes.json();
-          setPosts(data.posts || []);
-        }
-        if (videoRes && videoRes.ok) {
-          const data = await videoRes.json();
-          setVideos(data.videos || []);
-        }
-        if (priceRes.ok) {
-          const data = await priceRes.json();
-          setPriceItems(data.priceItems || []);
-        }
+        const sampleRes = await fetch('/images/samples/manifest.json').catch(() => null);
         if (sampleRes && sampleRes.ok) {
           const data = await sampleRes.json();
           setSamples(data || []);
         }
       } catch (err) {
-        console.error('Lỗi tải dữ liệu website:', err);
-      } finally {
+        console.error('Lỗi tải manifest ảnh mẫu:', err);
+      }
+
+      if (initialProducts.length === 0 && initialPosts.length === 0) {
+        try {
+          const [prodRes, postRes, priceRes, videoRes] = await Promise.all([
+            fetch('/api/web/products'),
+            fetch('/api/web/posts'),
+            fetch('/api/web/price-items'),
+            fetch('/api/web/videos'),
+          ]);
+
+          if (prodRes.ok) {
+            const data = await prodRes.json();
+            setProducts(data.products || []);
+          }
+          if (postRes.ok) {
+            const data = await postRes.json();
+            setPosts(data.posts || []);
+          }
+          if (videoRes && videoRes.ok) {
+            const data = await videoRes.json();
+            setVideos(data.videos || []);
+          }
+          if (priceRes.ok) {
+            const data = await priceRes.json();
+            setPriceItems(data.priceItems || []);
+          }
+        } catch (err) {
+          console.error('Lỗi tải dữ liệu website từ client-side fallback:', err);
+        } finally {
+          setLoading(false);
+        }
+      } else {
         setLoading(false);
       }
     }
     fetchData();
-  }, []);
+  }, [initialProducts, initialPosts, initialVideos, initialPriceItems]);
 
   const getYoutubeEmbedUrl = (url: string) => {
     const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
@@ -205,8 +225,8 @@ export default function WebsiteContent({ initialTheme, hideSwitcher = false }: W
       {/* 2. STICKY PUBLIC HEADER */}
       <Header activeTheme={activeTheme} setActiveTheme={setActiveTheme} hideSwitcher={hideSwitcher} />
 
-      {/* Spacer bù chiều cao header cố định (~68px) */}
-      <div className="h-16 md:h-[68px] flex-shrink-0" aria-hidden="true" />
+      {/* Không cần spacer nữa vì Header.tsx đã có spacer nội bộ. Chỉ cần chừa 1px rất nhỏ trên desktop */}
+      <div className="hidden md:block md:h-1 flex-shrink-0" aria-hidden="true" />
       <section id="about" className="py-12 md:py-24 px-6 relative z-10 max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
         <div className="lg:col-span-7 space-y-6">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[var(--accent)]/10 border border-[var(--accent)]/20 text-xs font-semibold text-[var(--accent)]">
@@ -264,15 +284,15 @@ export default function WebsiteContent({ initialTheme, hideSwitcher = false }: W
           <div className="w-full max-w-[400px] aspect-square relative glass-card p-4 overflow-hidden shadow-2xl flex items-center justify-center">
             <div className="absolute w-64 h-64 bg-[var(--accent-glow)] rounded-full blur-2xl z-0"></div>
             <img 
-              src="https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=500&auto=format&fit=crop&q=80" 
-              alt="UV DTF decal dán cốc" 
+              src="/images/hero_uv_dtf_mockup.png" 
+              alt="Tem UV DTF Nổi 3D Kim Loại dán bình giữ nhiệt" 
               className="w-full h-full object-cover rounded-lg relative z-10 shadow-lg border border-[var(--card-border)]"
             />
             <div className="absolute bottom-6 left-6 right-6 bg-[var(--card-bg)]/90 backdrop-blur-md p-3 border border-[var(--card-border)] rounded-lg z-20 flex items-center gap-3">
               <Award className="text-yellow-500 shrink-0" size={24} />
               <div>
-                <h5 className="text-xs font-bold text-[var(--foreground)]">PrinK Tech Decal</h5>
-                <p className="text-[10px] text-[var(--text-muted)] mt-0.5">Lớp phủ bóng bảo vệ kháng nước</p>
+                <h5 className="text-xs font-bold text-[var(--foreground)]">Tem UV DTF nổi 3D kim loại</h5>
+                <p className="text-[10px] text-[var(--text-muted)] mt-0.5">Dập nổi bóng gương, keo bám siêu bền</p>
               </div>
             </div>
           </div>
@@ -329,7 +349,7 @@ export default function WebsiteContent({ initialTheme, hideSwitcher = false }: W
                   label: 'Tem nhỏ (≤3×3cm)',
                   badge: 'Cắt bế sẵn',
                   desc: 'Tem nhỏ cắt sẵn rời từng cái. Dán chuyển nổi 3D không viền, kháng nước 100% chuyên dùng dán ly thủy tinh, đồ gốm sứ.',
-                  img: '/images/product_tem_nho.jpg',
+                  img: '/images/product_20260710_110649_04_sheet_ad.png',
                   imgAlt: 'Tem nhỏ UV DTF cắt bế sẵn dưới 3x3cm chibi xe đua không viền PrinK Tech',
                 };
 
@@ -631,10 +651,10 @@ export default function WebsiteContent({ initialTheme, hideSwitcher = false }: W
           >
             <button
               onClick={() => setSelectedSampleUrl(null)}
-              className="absolute top-4 right-4 z-110 p-2 bg-black/60 hover:bg-black/80 text-white rounded-full transition focus:outline-none cursor-pointer"
+              className="absolute top-4 right-4 z-110 w-10 h-10 flex items-center justify-center bg-black/60 hover:bg-black/80 text-white rounded-full transition focus:outline-none cursor-pointer"
               aria-label="Đóng ảnh"
             >
-              <X size={16} aria-hidden="true" />
+              <X size={20} aria-hidden="true" />
             </button>
             <img
               src={selectedSampleUrl}
@@ -677,10 +697,10 @@ export default function WebsiteContent({ initialTheme, hideSwitcher = false }: W
             </div>
             <button
               onClick={() => setActiveVideo(null)}
-              className="absolute top-3 right-3 z-20 p-1.5 bg-slate-900/80 hover:bg-slate-800 text-slate-400 hover:text-white rounded-full transition focus:outline-none focus:ring-2 focus:ring-[var(--accent)] cursor-pointer"
+              className="absolute top-3 right-3 z-20 w-10 h-10 flex items-center justify-center bg-slate-900/80 hover:bg-slate-800 text-slate-400 hover:text-white rounded-full transition focus:outline-none focus:ring-2 focus:ring-[var(--accent)] cursor-pointer"
               aria-label="Đóng trình phát video"
             >
-              <X size={16} aria-hidden="true" />
+              <X size={20} aria-hidden="true" />
             </button>
             <iframe
               src={activeVideo.embedUrl}

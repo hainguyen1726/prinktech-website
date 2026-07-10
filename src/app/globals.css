@@ -16,8 +16,8 @@
   --badge-radius: 0px;
   --btn-radius: 0px;
   --card-radius: 0px;
-  --font-family-heading: 'Playfair Display', Georgia, serif;
-  --font-family-body: 'Inter', system-ui, sans-serif;
+  --font-family-heading: var(--font-playfair), Georgia, serif;
+  --font-family-body: var(--font-inter), system-ui, sans-serif;
   --bg-pattern: radial-gradient(at 50% 0%, rgba(140, 98, 57, 0.03) 0px, transparent 65%);
   --tech-grid-opacity: 0;
 }
@@ -37,8 +37,8 @@
   --badge-radius: 0.5rem;
   --btn-radius: 0.75rem;
   --card-radius: 1rem;
-  --font-family-heading: 'Inter', system-ui, sans-serif;
-  --font-family-body: 'Inter', system-ui, sans-serif;
+  --font-family-heading: var(--font-inter), system-ui, sans-serif;
+  --font-family-body: var(--font-inter), system-ui, sans-serif;
   --bg-pattern: radial-gradient(at 0% 0%, rgba(14, 165, 233, 0.08) 0px, transparent 50%),
                 radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.05) 0px, transparent 50%);
   --tech-grid-opacity: 0.03;
@@ -59,8 +59,8 @@
   --badge-radius: 1rem;
   --btn-radius: 9999px;
   --card-radius: 1.5rem;
-  --font-family-heading: 'Outfit', system-ui, sans-serif;
-  --font-family-body: 'Outfit', system-ui, sans-serif;
+  --font-family-heading: var(--font-outfit), system-ui, sans-serif;
+  --font-family-body: var(--font-outfit), system-ui, sans-serif;
   --bg-pattern: radial-gradient(at 20% 20%, rgba(217, 70, 239, 0.1) 0px, transparent 40%),
                 radial-gradient(at 80% 80%, rgba(168, 85, 247, 0.1) 0px, transparent 40%);
   --tech-grid-opacity: 0;

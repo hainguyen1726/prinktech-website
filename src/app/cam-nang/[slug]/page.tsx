@@ -93,6 +93,15 @@ export default async function CamNangDetailPage({
 
   if (!post) notFound();
 
+  // Lấy danh sách bài viết liên quan (loại trừ bài hiện tại, giới hạn 3 bài)
+  const { data: relatedPosts } = await supabaseAdmin
+    .from('web_posts')
+    .select('id, title, slug, cover_image, summary, created_at')
+    .eq('status', 'published')
+    .neq('id', post.id)
+    .order('created_at', { ascending: false })
+    .limit(3);
+
   const articleSchema = {
     '@context': 'https://schema.org',
     '@type': 'Article',
@@ -126,12 +135,42 @@ export default async function CamNangDetailPage({
     year: 'numeric',
   });
 
+  const breadcrumbSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    'itemListElement': [
+      {
+        '@type': 'ListItem',
+        'position': 1,
+        'name': 'Trang chủ',
+        'item': BASE_URL,
+      },
+      {
+        '@type': 'ListItem',
+        'position': 2,
+        'name': 'Cẩm nang',
+        'item': `${BASE_URL}/#blog`,
+      },
+      {
+        '@type': 'ListItem',
+        'position': 3,
+        'name': post.title,
+        'item': `${BASE_URL}/cam-nang/${slug}`,
+      },
+    ],
+  };
+
   return (
     <>
       <Script
         id="schema-article"
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }}
+      />
+      <Script
+        id="schema-breadcrumb"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
       />
 
       <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
@@ -203,12 +242,57 @@ export default async function CamNangDetailPage({
               Cần tư vấn in UV DTF Nổi 3D?
             </p>
             <a
-              href="tel:0822968412"
+              href="https://zalo.me/0822968412"
+              target="_blank"
+              rel="noopener noreferrer"
               className="inline-flex items-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-white font-bold px-6 py-3 rounded-xl text-sm transition"
             >
-              📞 Gọi ngay 0822.968.412
+              💬 Chat Zalo: 0822.968.412 (Ưu tiên)
             </a>
           </div>
+
+          {/* Bài viết liên quan */}
+          {relatedPosts && relatedPosts.length > 0 && (
+            <section className="mt-16 pt-8 border-t border-card-border/40">
+              <h3 className="text-xl font-bold text-foreground mb-6">Kinh nghiệm & hướng dẫn khác</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {relatedPosts.map((p) => {
+                  const dateFmt = new Date(p.created_at).toLocaleDateString('vi-VN', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                  });
+                  return (
+                    <Link
+                      key={p.id}
+                      href={`/cam-nang/${p.slug}`}
+                      className="group block rounded-2xl border border-card-border/50 bg-card-bg/20 overflow-hidden hover:border-[var(--accent)]/55 hover:border-[var(--accent)]/50 transition-all duration-300"
+                    >
+                      <div className="aspect-[16/10] overflow-hidden border-b border-card-border/40 bg-slate-900/20">
+                        {p.cover_image ? (
+                          <img
+                            src={p.cover_image}
+                            alt={p.title}
+                            className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-300"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center bg-slate-900/60">
+                            <img src="/logo-horizontal.png" alt="PrinK Tech" className="h-8 opacity-20 object-contain" />
+                          </div>
+                        )}
+                      </div>
+                      <div className="p-4">
+                        <span className="text-[10px] text-slate-500 font-semibold">{dateFmt}</span>
+                        <h4 className="text-sm font-bold text-foreground mt-1 group-hover:text-[var(--accent)] transition-colors line-clamp-2 leading-snug">
+                          {p.title}
+                        </h4>
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+            </section>
+          )}
         </main>
 
         {/* Footer tối giản */}

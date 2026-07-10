@@ -1,6 +1,24 @@
 import type { Metadata } from 'next';
-import Script from 'next/script';
+import { Inter, Outfit, Playfair_Display } from 'next/font/google';
 import './globals.css';
+
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-inter',
+  display: 'swap',
+});
+
+const outfit = Outfit({
+  subsets: ['latin'],
+  variable: '--font-outfit',
+  display: 'swap',
+});
+
+const playfair = Playfair_Display({
+  subsets: ['latin'],
+  variable: '--font-playfair',
+  display: 'swap',
+});
 
 const BASE_URL = 'https://prinktech.netslive.com';
 const SITE_NAME = 'PrinK Tech - Xưởng In UV DTF Nổi 3D';
@@ -67,56 +85,7 @@ export const metadata: Metadata = {
   },
 };
 
-// JSON-LD Schema
-const localBusinessSchema = {
-  '@context': 'https://schema.org',
-  '@type': 'LocalBusiness',
-  '@id': `${BASE_URL}/#business`,
-  name: 'PrinK Tech - Xưởng In UV DTF Nổi 3D',
-  description: DESCRIPTION,
-  url: BASE_URL,
-  logo: `${BASE_URL}/logo-horizontal.png`,
-  image: OG_IMAGE,
-  telephone: '+84822968412',
-  email: 'info@prinktech.vn',
-  address: {
-    '@type': 'PostalAddress',
-    addressCountry: 'VN',
-  },
-  openingHoursSpecification: [
-    {
-      '@type': 'OpeningHoursSpecification',
-      dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
-      opens: '08:00',
-      closes: '18:00',
-    },
-  ],
-  priceRange: '$$',
-  servesCuisine: undefined,
-  sameAs: [
-    'https://zalo.me/0822968412',
-  ],
-};
-
-const websiteSchema = {
-  '@context': 'https://schema.org',
-  '@type': 'WebSite',
-  '@id': `${BASE_URL}/#website`,
-  name: SITE_NAME,
-  url: BASE_URL,
-  description: DESCRIPTION,
-  publisher: {
-    '@id': `${BASE_URL}/#business`,
-  },
-  potentialAction: {
-    '@type': 'SearchAction',
-    target: {
-      '@type': 'EntryPoint',
-      urlTemplate: `${BASE_URL}/cam-nang?q={search_term_string}`,
-    },
-    'query-input': 'required name=search_term_string',
-  },
-};
+// Schema đã được chuyển sang trang chủ để tránh ảnh hưởng trang con
 
 import BottomNav from '@/components/BottomNav';
 
@@ -129,27 +98,10 @@ export default function RootLayout({
     <html lang="vi">
       <head>
         <link rel="icon" href="/favicon.ico" sizes="any" />
-        <link rel="canonical" href={BASE_URL} />
         <meta name="theme-color" content="#0ea5e9" />
         <meta name="geo.region" content="VN" />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap"
-          rel="stylesheet"
-        />
-        <Script
-          id="schema-local-business"
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessSchema) }}
-        />
-        <Script
-          id="schema-website"
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
-        />
       </head>
-      <body className="min-h-screen flex flex-col relative overflow-x-hidden antialiased pb-16 md:pb-0">
+      <body className={`${inter.variable} ${outfit.variable} ${playfair.variable} min-h-screen flex flex-col relative overflow-x-hidden antialiased pb-16 md:pb-0`}>
         {children}
         <BottomNav />
       </body>

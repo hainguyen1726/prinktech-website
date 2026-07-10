@@ -79,7 +79,7 @@ export default function ProductListContent({ products }: { products: Product[] }
       {/* ── PRODUCTS SECTION ── */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-12">
         {/* Tab Filters */}
-        <div className="flex flex-wrap items-center justify-center gap-2 mb-10">
+        <div className="flex flex-nowrap overflow-x-auto whitespace-nowrap scrollbar-none justify-start md:justify-center items-center gap-2 mb-10 px-4 -mx-4 pb-2">
           {[
             { id: 'all', label: 'Tất cả sản phẩm' },
             { id: 'embossed', label: 'UV DTF Nổi 3D' },
@@ -89,7 +89,7 @@ export default function ProductListContent({ products }: { products: Product[] }
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`px-4 py-1.5 rounded-full text-xs font-bold transition border cursor-pointer ${
+              className={`px-4 py-1.5 rounded-full text-xs font-bold transition border cursor-pointer shrink-0 ${
                 activeTab === tab.id
                   ? 'btn-primary'
                   : 'bg-block-bg border-card-border text-text-muted hover:text-foreground hover:bg-card-bg'

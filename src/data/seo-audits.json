@@ -1,0 +1,109 @@
+[
+  {
+    "id": "audit-20260710-01",
+    "createdAt": "2026-07-10T10:48:51.187Z",
+    "targetUrl": "https://prinktech.netslive.com/",
+    "score": 70,
+    "summary": "Phiên audit SEO đầu tiên sau khi tối ưu hóa cấu trúc Server-Side rendering trang chủ, bổ sung sitemap, bảo mật headers và Schema Breadcrumb.",
+    "issues": [
+      {
+        "id": "issue-01",
+        "severity": "Critical",
+        "area": "Technical",
+        "title": "Client-Side Rendering (CSR) dữ liệu động trang chủ",
+        "evidence": "Nội dung động (sản phẩm, blog, video) tải qua useEffect client-side gây rỗng HTML thô.",
+        "recommendation": "Chuyển trang chủ thành Server Component, fetch Supabase và truyền props cho WebsiteContent.",
+        "resolved": true,
+        "resolvedAt": "2026-07-10T10:53:30.000Z"
+      },
+      {
+        "id": "issue-02",
+        "severity": "Critical",
+        "area": "Sitemap",
+        "title": "Thiếu các trang tĩnh quan trọng trong sitemap.xml",
+        "evidence": "Sitemap chỉ chứa trang chủ, thiếu các trang cốt lõi như /san-pham, /bao-gia...",
+        "recommendation": "Cập nhật sitemap.ts bổ sung các trang tĩnh public.",
+        "resolved": true,
+        "resolvedAt": "2026-07-10T10:52:54.000Z"
+      },
+      {
+        "id": "issue-03",
+        "severity": "Critical",
+        "area": "Security",
+        "title": "Thiếu 6 HTTP Security Headers cốt lõi",
+        "evidence": "Không có HSTS, CSP, X-Frame-Options... trong phản hồi header.",
+        "recommendation": "Cấu hình headers bảo mật trong next.config.ts hoặc web server Caddy.",
+        "resolved": true,
+        "resolvedAt": "2026-07-10T10:52:47.000Z"
+      },
+      {
+        "id": "issue-04",
+        "severity": "Warning",
+        "area": "Schema",
+        "title": "Trùng lặp và ô nhiễm Schema trang chủ",
+        "evidence": "Schema LocalBusiness và WebSite nằm trong layout.tsx lặp lại ở mọi trang con.",
+        "recommendation": "Di chuyển Schema trang chủ sang chỉ nhúng trên trang chủ page.tsx.",
+        "resolved": true,
+        "resolvedAt": "2026-07-10T10:53:07.000Z"
+      },
+      {
+        "id": "issue-05",
+        "severity": "Warning",
+        "area": "On-Page",
+        "title": "Trùng lặp thẻ canonical trang chủ",
+        "evidence": "Trang chủ xuất hiện 2 thẻ link canonical trong HTML thô.",
+        "recommendation": "Xóa thẻ canonical viết cứng thủ công trong layout.tsx, để Next.js Metadata tự quản lý.",
+        "resolved": true,
+        "resolvedAt": "2026-07-10T10:53:13.000Z"
+      },
+      {
+        "id": "issue-06",
+        "severity": "Warning",
+        "area": "Performance",
+        "title": "Tải Google Fonts qua CDN gây render-blocking",
+        "evidence": "Layout.tsx gọi link fonts.googleapis.com kiểu truyền thống.",
+        "recommendation": "Sử dụng next/font/google để nạp font local tối ưu hóa FCP/CLS.",
+        "resolved": true,
+        "resolvedAt": "2026-07-10T10:53:19.000Z"
+      },
+      {
+        "id": "issue-07",
+        "severity": "Warning",
+        "area": "AI Search",
+        "title": "Thiếu tệp chỉ mục AI llms.txt",
+        "evidence": "Không tìm thấy file /llms.txt trên server.",
+        "recommendation": "Tạo file public/llms.txt cung cấp thông tin ngắn gọn về xưởng in.",
+        "resolved": true,
+        "resolvedAt": "2026-07-10T10:52:52.000Z"
+      },
+      {
+        "id": "issue-08",
+        "severity": "Warning",
+        "area": "Schema",
+        "title": "Thiếu Schema BreadcrumbList cho trang chi tiết bài viết và sản phẩm",
+        "evidence": "Các trang chi tiết cẩm nang và sản phẩm có breadcrumb HTML nhưng thiếu Schema JSON-LD tương ứng.",
+        "recommendation": "Cập nhật cam-nang/[slug]/page.tsx và san-pham/[slug]/page.tsx nhúng Breadcrumb schema.",
+        "resolved": true,
+        "resolvedAt": "2026-07-10T03:00:59.000Z"
+      },
+      {
+        "id": "issue-09",
+        "severity": "Critical",
+        "area": "Content / UX",
+        "title": "Thiếu hình ảnh minh họa thực tế cho bài viết hướng dẫn dán và so sánh",
+        "evidence": "Bài viết 'Hướng dẫn dán tem UV DTF' và 'So sánh in nổi vs in phẳng' hoàn toàn không có ảnh nhúng trong nội dung.",
+        "recommendation": "Chèn thêm 4 ảnh minh họa quy trình dán và 2 ảnh chụp cận cảnh so sánh in nổi/in phẳng trong Admin Portal.",
+        "resolved": false
+      },
+      {
+        "id": "issue-10",
+        "severity": "Warning",
+        "area": "Content",
+        "title": "Tiêu đề một số bài viết quá dài",
+        "evidence": "Bài viết 'Tem UV DTF siêu bền ngoài trời...' dài 78 ký tự, vượt quá độ dài chuẩn (60 ký tự) trên SERP.",
+        "recommendation": "Rút ngắn tiêu đề các bài viết còn khoảng 50 - 60 ký tự trong trang Admin.",
+        "resolved": false
+      }
+    ]
+  }
+]

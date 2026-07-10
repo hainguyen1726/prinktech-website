@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { X } from 'lucide-react';
+import { X, Trash2 } from 'lucide-react';
 import Header from '@/components/Header';
 import {
   PRODUCTS,
@@ -325,7 +325,7 @@ export default function OrderForm() {
             <div style="border-left:2px solid #e2e8f0;padding-left:14px;margin-left:4px">
               <p style="font-size:9px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:3px">Đơn vị thực hiện</p>
               <p style="font-weight:900;font-size:12px;color:#1e293b">XƯỞNG IN UV DTF – PRINK TECH</p>
-              <p style="font-size:10px;color:#64748b;margin-top:2px">Hotline / Zalo: <strong style="color:#1e293b">0822.968.412</strong></p>
+              <p style="font-size:10px;color:#64748b;margin-top:2px">Zalo (Ưu tiên) / Hotline: <strong style="color:#1e293b">0822.968.412</strong></p>
             </div>
           </div>
           <div style="text-align:right">
@@ -360,7 +360,7 @@ export default function OrderForm() {
             <div style="display:flex;gap:8px;margin-bottom:6px"><span style="color:#64748b;width:80px;flex-shrink:0;font-size:11px">Ngân hàng:</span><span style="font-weight:700;color:#1e293b;font-size:11px">Vietinbank</span></div>
             <div style="display:flex;gap:8px;margin-bottom:6px"><span style="color:#64748b;width:80px;flex-shrink:0;font-size:11px">Số TK:</span><span style="font-weight:900;color:#ec4899;font-size:14px;letter-spacing:0.06em">110602191866</span></div>
             <div style="display:flex;gap:8px;margin-bottom:12px"><span style="color:#64748b;width:80px;flex-shrink:0;font-size:11px">Chủ TK:</span><span style="font-weight:700;color:#1e293b;text-transform:uppercase;font-size:11px">CÔNG TY TNHH GMKT VIỆT NAM</span></div>
-            <p style="font-size:10px;color:#64748b;border-top:1px solid #e2e8f0;padding-top:10px;line-height:1.7">✅ Miễn phí vận chuyển cho đơn từ 150.000 ₫<br/>⚡ Hoàn thành trong 24h sau khi chốt file<br/>📞 Xác nhận qua Zalo: <strong>0822.968.412</strong></p>
+            <p style="font-size:10px;color:#64748b;border-top:1px solid #e2e8f0;padding-top:10px;line-height:1.7">✅ Miễn phí vận chuyển cho đơn từ 150.000 ₫<br/>⚡ Hoàn thành trong 24h sau khi chốt file<br/>💬 Xác nhận qua Zalo (Ưu tiên): <strong>0822.968.412</strong></p>
           </div>
           <div style="width:260px">
             <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #e2e8f0;font-size:12px"><span style="color:#64748b">Tạm tính (${items.length} sp):</span><span style="font-weight:600;color:#1e293b">${fmt(subtotal)}</span></div>
@@ -385,16 +385,16 @@ export default function OrderForm() {
         <div className="max-w-3xl mx-auto bg-white rounded-2xl shadow-2xl overflow-hidden animate-fadeIn">
 
           {/* Header */}
-          <div className="flex justify-between items-start p-7 pb-5 border-b-[2.5px] border-pink-500">
-            <div className="flex items-start gap-4">
+          <div className="flex flex-col md:flex-row justify-between items-center md:items-start p-6 md:p-7 pb-5 gap-6 md:gap-4 border-b-[2.5px] border-pink-500 text-center md:text-left">
+            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4">
               <img src="/logo-horizontal-dark-text.png" alt="PrinK Tech" className="h-12 object-contain" onError={e => (e.currentTarget.style.display='none')} />
-              <div className="border-l-2 border-slate-200 pl-4 ml-1">
+              <div className="border-t sm:border-t-0 sm:border-l-2 border-slate-200 pt-3 sm:pt-0 sm:pl-4 sm:ml-1">
                 <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Đơn vị thực hiện</p>
                 <p className="font-black text-slate-800 text-sm">XƯỞNG IN UV DTF – PRINK TECH</p>
-                <p className="text-[11px] text-slate-500 mt-0.5">Hotline / Zalo: <strong className="text-slate-700">0822.968.412</strong></p>
+                <p className="text-[11px] text-slate-500 mt-0.5">Zalo (Ưu tiên) / Hotline: <strong className="text-slate-700">0822.968.412</strong></p>
               </div>
             </div>
-            <div className="text-right">
+            <div className="text-center md:text-right flex flex-col items-center md:items-end">
               <div className="inline-flex items-center gap-1.5 bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-bold px-3 py-1 rounded-full mb-2">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                 Đặt hàng thành công
@@ -456,7 +456,7 @@ export default function OrderForm() {
               <p className="text-[11px] text-slate-500 mt-3 pt-3 border-t border-slate-200 leading-relaxed">
                 ✅ Miễn phí vận chuyển cho đơn từ 150.000 ₫<br/>
                 ⚡ Hoàn thành trong 24h sau khi chốt file<br/>
-                📞 Xác nhận qua Zalo: <strong className="text-slate-700">0822.968.412</strong>
+                💬 Xác nhận qua Zalo (Ưu tiên): <strong className="text-slate-700">0822.968.412</strong>
               </p>
             </div>
             <div className="w-full md:w-64 space-y-2">
@@ -714,13 +714,15 @@ export default function OrderForm() {
                           </a>
                         )}
                       </div>
-                      <div className="shrink-0 text-right">
+                      <div className="shrink-0 flex flex-col items-end justify-between h-full min-h-[60px]">
                         <p className="text-sm font-bold text-[var(--accent)] tabular-nums">{formatCurrency(item.subtotal)}</p>
                         <button
                           onClick={() => setItems(prev => prev.filter(x => x.id !== item.id))}
-                          className="text-xs text-text-muted hover:text-red-400 transition-colors mt-2 cursor-pointer font-bold"
+                          className="w-9 h-9 flex items-center justify-center text-text-muted hover:text-red-500 hover:bg-red-500/10 rounded-full transition-colors cursor-pointer shrink-0 mt-1"
+                          title="Xoá sản phẩm"
+                          aria-label="Xoá sản phẩm"
                         >
-                          Xoá
+                          <Trash2 size={15} />
                         </button>
                       </div>
                     </div>
@@ -815,11 +817,31 @@ export default function OrderForm() {
 
             <div className="text-xs text-text-muted text-center space-y-1">
               <p>Giá chưa bao gồm VAT 8%</p>
-              <p>Hotline: <a href="tel:0822968412" className="text-[var(--accent)] font-bold hover:underline">0822.968.412</a></p>
+              <p>Zalo (Ưu tiên): <a href="https://zalo.me/0822968412" target="_blank" rel="noopener noreferrer" className="text-[var(--accent)] font-bold hover:underline">0822.968.412</a></p>
+              <p className="text-[10px]">Hotline: <a href="tel:0822968412" className="text-slate-500 hover:underline">0822.968.412</a> (Gọi khi cần gấp)</p>
             </div>
           </div>
         </div>
       </div>
+      {/* Sticky Bottom Bar cho mobile khi điền form đặt hàng */}
+      {items.length > 0 && !result && (
+        <div className="lg:hidden fixed bottom-16 left-0 right-0 z-40 bg-background/95 backdrop-blur-md border-t border-card-border p-4 shadow-[0_-4px_20px_rgba(0,0,0,0.08)] pb-safe-bottom">
+          <div className="flex items-center justify-between gap-4 max-w-md mx-auto">
+            <div>
+              <span className="text-[10px] text-text-muted font-bold block uppercase">Tổng tiền đơn</span>
+              <span className="font-black text-base text-[var(--accent)] tabular-nums">{formatCurrency(total)}</span>
+            </div>
+            <button
+              onClick={handleSubmit}
+              disabled={!isValid || submitting}
+              className="flex-1 max-w-[200px] h-10 rounded-xl font-bold text-xs bg-gradient-to-r from-purple-650 to-fuchsia-650 text-white shadow-md transition-all active:scale-95 disabled:opacity-40 cursor-pointer"
+            >
+              {submitting ? 'Đang gửi...' : '🚀 Gửi đơn hàng'}
+            </button>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

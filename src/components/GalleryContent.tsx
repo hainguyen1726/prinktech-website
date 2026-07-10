@@ -70,12 +70,12 @@ export default function GalleryContent({ initialSamples }: { initialSamples: Sam
       {/* ── GALLERY SECTION ── */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-12">
         {/* Categories Tab Filter */}
-        <div className="flex flex-wrap items-center justify-center gap-2 mb-10">
+        <div className="flex flex-nowrap overflow-x-auto whitespace-nowrap scrollbar-none justify-start md:justify-center items-center gap-2 mb-10 px-4 -mx-4 pb-2">
           {['Tất cả', 'Tem ly/cốc', 'Tem mũ bảo hiểm', 'Tem bình giữ nhiệt', 'Tem xe máy', 'Tem nhãn sỉ'].map(cat => (
             <button
               key={cat}
               onClick={() => setActiveCategory(cat)}
-              className={`px-4 py-1.5 rounded-full text-xs font-bold transition border cursor-pointer ${
+              className={`px-4 py-1.5 rounded-full text-xs font-bold transition border cursor-pointer shrink-0 ${
                 activeCategory === cat
                   ? 'btn-primary'
                   : 'bg-block-bg border-card-border text-text-muted hover:text-foreground hover:bg-card-bg'
@@ -100,11 +100,11 @@ export default function GalleryContent({ initialSamples }: { initialSamples: Sam
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 loading="lazy"
               />
-              {/* Hover Overlay */}
-              <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-4">
-                <span className="text-[10px] font-mono text-purple-300 font-bold uppercase block">{item.category}</span>
-                <span className="font-bold text-xs text-white leading-snug mt-1 truncate">{item.title}</span>
-                <span className="text-[10px] text-stone-300/80 mt-1 flex items-center gap-1 font-semibold">
+              {/* Overlay thông tin: Trên mobile hiện cố định dưới dạng dải mờ đen nhẹ, trên desktop chỉ hiện khi hover */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/45 to-transparent md:bg-black/60 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity flex flex-col justify-end p-3.5">
+                <span className="text-[9px] md:text-[10px] font-mono text-purple-300 font-bold uppercase block">{item.category}</span>
+                <span className="font-bold text-[11px] md:text-xs text-white leading-snug mt-0.5 md:mt-1 truncate">{item.title}</span>
+                <span className="hidden md:flex text-[10px] text-stone-300/80 mt-1 items-center gap-1 font-semibold">
                   🔍 Nhấp để xem lớn
                 </span>
               </div>

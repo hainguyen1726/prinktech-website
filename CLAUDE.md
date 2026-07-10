@@ -56,3 +56,14 @@ Tài liệu này cung cấp các lệnh phát triển, cấu trúc dự án và 
   * Quản lý kho thư viện video thực tế (Thêm/Sửa/Xóa link YouTube, Reels, TikTok).
   * Xem, đổi trạng thái và xử lý yêu cầu báo giá của khách hàng.
 * Trang viết bài chuẩn SEO chuyên sâu độc lập tại `/admin/viet-bai` hỗ trợ WYSIWYG editor, tính điểm SEO, phân tích mật độ từ khóa, checklist và Google SERP preview trực quan.
+
+### 4. Quy định kỹ thuật SEO bắt buộc
+* **Kiến trúc tải dữ liệu**: Trang chủ `/` phải luôn là **Server Component**. Dữ liệu Supabase phải được load trước trên server và truyền xuống client component dạng props để đảm bảo bot cào được nội dung tĩnh 100%. Không dùng `useEffect` client-side fetch cho dữ liệu trang chủ.
+* **Schema JSON-LD**: Chỉ nhúng Schema `LocalBusiness` và `WebSite` trên trang chủ [page.tsx](file:///D:/16.%20Code/32-website-prinktech/src/app/page.tsx). Các trang con chỉ chứa Schema đặc thù (`Product`, `Article`) và không được nhúng Schema trang chủ ở layout chung để tránh ô nhiễm Schema.
+* **Metadata & Fonts**: 
+  * Tận dụng Next.js Metadata API để quản lý canonical link. Không khai báo cứng `<link rel="canonical">` trong layout.
+  * Tải fonts bằng module `next/font/google` trong layout để tối ưu hóa hiệu năng, giảm CLS. Không nhúng link Google Fonts API CDN trực tiếp trong HTML layout.
+* **Sitemap & Security Headers**:
+  * Đảm bảo cập nhật đầy đủ các trang tĩnh public mới vào [sitemap.ts](file:///D:/16.%20Code/32-website-prinktech/src/app/sitemap.ts).
+  * Bảo đảm giữ nguyên các HTTP Security Headers trong [next.config.ts](file:///D:/16.%20Code/32-website-prinktech/next.config.ts) để website duy trì trạng thái bảo mật tối đa.
+

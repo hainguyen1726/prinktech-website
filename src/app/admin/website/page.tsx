@@ -640,6 +640,14 @@ export default function AdminWebsitePage() {
               <PenTool size={16} className="text-amber-400" /> Viết bài (Công cụ SEO)
             </Link>
 
+            <Link
+              href="/admin/seo"
+              className="w-full flex items-center gap-2.5 px-4 py-3 rounded-lg text-xs font-bold text-left text-slate-400 hover:text-slate-200 hover:bg-slate-900/30 border border-transparent transition cursor-pointer"
+            >
+              <BarChart size={16} className="text-teal-400" /> SEO Audit Center
+            </Link>
+
+
             <button
               onClick={() => setActiveTab('products')}
               className={`w-full flex items-center gap-2.5 px-4 py-3 rounded-lg text-xs font-bold text-left transition cursor-pointer ${

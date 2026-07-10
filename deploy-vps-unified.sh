@@ -100,10 +100,17 @@ step "4️⃣  CÀI ĐẶT & BUILD NEXT.JS (DOCKER)"
 
 cd "$APP_DIR"
 
+info "Dọn dẹp triệt để thư mục build cũ bằng Docker..."
+docker run --rm -v "$APP_DIR:/app" -w /app node:20 rm -rf .next node_modules
+
+info "Dọn dẹp package-lock.json để tránh xung đột Windows/Linux..."
+rm -f package-lock.json
+
 info "Đang cài đặt node_modules..."
 docker run --rm \
     -v "$APP_DIR:/app" \
     -w /app \
+    -e NODE_ENV=development \
     node:20 \
     npm install --include=dev --no-audit --no-fund --legacy-peer-deps
 
