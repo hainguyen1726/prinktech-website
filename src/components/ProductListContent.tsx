@@ -100,14 +100,23 @@ export default function ProductListContent({ products }: { products: Product[] }
           ))}
         </div>
 
-        {/* Grid Products */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {filteredProducts.map(product => {
+        {/* Grid Products — layout bất đồng đều để tạo nhịp điệu thị giác */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-auto">
+          {filteredProducts.map((product, idx) => {
             const label = CATEGORY_LABELS[product.category] || 'UV DTF';
+            // Card đầu tiên và thứ 3 (idx 0,2) chiếm 2 cột trên desktop để tạo layout bất đối xứng
+            const isFeatured = idx === 0 || idx === 2;
             return (
-              <div key={product.id} className="glass-card flex flex-col overflow-hidden h-full group transition-all duration-300">
-                {/* Image */}
-                <div className="relative aspect-video w-full overflow-hidden bg-black/10">
+              <div
+                key={product.id}
+                className={`glass-card flex flex-col overflow-hidden group transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5 ${
+                  isFeatured ? 'md:col-span-2 lg:col-span-2' : ''
+                }`}
+              >
+                {/* Image — tỷ lệ khác nhau tùy featured */}
+                <div className={`relative w-full overflow-hidden bg-black/10 ${
+                  isFeatured ? 'aspect-[21/9]' : 'aspect-video'
+                }`}>
                   <img
                     src={product.image_url || 'https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=500&auto=format&fit=crop&q=80'}
                     alt={product.name}
@@ -117,12 +126,19 @@ export default function ProductListContent({ products }: { products: Product[] }
                   <div className="absolute top-3 left-3 bg-[var(--card-bg)]/90 backdrop-blur-sm border border-card-border rounded px-2.5 py-0.5 text-[10px] font-bold text-[var(--accent)]">
                     {label}
                   </div>
+                  {isFeatured && (
+                    <div className="absolute top-3 right-3 bg-yellow-400 text-yellow-900 rounded px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wide">
+                      ⭐ Nổi bật
+                    </div>
+                  )}
                 </div>
 
                 {/* Content */}
-                <div className="p-5 flex-1 flex flex-col justify-between space-y-5">
-                  <div className="space-y-2">
-                    <h3 className="font-bold text-base text-foreground leading-snug group-hover:text-[var(--accent)] transition-colors">
+                <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
+                  <div className="space-y-1.5">
+                    <h3 className={`font-bold text-foreground leading-snug group-hover:text-[var(--accent)] transition-colors ${
+                      isFeatured ? 'text-lg' : 'text-base'
+                    }`}>
                       {product.name}
                     </h3>
                     <p className="text-xs text-text-muted line-clamp-3 leading-relaxed">
@@ -132,9 +148,9 @@ export default function ProductListContent({ products }: { products: Product[] }
 
                   <div className="flex justify-between items-center pt-3 border-t border-card-border/50">
                     <div>
-                      <span className="text-[9px] text-text-muted block font-semibold uppercase">Giá khoảng</span>
+                      <span className="text-[9px] text-text-muted block font-semibold uppercase">Từ</span>
                       <span className="font-black text-sm text-[var(--accent)] tabular-nums">
-                        {product.price ? formatCurrency(product.price) : 'Liên hệ'}
+                        {product.price ? `${formatCurrency(product.price)}/chiếc` : 'Liên hệ'}
                       </span>
                     </div>
                     <div className="flex gap-2">
@@ -163,6 +179,33 @@ export default function ProductListContent({ products }: { products: Product[] }
             </div>
           )}
         </div>
+
+        {/* ── PHÂN LOẠI NHÓM STICKER THEO CHỦ ĐỀ ── */}
+        <section className="mt-16 space-y-6">
+          <div className="text-center space-y-2">
+            <span className="text-[10px] uppercase font-bold tracking-widest text-[var(--accent)]">In mẫu nào?</span>
+            <h2 className="text-2xl md:text-3xl font-black text-foreground">Phân loại theo chủ đề sticker</h2>
+            <p className="text-xs text-text-muted max-w-lg mx-auto">Từ logo thương hiệu nghiêm túc đến hoạt hình dễ thương, chúng tôi in bất kỳ hình gì bạn cần.</p>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            {[
+              { emoji: '🏷️', label: 'Logo Brand', desc: 'Nhãn hàng, thương hiệu', color: 'from-blue-500/20 to-indigo-500/20', border: 'border-blue-400/30' },
+              { emoji: '🎨', label: 'Cá nhân hóa', desc: 'Tên, ngày tháng, chân dung', color: 'from-purple-500/20 to-fuchsia-500/20', border: 'border-purple-400/30' },
+              { emoji: '✍️', label: 'Chữ ký', desc: 'Signature, handwriting', color: 'from-amber-500/20 to-orange-500/20', border: 'border-amber-400/30' },
+              { emoji: '🐱', label: 'Hoạt hình', desc: 'Cute, anime, cartoon', color: 'from-pink-500/20 to-rose-500/20', border: 'border-pink-400/30' },
+              { emoji: '📸', label: 'Ảnh thật', desc: 'In ảnh màu sắc nét', color: 'from-green-500/20 to-teal-500/20', border: 'border-green-400/30' },
+              { emoji: '😂', label: 'Meme / Funny', desc: 'Nổi bật, gây cười', color: 'from-yellow-500/20 to-orange-500/20', border: 'border-yellow-400/30' },
+            ].map((item, i) => (
+              <div key={i} className={`rounded-2xl border bg-gradient-to-br ${item.color} ${item.border} p-4 text-center space-y-2 hover:scale-105 transition-transform duration-200 cursor-default`}>
+                <div className="text-3xl">{item.emoji}</div>
+                <div className="font-black text-xs text-foreground">{item.label}</div>
+                <div className="text-[10px] text-text-muted leading-snug">{item.desc}</div>
+              </div>
+            ))}
+          </div>
+          <p className="text-center text-xs text-text-muted">✅ Tất cả đều in được bằng công nghệ UV DTF • Màu sắc trung thực • Keo siêu bám dính</p>
+        </section>
       </main>
 
       {/* ── Quy cách in ấn (Khối Banner) ── */}
