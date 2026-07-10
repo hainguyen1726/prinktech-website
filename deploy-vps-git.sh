@@ -6,6 +6,19 @@ set -e
 
 APP_DIR="/srv/website-prinktech"
 CONTAINER_NAME="prinktech-website"
+LOCKFILE="/tmp/prinktech-deploy.lock"
+
+# Prevent concurrent deployments
+if [ -f "$LOCKFILE" ]; then
+    PID=$(cat "$LOCKFILE")
+    if kill -0 "$PID" 2>/dev/null; then
+        echo -e "\033[0;31m❌ Một tiến trình deploy khác đang chạy (PID: $PID). Vui lòng thử lại sau để tránh lỗi xung đột build.\033[0m"
+        exit 1
+    fi
+fi
+echo $$ > "$LOCKFILE"
+trap 'rm -f "$LOCKFILE"' EXIT
+
 
 # Colors
 GREEN='\033[0;32m'
