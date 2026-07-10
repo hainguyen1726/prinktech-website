@@ -284,15 +284,15 @@ export default function WebsiteContent({
           <div className="w-full max-w-[400px] aspect-square relative glass-card p-4 overflow-hidden shadow-2xl flex items-center justify-center">
             <div className="absolute w-64 h-64 bg-[var(--accent-glow)] rounded-full blur-2xl z-0"></div>
             <img 
-              src="/images/hero_uv_dtf_mockup.png" 
-              alt="Tem UV DTF Nổi 3D Kim Loại dán bình giữ nhiệt" 
+              src="/images/hero_official_mockup.png" 
+              alt="Tem UV DTF Nổi 3D dán bình giữ nhiệt PrinK Tech" 
               className="w-full h-full object-cover rounded-lg relative z-10 shadow-lg border border-[var(--card-border)]"
             />
             <div className="absolute bottom-6 left-6 right-6 bg-[var(--card-bg)]/90 backdrop-blur-md p-3 border border-[var(--card-border)] rounded-lg z-20 flex items-center gap-3">
               <Award className="text-yellow-500 shrink-0" size={24} />
               <div>
-                <h5 className="text-xs font-bold text-[var(--foreground)]">Tem UV DTF nổi 3D kim loại</h5>
-                <p className="text-[10px] text-[var(--text-muted)] mt-0.5">Dập nổi bóng gương, keo bám siêu bền</p>
+                <h5 className="text-xs font-bold text-[var(--foreground)]">Tem UV DTF Nổi 3D PrinK Tech</h5>
+                <p className="text-[10px] text-[var(--text-muted)] mt-0.5">Mực in sắc nét, keo dính siêu bền</p>
               </div>
             </div>
           </div>

@@ -2,6 +2,8 @@ import { Metadata } from 'next';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import ProductListContent from '@/components/ProductListContent';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: 'Danh Sách Sản Phẩm | In UV DTF PrinK Tech',
   description: 'Khám phá các sản phẩm tem in UV DTF nổi 3D cao cấp, tem dán cốc thủy tinh, bình giữ nhiệt và tem in sỉ theo cuộn từ xưởng PrinK Tech.',
