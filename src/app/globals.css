@@ -462,10 +462,11 @@ body.admin-panel {
   color: #0f172a !important;
 }
 
-/* Sidebar SEO Panel bên phải */
+/* Sidebar SEO Panel bên trái */
 .admin-seo-panel {
   background-color: #ffffff !important;
-  border-left: 1px solid #cbd5e1 !important;
+  border-right: 1px solid #cbd5e1 !important;
+  border-left: none !important;
 }
 .admin-seo-panel label {
   color: #334155 !important; /* Slate 700 - Đậm và rõ */

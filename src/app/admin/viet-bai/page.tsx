@@ -9,6 +9,7 @@ import {
   Heading3, Link as LinkIcon, Image as ImageIcon, Quote, Code,
   Loader2, RefreshCw, Sparkles, Search, BarChart2
 } from 'lucide-react';
+import { supabase } from '@/lib/supabaseClient';
 
 // =================== HELPERS ===================
 function slugify(text: string): string {
@@ -29,6 +30,45 @@ function countWords(text: string): number {
 
 function stripHtml(html: string): string {
   return html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
+function convertToWebP(file: File): Promise<Blob> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+        const maxWidth = 1600; // Giới hạn chiều rộng ảnh
+        if (width > maxWidth) {
+          height = Math.round((height * maxWidth) / width);
+          width = maxWidth;
+        }
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          reject(new Error('Không tạo được context canvas'));
+          return;
+        }
+        ctx.drawImage(img, 0, 0, width, height);
+        canvas.toBlob(
+          (blob) => {
+            if (blob) resolve(blob);
+            else reject(new Error('Chuyển đổi WebP thất bại'));
+          },
+          'image/webp',
+          0.82
+        );
+      };
+      img.onerror = () => reject(new Error('Không load được ảnh'));
+      img.src = e.target?.result as string;
+    };
+    reader.onerror = () => reject(new Error('Không đọc được file'));
+    reader.readAsDataURL(file);
+  });
 }
 
 // =================== SEO SCORE ===================
@@ -108,10 +148,12 @@ function VietBaiContent() {
   const searchParams = useSearchParams();
   const editId = searchParams.get('id');
   const editorRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Auth
   const [authorized, setAuthorized] = useState(false);
   const [authLoading, setAuthLoading] = useState(true);
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   // Bài viết
   const [title, setTitle] = useState('');
@@ -197,6 +239,65 @@ function VietBaiContent() {
   const insertLink = () => {
     const url = prompt('Nhập URL liên kết:');
     if (url) exec('createLink', url);
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingImage(true);
+    setError('');
+
+    try {
+      const webpBlob = await convertToWebP(file);
+      const fileName = `post_image_${Date.now()}.webp`;
+
+      let usedBucket = 'public';
+
+      const { data: uploadData, error: uploadErr } = await supabase.storage
+        .from('public')
+        .upload(`posts/${fileName}`, webpBlob, {
+          contentType: 'image/webp',
+          cacheControl: '31536000',
+          upsert: false
+        });
+
+      if (uploadErr) {
+        console.warn("Upload lên bucket 'public' thất bại, thử sang bucket 'images'...", uploadErr.message);
+        const { data: uploadData2, error: uploadErr2 } = await supabase.storage
+          .from('images')
+          .upload(`posts/${fileName}`, webpBlob, {
+            contentType: 'image/webp',
+            cacheControl: '31536000',
+            upsert: false
+          });
+
+        if (uploadErr2) {
+          throw new Error(`Không thể upload ảnh lên Supabase Storage (cả bucket 'public' và 'images' đều báo lỗi: ${uploadErr2.message || uploadErr.message})`);
+        }
+        usedBucket = 'images';
+      }
+
+      const { data: publicUrlData } = supabase.storage
+        .from(usedBucket)
+        .getPublicUrl(`posts/${fileName}`);
+
+      const imageUrl = publicUrlData.publicUrl;
+
+      if (editorRef.current) {
+        editorRef.current.focus();
+        document.execCommand('insertImage', false, imageUrl);
+        handleEditorInput();
+      }
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message || 'Lỗi upload hình ảnh');
+    } finally {
+      setUploadingImage(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
   };
 
   // Lưu bài
@@ -298,7 +399,7 @@ function VietBaiContent() {
       )}
 
       {/* Main layout */}
-      <div className="flex-1 flex max-w-[1600px] mx-auto w-full">
+      <div className="flex-1 flex flex-col lg:flex-row-reverse max-w-[1600px] mx-auto w-full">
 
         {/* === CENTER: Editor === */}
         <main className="flex-1 min-w-0 flex flex-col p-6 md:p-8">
@@ -321,13 +422,22 @@ function VietBaiContent() {
               </div>
             )}
 
+            {/* Input file ẩn phục vụ upload ảnh */}
+            <input 
+              type="file" 
+              ref={fileInputRef} 
+              className="hidden" 
+              accept="image/*" 
+              onChange={handleImageUpload} 
+            />
+
             {/* Tiêu đề bài */}
             <textarea
               value={title}
               onChange={e => setTitle(e.target.value)}
               placeholder="Tiêu đề bài viết (nên chứa từ khóa chính)…"
               rows={2}
-              className="w-full bg-transparent text-3xl md:text-4xl font-black text-slate-900 placeholder-slate-300 border-none outline-none resize-none leading-tight"
+              className="w-full bg-transparent text-3xl md:text-4xl font-black text-slate-900 placeholder-slate-450 border-none outline-none resize-none leading-tight"
             />
 
             {/* Tóm tắt */}
@@ -336,25 +446,28 @@ function VietBaiContent() {
               onChange={e => setSummary(e.target.value)}
               placeholder="Tóm tắt bài viết (excerpt) — 120–160 ký tự, hiển thị dưới title trên Google…"
               rows={2}
-              className="w-full bg-transparent text-sm text-slate-600 placeholder-slate-300 border-b border-slate-100 pb-4 outline-none resize-none leading-relaxed"
+              className="w-full bg-transparent text-sm text-slate-700 placeholder-slate-450 border-b border-slate-200 pb-4 outline-none resize-none leading-relaxed"
             />
 
             {/* Toolbar */}
             <div className="admin-editor-toolbar flex flex-wrap items-center gap-0.5 p-1.5 rounded-xl sticky top-16 z-10">
-              <button type="button" title="In đậm" onMouseDown={(e) => { e.preventDefault(); exec('bold'); }} className="p-1.5 rounded hover:bg-slate-100 text-slate-600 hover:text-slate-900 transition"><Bold size={15} /></button>
-              <button type="button" title="In nghiêng" onMouseDown={(e) => { e.preventDefault(); exec('italic'); }} className="p-1.5 rounded hover:bg-slate-100 text-slate-600 hover:text-slate-900 transition"><Italic size={15} /></button>
-              <button type="button" title="Gạch chân" onMouseDown={(e) => { e.preventDefault(); exec('underline'); }} className="p-1.5 rounded hover:bg-slate-100 text-slate-600 hover:text-slate-900 transition"><Underline size={15} /></button>
+              <button type="button" title="In đậm" onMouseDown={(e) => { e.preventDefault(); exec('bold'); }} className="p-1.5 rounded hover:bg-slate-100 text-slate-655 hover:text-slate-900 transition"><Bold size={15} /></button>
+              <button type="button" title="In nghiêng" onMouseDown={(e) => { e.preventDefault(); exec('italic'); }} className="p-1.5 rounded hover:bg-slate-100 text-slate-655 hover:text-slate-900 transition"><Italic size={15} /></button>
+              <button type="button" title="Gạch chân" onMouseDown={(e) => { e.preventDefault(); exec('underline'); }} className="p-1.5 rounded hover:bg-slate-100 text-slate-655 hover:text-slate-900 transition"><Underline size={15} /></button>
               <div className="w-px h-5 bg-slate-200 mx-1" />
-              <button type="button" title="Heading H2" onMouseDown={(e) => { e.preventDefault(); insertBlock('h2'); }} className="p-1.5 rounded hover:bg-slate-100 text-slate-600 hover:text-slate-900 transition"><Heading2 size={15} /></button>
-              <button type="button" title="Heading H3" onMouseDown={(e) => { e.preventDefault(); insertBlock('h3'); }} className="p-1.5 rounded hover:bg-slate-100 text-slate-600 hover:text-slate-900 transition"><Heading3 size={15} /></button>
+              <button type="button" title="Heading H2" onMouseDown={(e) => { e.preventDefault(); insertBlock('h2'); }} className="p-1.5 rounded hover:bg-slate-100 text-slate-655 hover:text-slate-900 transition"><Heading2 size={15} /></button>
+              <button type="button" title="Heading H3" onMouseDown={(e) => { e.preventDefault(); insertBlock('h3'); }} className="p-1.5 rounded hover:bg-slate-100 text-slate-655 hover:text-slate-900 transition"><Heading3 size={15} /></button>
               <div className="w-px h-5 bg-slate-200 mx-1" />
-              <button type="button" title="Danh sách gạch đầu dòng" onMouseDown={(e) => { e.preventDefault(); exec('insertUnorderedList'); }} className="p-1.5 rounded hover:bg-slate-100 text-slate-600 hover:text-slate-900 transition"><List size={15} /></button>
-              <button type="button" title="Danh sách số" onMouseDown={(e) => { e.preventDefault(); exec('insertOrderedList'); }} className="p-1.5 rounded hover:bg-slate-100 text-slate-600 hover:text-slate-900 transition"><ListOrdered size={15} /></button>
+              <button type="button" title="Danh sách gạch đầu dòng" onMouseDown={(e) => { e.preventDefault(); exec('insertUnorderedList'); }} className="p-1.5 rounded hover:bg-slate-100 text-slate-655 hover:text-slate-900 transition"><List size={15} /></button>
+              <button type="button" title="Danh sách số" onMouseDown={(e) => { e.preventDefault(); exec('insertOrderedList'); }} className="p-1.5 rounded hover:bg-slate-100 text-slate-655 hover:text-slate-900 transition"><ListOrdered size={15} /></button>
               <div className="w-px h-5 bg-slate-200 mx-1" />
-              <button type="button" title="Trích dẫn" onMouseDown={(e) => { e.preventDefault(); insertBlock('blockquote'); }} className="p-1.5 rounded hover:bg-slate-100 text-slate-600 hover:text-slate-900 transition"><Quote size={15} /></button>
-              <button type="button" title="Code" onMouseDown={(e) => { e.preventDefault(); insertBlock('code'); }} className="p-1.5 rounded hover:bg-slate-100 text-slate-600 hover:text-slate-900 transition"><Code size={15} /></button>
-              <button type="button" title="Thêm liên kết" onMouseDown={(e) => { e.preventDefault(); insertLink(); }} className="p-1.5 rounded hover:bg-slate-100 text-slate-600 hover:text-slate-900 transition"><LinkIcon size={15} /></button>
-              <div className="ml-auto text-[10px] text-slate-400 pr-2">
+              <button type="button" title="Trích dẫn" onMouseDown={(e) => { e.preventDefault(); insertBlock('blockquote'); }} className="p-1.5 rounded hover:bg-slate-100 text-slate-655 hover:text-slate-900 transition"><Quote size={15} /></button>
+              <button type="button" title="Code" onMouseDown={(e) => { e.preventDefault(); insertBlock('code'); }} className="p-1.5 rounded hover:bg-slate-100 text-slate-655 hover:text-slate-900 transition"><Code size={15} /></button>
+              <button type="button" title="Thêm liên kết" onMouseDown={(e) => { e.preventDefault(); insertLink(); }} className="p-1.5 rounded hover:bg-slate-100 text-slate-655 hover:text-slate-900 transition"><LinkIcon size={15} /></button>
+              <button type="button" title="Chèn hình ảnh" onClick={() => fileInputRef.current?.click()} disabled={uploadingImage} className="p-1.5 rounded hover:bg-slate-100 text-slate-655 hover:text-slate-900 transition disabled:opacity-50 flex items-center justify-center">
+                {uploadingImage ? <Loader2 size={15} className="animate-spin text-blue-600" /> : <ImageIcon size={15} />}
+              </button>
+              <div className="ml-auto text-[10px] text-slate-500 pr-2 font-bold">
                 {countWords(stripHtml(content))} từ
               </div>
             </div>
