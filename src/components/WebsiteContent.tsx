@@ -1042,7 +1042,12 @@ export default function WebsiteContent({
         </div>
 
         <div className="max-w-7xl mx-auto w-full pt-6 flex flex-col md:flex-row justify-between items-center gap-3 text-[11px] text-stone-500">
-          <p>© 2026 Xưởng in UV DTF PrinK Tech. Dự án thuộc sở hữu của GMKT Việt Nam.</p>
+          <div className="flex flex-col sm:flex-row items-center gap-3">
+            <p>© 2026 Xưởng in UV DTF PrinK Tech. Dự án thuộc sở hữu của GMKT Việt Nam.</p>
+            <Link href="/chinh-sach-bao-mat" className="text-stone-500 hover:text-stone-300 underline underline-offset-2 transition">
+              Chính sách bảo mật
+            </Link>
+          </div>
           <div className="flex items-center gap-4">
             <span className="text-stone-600">Designed by PrinK Tech</span>
             <Link

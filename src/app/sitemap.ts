@@ -44,6 +44,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: 'monthly',
       priority: 0.8,
     },
+    {
+      url: `${BASE_URL}/chinh-sach-bao-mat`,
+      lastModified: today,
+      changeFrequency: 'yearly',
+      priority: 0.4,
+    },
   ];
 
   // Fetch posts từ Supabase
