@@ -181,7 +181,7 @@ export default function ProductListContent({ products }: { products: Product[] }
         </div>
 
         {/* ── PHÂN LOẠI NHÓM STICKER THEO CHỦ ĐỀ ── */}
-        <section className="mt-16 space-y-6">
+        <section className="mt-16 space-y-8">
           <div className="text-center space-y-2">
             <span className="text-[10px] uppercase font-bold tracking-widest text-[var(--accent)]">In mẫu nào?</span>
             <h2 className="text-2xl md:text-3xl font-black text-foreground">Phân loại theo chủ đề sticker</h2>
@@ -190,17 +190,28 @@ export default function ProductListContent({ products }: { products: Product[] }
 
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
             {[
-              { emoji: '🏷️', label: 'Logo Brand', desc: 'Nhãn hàng, thương hiệu', color: 'from-blue-500/20 to-indigo-500/20', border: 'border-blue-400/30' },
-              { emoji: '🎨', label: 'Cá nhân hóa', desc: 'Tên, ngày tháng, chân dung', color: 'from-purple-500/20 to-fuchsia-500/20', border: 'border-purple-400/30' },
-              { emoji: '✍️', label: 'Chữ ký', desc: 'Signature, handwriting', color: 'from-amber-500/20 to-orange-500/20', border: 'border-amber-400/30' },
-              { emoji: '🐱', label: 'Hoạt hình', desc: 'Cute, anime, cartoon', color: 'from-pink-500/20 to-rose-500/20', border: 'border-pink-400/30' },
-              { emoji: '📸', label: 'Ảnh thật', desc: 'In ảnh màu sắc nét', color: 'from-green-500/20 to-teal-500/20', border: 'border-green-400/30' },
-              { emoji: '😂', label: 'Meme / Funny', desc: 'Nổi bật, gây cười', color: 'from-yellow-500/20 to-orange-500/20', border: 'border-yellow-400/30' },
+              { img: '/images/category_logo_brand.png', label: 'Logo Brand', desc: 'Nhãn hàng, thương hiệu', border: 'border-blue-400/30 hover:border-blue-400/70' },
+              { img: '/images/category_ca_nhan_hoa.png', label: 'Cá nhân hóa', desc: 'Tên, ngày tháng, chân dung', border: 'border-purple-400/30 hover:border-purple-400/70' },
+              { img: '/images/category_chu_ky.png', label: 'Chữ ký', desc: 'Signature, handwriting', border: 'border-amber-400/30 hover:border-amber-400/70' },
+              { img: '/images/category_hoat_hinh.png', label: 'Hoạt hình', desc: 'Cute, anime, cartoon', border: 'border-pink-400/30 hover:border-pink-400/70' },
+              { img: '/images/category_anh_that.png', label: 'Ảnh thật', desc: 'In ảnh màu sắc nét', border: 'border-green-400/30 hover:border-green-400/70' },
+              { img: '/images/category_meme_funny.png', label: 'Meme / Funny', desc: 'Nổi bật, gây cười', border: 'border-yellow-400/30 hover:border-yellow-400/70' },
             ].map((item, i) => (
-              <div key={i} className={`rounded-2xl border bg-gradient-to-br ${item.color} ${item.border} p-4 text-center space-y-2 hover:scale-105 transition-transform duration-200 cursor-default`}>
-                <div className="text-3xl">{item.emoji}</div>
-                <div className="font-black text-xs text-foreground">{item.label}</div>
-                <div className="text-[10px] text-text-muted leading-snug">{item.desc}</div>
+              <div key={i} className={`glass-card overflow-hidden rounded-2xl border ${item.border} group hover:scale-105 transition-all duration-200 cursor-default`}>
+                {/* Ảnh sản phẩm thật nền trắng */}
+                <div className="aspect-square w-full overflow-hidden bg-white">
+                  <img
+                    src={item.img}
+                    alt={`Sticker ${item.label} UV DTF`}
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                    loading="lazy"
+                  />
+                </div>
+                {/* Label + mô tả */}
+                <div className="p-3 text-center space-y-0.5">
+                  <div className="font-black text-xs text-foreground">{item.label}</div>
+                  <div className="text-[10px] text-text-muted leading-snug">{item.desc}</div>
+                </div>
               </div>
             ))}
           </div>
