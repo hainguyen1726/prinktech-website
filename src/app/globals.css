@@ -637,3 +637,242 @@ body.admin-panel {
   color: #475569 !important;
   font-weight: 700 !important;
 }
+
+/* ==================== MARKETING PORTAL LIGHT THEME ==================== */
+.marketing-portal {
+  background-color: #f8fafc !important;
+  color: #0f172a !important;
+}
+
+/* Header & Nav */
+.marketing-portal header {
+  background-color: #ffffff !important;
+  border-bottom: 1px solid #cbd5e1 !important;
+}
+.marketing-portal header h1, 
+.marketing-portal header .text-white {
+  color: #0f172a !important;
+}
+.marketing-portal header nav {
+  background-color: #f1f5f9 !important;
+  border-color: #cbd5e1 !important;
+}
+.marketing-portal header nav button {
+  color: #475569 !important;
+}
+.marketing-portal header nav button:hover {
+  color: #0f172a !important;
+}
+.marketing-portal header nav button[class*="bg-sky-500"] {
+  background-color: #ffffff !important;
+  color: #2563eb !important;
+  border-color: #cbd5e1 !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+}
+.marketing-portal header .bg-gradient-to-tr {
+  box-shadow: none !important;
+}
+
+/* Filters & Containers */
+.marketing-portal .bg-zinc-900\/40,
+.marketing-portal .bg-zinc-900\/20,
+.marketing-portal .bg-zinc-900,
+.marketing-portal .bg-zinc-950\/20 {
+  background-color: #ffffff !important;
+  border-color: #cbd5e1 !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02) !important;
+}
+.marketing-portal input[type="date"],
+.marketing-portal select {
+  background-color: #f8fafc !important;
+  border-color: #cbd5e1 !important;
+  color: #0f172a !important;
+}
+.marketing-portal input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(0);
+}
+
+/* Cards & Stats */
+.marketing-portal .grid > div {
+  background-color: #ffffff !important;
+  border-color: #cbd5e1 !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02) !important;
+}
+.marketing-portal .grid > div .text-zinc-500,
+.marketing-portal .text-zinc-500 {
+  color: #475569 !important;
+  font-weight: 600 !important;
+}
+.marketing-portal .text-zinc-400 {
+  color: #334155 !important;
+  font-weight: 550 !important;
+}
+.marketing-portal .text-zinc-300 {
+  color: #0f172a !important;
+  font-weight: 600 !important;
+}
+.marketing-portal .text-zinc-200 {
+  color: #1e293b !important;
+  font-weight: 550 !important;
+}
+.marketing-portal .text-zinc-100 {
+  color: #0f172a !important;
+}
+
+/* Trend Chart SVG */
+.marketing-portal svg text {
+  fill: #475569 !important;
+  font-weight: 600 !important;
+}
+.marketing-portal svg line {
+  stroke: #cbd5e1 !important;
+}
+.marketing-portal svg line[opacity] {
+  stroke: #cbd5e1 !important;
+  opacity: 0.5 !important;
+}
+
+/* Buttons in Portal */
+.marketing-portal button.bg-zinc-900,
+.marketing-portal a.bg-zinc-900 {
+  background-color: #ffffff !important;
+  border-color: #cbd5e1 !important;
+  color: #334155 !important;
+}
+.marketing-portal button.bg-zinc-900:hover,
+.marketing-portal a.bg-zinc-900:hover {
+  background-color: #f1f5f9 !important;
+  color: #0f172a !important;
+}
+
+/* Table */
+.marketing-portal table {
+  background-color: #ffffff !important;
+  border-color: #cbd5e1 !important;
+}
+.marketing-portal table th {
+  background-color: #f8fafc !important;
+  color: #475569 !important;
+  font-weight: 700 !important;
+  border-bottom: 2px solid #cbd5e1 !important;
+}
+.marketing-portal table td {
+  color: #0f172a !important;
+  border-bottom: 1px solid #cbd5e1 !important;
+}
+.marketing-portal table tr:hover {
+  background-color: #f1f5f9 !important;
+}
+
+/* CRM (Hội thoại & CSKH) */
+.marketing-portal .flex.h-\[calc\(100vh-140px\)\] {
+  background-color: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 0.75rem !important;
+  overflow: hidden !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+}
+/* Cột trái: Danh sách hội thoại */
+.marketing-portal .w-80.border-r,
+.marketing-portal .w-80.border-zinc-800 {
+  background-color: #ffffff !important;
+  border-color: #cbd5e1 !important;
+}
+.marketing-portal .w-80.border-r input {
+  background-color: #f8fafc !important;
+  border-color: #cbd5e1 !important;
+  color: #0f172a !important;
+}
+.marketing-portal .w-80.border-r input::placeholder {
+  color: #475569 !important;
+}
+/* Items hội thoại */
+.marketing-portal .w-80.border-r button {
+  border-bottom: 1px solid #e2e8f0 !important;
+}
+.marketing-portal .w-80.border-r button:hover {
+  background-color: #f8fafc !important;
+}
+.marketing-portal .w-80.border-r button[class*="bg-zinc-800"] {
+  background-color: #eff6ff !important;
+  color: #2563eb !important;
+}
+
+/* Cột giữa: Chat window */
+.marketing-portal .flex-1.bg-zinc-950\/40 {
+  background-color: #f8fafc !important;
+}
+.marketing-portal .flex-1.bg-zinc-950\/40 .border-b,
+.marketing-portal .flex-1.bg-zinc-950\/40 .border-zinc-800 {
+  background-color: #ffffff !important;
+  border-color: #cbd5e1 !important;
+}
+/* Chat bubbles */
+.marketing-portal .max-w-\[70\%\].bg-zinc-800 {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  border: 1px solid #e2e8f0 !important;
+}
+.marketing-portal .max-w-\[70\%\].bg-sky-600 {
+  background-color: #2563eb !important;
+  color: #ffffff !important;
+}
+/* Input chat phía dưới */
+.marketing-portal .p-4.border-t.border-zinc-800 {
+  background-color: #ffffff !important;
+  border-color: #cbd5e1 !important;
+}
+.marketing-portal .p-4.border-t.border-zinc-800 input {
+  background-color: #f8fafc !important;
+  border-color: #cbd5e1 !important;
+  color: #0f172a !important;
+}
+.marketing-portal .p-4.border-t.border-zinc-800 input::placeholder {
+  color: #475569 !important;
+}
+
+/* Cột phải: Chốt đơn form */
+.marketing-portal .w-80.border-l,
+.marketing-portal .w-80.border-zinc-800 {
+  background-color: #ffffff !important;
+  border-color: #cbd5e1 !important;
+}
+.marketing-portal .w-80.border-l input,
+.marketing-portal .w-80.border-l select,
+.marketing-portal .w-80.border-l textarea {
+  background-color: #f8fafc !important;
+  border-color: #cbd5e1 !important;
+  color: #0f172a !important;
+}
+.marketing-portal .w-80.border-l input::placeholder,
+.marketing-portal .w-80.border-l textarea::placeholder {
+  color: #475569 !important;
+}
+
+/* Modal */
+.marketing-portal .bg-zinc-950 {
+  background-color: #ffffff !important;
+  border-color: #cbd5e1 !important;
+  color: #0f172a !important;
+}
+.marketing-portal .bg-zinc-950 h2,
+.marketing-portal .bg-zinc-950 h3 {
+  color: #0f172a !important;
+}
+.marketing-portal .bg-zinc-950 input,
+.marketing-portal .bg-zinc-950 select,
+.marketing-portal .bg-zinc-950 textarea {
+  background-color: #f8fafc !important;
+  border-color: #cbd5e1 !important;
+  color: #0f172a !important;
+}
+
+/* Scrollbars */
+.marketing-portal *::-webkit-scrollbar-track {
+  background: #f1f5f9 !important;
+}
+.marketing-portal *::-webkit-scrollbar-thumb {
+  background-color: #cbd5e1 !important;
+  border-radius: 4px !important;
+}
+

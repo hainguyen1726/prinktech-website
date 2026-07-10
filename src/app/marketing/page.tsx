@@ -728,9 +728,9 @@ export default function MarketingDashboardPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center text-white gap-4">
+      <div className="min-h-screen bg-[#f8fafc] flex flex-col items-center justify-center text-slate-900 gap-4">
         <RefreshCw className="animate-spin text-sky-500" size={32} />
-        <p className="text-zinc-400 text-sm">Đang kiểm tra bảo mật...</p>
+        <p className="text-slate-600 text-sm">Đang kiểm tra bảo mật...</p>
       </div>
     );
   }
@@ -738,7 +738,7 @@ export default function MarketingDashboardPage() {
   if (!authorized) return null;
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col font-sans selection:bg-sky-500 selection:text-white">
+    <div className="marketing-portal min-h-screen bg-[#f8fafc] text-slate-900 flex flex-col font-sans selection:bg-sky-500 selection:text-white">
       {/* 1. Header & Navigation */}
       <header className="sticky top-0 z-40 bg-zinc-950/80 backdrop-blur-md border-b border-zinc-900 px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
