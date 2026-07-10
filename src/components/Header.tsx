@@ -29,12 +29,15 @@ export default function Header({ activeTheme: propTheme, setActiveTheme: propSet
     }
   }, [propTheme]);
 
-  // Tự động apply theme class lên body mỗi khi activeTheme thay đổi
+  // Tự động apply theme class lên html/body mỗi khi activeTheme thay đổi
   useEffect(() => {
-    document.body.className = '';
+    document.documentElement.classList.remove('theme-tech', 'theme-creative');
+    document.body.classList.remove('theme-tech', 'theme-creative');
     if (activeTheme === 'tech') {
+      document.documentElement.classList.add('theme-tech');
       document.body.classList.add('theme-tech');
     } else if (activeTheme === 'creative') {
+      document.documentElement.classList.add('theme-creative');
       document.body.classList.add('theme-creative');
     }
   }, [activeTheme]);

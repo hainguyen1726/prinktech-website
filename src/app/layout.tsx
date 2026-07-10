@@ -100,6 +100,23 @@ export default function RootLayout({
         <link rel="icon" href="/favicon.ico" sizes="any" />
         <meta name="theme-color" content="#0ea5e9" />
         <meta name="geo.region" content="VN" />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  var savedTheme = localStorage.getItem('prinktech-theme') || 'elegant';
+                  document.documentElement.classList.remove('theme-tech', 'theme-creative');
+                  if (savedTheme === 'tech') {
+                    document.documentElement.classList.add('theme-tech');
+                  } else if (savedTheme === 'creative') {
+                    document.documentElement.classList.add('theme-creative');
+                  }
+                } catch (e) {}
+              })();
+            `
+          }}
+        />
       </head>
       <body className={`${inter.variable} ${outfit.variable} ${playfair.variable} min-h-screen flex flex-col relative overflow-x-hidden antialiased pb-16 md:pb-0`}>
         {children}

@@ -6,7 +6,8 @@ import Link from 'next/link';
 import { 
   BarChart, ArrowLeft, CheckCircle2, AlertTriangle, Info, Loader2, RefreshCw, 
   Globe, PlusCircle, Check, X, ShieldAlert, ChevronDown, ChevronUp, LogOut,
-  FileText, Award, Search, ChevronLeft, ChevronRight
+  FileText, Award, Search, ChevronLeft, ChevronRight,
+  TrendingUp, TrendingDown, ArrowUpRight, HelpCircle, Upload, Edit3, Trash2
 } from 'lucide-react';
 
 interface SEOIssue {
@@ -42,22 +43,38 @@ interface Post {
   target_keyword?: string;
 }
 
+interface SEOKeyword {
+  id: string;
+  keyword: string;
+  targetUrl: string;
+  targetRank: number;
+  currentRank: number;
+  prevRank: number;
+  searchVolume: number;
+  clicks: number;
+  impressions: number;
+  ctr: number;
+  updatedAt: string;
+}
+
 export default function AdminSEOAuditPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [authorized, setAuthorized] = useState(false);
   const [adminUser, setAdminUser] = useState<any>(null);
 
-  // Active Tab: 'technical' | 'content'
-  const [activeTab, setActiveTab] = useState<'technical' | 'content'>('technical');
+  // Active Tab: 'technical' | 'content' | 'keywords'
+  const [activeTab, setActiveTab] = useState<'technical' | 'content' | 'keywords'>('technical');
 
   // Search Queries
   const [techSearch, setTechSearch] = useState('');
   const [contentSearch, setContentSearch] = useState('');
+  const [keywordSearch, setKeywordSearch] = useState('');
 
   // Pagination States
   const [techPage, setTechPage] = useState(1);
   const [contentPage, setContentPage] = useState(1);
+  const [keywordPage, setKeywordPage] = useState(1);
   const pageSize = 10;
 
   // Technical Audit States
@@ -80,6 +97,27 @@ export default function AdminSEOAuditPage() {
   const [newScore, setNewScore] = useState(70);
   const [actionLoading, setActionLoading] = useState(false);
 
+  // SEO Keywords States
+  const [keywords, setKeywords] = useState<SEOKeyword[]>([]);
+  const [loadingKeywords, setLoadingKeywords] = useState(false);
+  const [showAddKeywordModal, setShowAddKeywordModal] = useState(false);
+  const [showGscImportModal, setShowGscImportModal] = useState(false);
+  
+  // Form add keyword
+  const [newKeywordText, setNewKeywordText] = useState('');
+  const [newKeywordUrl, setNewKeywordUrl] = useState('');
+  const [newKeywordTargetRank, setNewKeywordTargetRank] = useState(1);
+  const [newKeywordCurrentRank, setNewKeywordCurrentRank] = useState(100);
+  const [newKeywordVolume, setNewKeywordVolume] = useState(0);
+
+  // Quick edit keyword
+  const [editingKeywordId, setEditingKeywordId] = useState<string | null>(null);
+  const [editTargetRank, setEditTargetRank] = useState(1);
+  const [editCurrentRank, setEditCurrentRank] = useState(100);
+
+  // GSC Import
+  const [gscImportText, setGscImportText] = useState('');
+
   // Toast Feedback State
   const [toast, setToast] = useState<{ text: string; type: 'success' | 'error' | '' }>({ text: '', type: '' });
 
@@ -96,6 +134,10 @@ export default function AdminSEOAuditPage() {
   useEffect(() => {
     setContentPage(1);
   }, [contentSearch]);
+
+  useEffect(() => {
+    setKeywordPage(1);
+  }, [keywordSearch]);
 
   // 1. Xác thực Admin Auth
   useEffect(() => {
@@ -171,12 +213,182 @@ export default function AdminSEOAuditPage() {
     }
   };
 
+  // 3b. Fetch danh sách từ khóa theo dõi
+  const fetchKeywords = async () => {
+    setLoadingKeywords(true);
+    try {
+      const res = await fetch('/api/admin/seo-keywords');
+      if (res.ok) {
+        const data = await res.json();
+        setKeywords(data.keywords || []);
+      }
+    } catch (err) {
+      console.error('Lỗi tải danh sách từ khóa:', err);
+      showToast('Không thể tải danh sách từ khóa SEO', 'error');
+    } finally {
+      setLoadingKeywords(false);
+    }
+  };
+
   useEffect(() => {
     if (authorized) {
       fetchAudits();
       fetchPosts();
+      fetchKeywords();
     }
   }, [authorized]);
+
+  // Các hàm tương tác từ khóa SEO
+  const handleAddKeyword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newKeywordText.trim()) return;
+
+    try {
+      const res = await fetch('/api/admin/seo-keywords', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          keyword: newKeywordText,
+          targetUrl: newKeywordUrl,
+          targetRank: newKeywordTargetRank,
+          currentRank: newKeywordCurrentRank,
+          searchVolume: newKeywordVolume
+        })
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setKeywords(prev => [...prev, data.keyword]);
+        setShowAddKeywordModal(false);
+        setNewKeywordText('');
+        setNewKeywordUrl('');
+        setNewKeywordTargetRank(1);
+        setNewKeywordCurrentRank(100);
+        setNewKeywordVolume(0);
+        showToast('Đã thêm từ khóa theo dõi mới!', 'success');
+      } else {
+        const err = await res.json();
+        showToast(err.error || 'Lỗi thêm từ khóa', 'error');
+      }
+    } catch (err) {
+      console.error(err);
+      showToast('Lỗi kết nối máy chủ', 'error');
+    }
+  };
+
+  const handleDeleteKeyword = async (id: string) => {
+    if (!confirm('Bạn có chắc chắn muốn xóa từ khóa này khỏi danh sách theo dõi?')) return;
+    try {
+      const res = await fetch(`/api/admin/seo-keywords?id=${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        setKeywords(prev => prev.filter(kw => kw.id !== id));
+        showToast('Đã xóa từ khóa thành công!', 'success');
+      } else {
+        const err = await res.json();
+        showToast(err.error || 'Lỗi xóa từ khóa', 'error');
+      }
+    } catch (err) {
+      console.error(err);
+      showToast('Lỗi kết nối máy chủ', 'error');
+    }
+  };
+
+  const handleStartQuickEdit = (kw: SEOKeyword) => {
+    setEditingKeywordId(kw.id);
+    setEditTargetRank(kw.targetRank);
+    setEditCurrentRank(kw.currentRank);
+  };
+
+  const handleSaveQuickEdit = async (id: string) => {
+    try {
+      const res = await fetch('/api/admin/seo-keywords', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id,
+          targetRank: editTargetRank,
+          currentRank: editCurrentRank
+        })
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setKeywords(prev => prev.map(kw => kw.id === id ? data.keyword : kw));
+        setEditingKeywordId(null);
+        showToast('Đã cập nhật thứ hạng từ khóa!', 'success');
+      } else {
+        const err = await res.json();
+        showToast(err.error || 'Lỗi cập nhật thứ hạng', 'error');
+      }
+    } catch (err) {
+      console.error(err);
+      showToast('Lỗi kết nối máy chủ', 'error');
+    }
+  };
+
+  const handleImportGscData = async () => {
+    if (!gscImportText.trim()) return;
+
+    try {
+      const lines = gscImportText.split('\n');
+      const parsedKeywords: any[] = [];
+
+      lines.forEach(line => {
+        const parts = line.split('\t').length > 1 ? line.split('\t') : line.split(',');
+        if (parts.length >= 2) {
+          const keyword = parts[0].trim().replace(/^"|"$/g, '');
+          if (keyword && 
+              keyword.toLowerCase() !== 'query' && 
+              keyword.toLowerCase() !== 'từ khóa' && 
+              keyword.toLowerCase() !== 'top queries' &&
+              keyword.toLowerCase() !== 'từ khóa hàng đầu') {
+            const clicks = parseInt(parts[1]) || 0;
+            const impressions = parseInt(parts[2]) || 0;
+            const ctrRaw = parts[3] ? parts[3].replace('%', '').trim() : '0';
+            const ctr = parseFloat(ctrRaw) || 0;
+            const currentRankRaw = parts[4] ? parts[4].trim() : '100';
+            const currentRank = Math.round(parseFloat(currentRankRaw)) || 100;
+
+            parsedKeywords.push({
+              keyword,
+              clicks,
+              impressions,
+              ctr,
+              currentRank
+            });
+          }
+        }
+      });
+
+      if (parsedKeywords.length === 0) {
+        showToast('Không nhận diện được dữ liệu. Hãy đảm bảo copy đúng các cột từ GSC.', 'error');
+        return;
+      }
+
+      const res = await fetch('/api/admin/seo-keywords', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          bulk: true,
+          keywords: parsedKeywords
+        })
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        await fetchKeywords();
+        setShowGscImportModal(false);
+        setGscImportText('');
+        showToast(`Đã đồng bộ thành công ${data.count} từ khóa từ Google Search Console!`, 'success');
+      } else {
+        const err = await res.json();
+        showToast(err.error || 'Lỗi nhập dữ liệu GSC', 'error');
+      }
+    } catch (err) {
+      console.error(err);
+      showToast('Lỗi kết nối máy chủ', 'error');
+    }
+  };
 
   const selectedAudit = audits.find(a => a.id === selectedAuditId);
 
@@ -495,6 +707,17 @@ export default function AdminSEOAuditPage() {
           >
             <FileText size={16} />
             Chấm điểm SEO Bài viết
+          </button>
+          <button
+            onClick={() => setActiveTab('keywords')}
+            className={`py-4 px-4 text-xs font-medium uppercase tracking-wider border-b-2 transition flex items-center gap-2 ${
+              activeTab === 'keywords'
+                ? 'border-blue-600 text-blue-600'
+                : 'border-transparent text-slate-500 hover:text-slate-800'
+            }`}
+          >
+            <Award size={16} />
+            Theo dõi từ khóa SEO
           </button>
         </div>
       </div>
@@ -1024,7 +1247,448 @@ export default function AdminSEOAuditPage() {
           </div>
         )}
 
+        {/* 3. TAB: THEO DÕI TỪ KHÓA SEO */}
+        {activeTab === 'keywords' && (
+          <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden p-6 space-y-6">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+              <div>
+                <h3 className="font-medium text-base text-slate-900 flex items-center gap-2">
+                  <Award size={20} className="text-blue-600" />
+                  Mục tiêu từ khóa SEO & Kết quả thực tế
+                </h3>
+                <p className="text-xs text-slate-400 mt-1">
+                  Quản lý danh sách từ khóa mục tiêu, thứ hạng mong muốn và đồng bộ dữ liệu thực tế từ Google Search Console.
+                </p>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-3">
+                {/* Search Bar */}
+                <div className="relative w-full sm:w-60 shrink-0">
+                  <span className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
+                    <Search size={14} />
+                  </span>
+                  <input
+                    type="text"
+                    placeholder="Tìm kiếm từ khóa..."
+                    value={keywordSearch}
+                    onChange={(e) => setKeywordSearch(e.target.value)}
+                    className="w-full pl-9 pr-4 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-normal focus:outline-none focus:border-blue-500"
+                  />
+                </div>
+
+                <button
+                  onClick={() => setShowGscImportModal(true)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 font-medium text-xs transition cursor-pointer"
+                >
+                  <Upload size={14} /> Import GSC Data
+                </button>
+
+                <button
+                  onClick={() => setShowAddKeywordModal(true)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium text-xs transition cursor-pointer"
+                >
+                  <PlusCircle size={14} /> Thêm từ khóa
+                </button>
+              </div>
+            </div>
+
+            {loadingKeywords ? (
+              <div className="flex items-center justify-center p-12 text-slate-500 gap-2">
+                <Loader2 className="animate-spin" size={20} />
+                <span className="text-xs font-medium">Đang tải danh sách từ khóa...</span>
+              </div>
+            ) : keywords.length === 0 ? (
+              <div className="p-12 text-center text-slate-400 italic border border-dashed border-slate-200 rounded-xl">
+                Chưa có từ khóa nào được thiết lập. Nhấp "Thêm từ khóa" để bắt đầu theo dõi.
+              </div>
+            ) : (
+              <div className="border border-slate-100 rounded-xl overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse text-base">
+                    <thead>
+                      <tr className="border-b border-slate-200 bg-slate-50 text-slate-500 font-medium uppercase tracking-wider text-xs">
+                        <th className="p-4 w-12 text-center font-medium">STT</th>
+                        <th className="p-4 w-52">Từ khóa mục tiêu</th>
+                        <th className="p-4">Trang đích (URL)</th>
+                        <th className="p-4 w-28 text-center">Volume</th>
+                        <th className="p-4 w-28 text-center">Clicks / Imp</th>
+                        <th className="p-4 w-24 text-center">CTR</th>
+                        <th className="p-4 w-32 text-center">Mục tiêu</th>
+                        <th className="p-4 w-36 text-center">Thực tế</th>
+                        <th className="p-4 w-28 text-center">Trạng thái</th>
+                        <th className="p-4 w-24 text-right">Thao tác</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {keywords
+                        .filter(kw => kw.keyword.toLowerCase().includes(keywordSearch.toLowerCase()))
+                        .map((kw, idx) => {
+                          const isEditing = editingKeywordId === kw.id;
+                          const reached = kw.currentRank <= kw.targetRank;
+                          const closeToGoal = !reached && (kw.currentRank - kw.targetRank <= 5);
+                          
+                          // Biến động hạng
+                          const rankDiff = kw.prevRank - kw.currentRank;
+                          
+                          return (
+                            <tr key={kw.id} className="hover:bg-slate-50/50 transition text-slate-700 text-sm">
+                              <td className="p-4 text-center text-slate-400 font-mono text-xs">{idx + 1}</td>
+                              <td className="p-4 font-bold text-slate-900">{kw.keyword}</td>
+                              <td className="p-4">
+                                <a 
+                                  href={kw.targetUrl} 
+                                  target="_blank" 
+                                  rel="noopener noreferrer" 
+                                  className="text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-0.5 truncate max-w-xs text-xs font-normal"
+                                >
+                                  {kw.targetUrl.replace('https://prinktech.vn', '') || '/'}
+                                  <ArrowUpRight size={10} className="shrink-0" />
+                                </a>
+                              </td>
+                              <td className="p-4 text-center font-mono tabular-nums text-xs text-slate-650">
+                                {kw.searchVolume || '—'}
+                              </td>
+                              <td className="p-4 text-center font-mono text-xs text-slate-655">
+                                {kw.clicks !== undefined ? (
+                                  <div>
+                                    <span className="font-bold text-slate-800">{kw.clicks}</span>
+                                    <span className="text-slate-450 mx-1">/</span>
+                                    <span>{kw.impressions}</span>
+                                  </div>
+                                ) : '—'}
+                              </td>
+                              <td className="p-4 text-center font-mono text-xs text-slate-650">
+                                {kw.ctr !== undefined ? `${kw.ctr.toFixed(1)}%` : '—'}
+                              </td>
+                              <td className="p-4 text-center">
+                                {isEditing ? (
+                                  <input
+                                    type="number"
+                                    min="1"
+                                    max="100"
+                                    value={editTargetRank}
+                                    onChange={(e) => setEditTargetRank(Number(e.target.value))}
+                                    className="w-16 bg-white border border-slate-350 rounded px-1.5 py-0.5 text-center text-xs font-bold"
+                                  />
+                                ) : (
+                                  <span className="font-bold text-slate-800 text-xs bg-slate-100 border border-slate-200 px-2 py-0.5 rounded">
+                                    TOP {kw.targetRank}
+                                  </span>
+                                )}
+                              </td>
+                              <td className="p-4">
+                                <div className="flex flex-col items-center justify-center gap-1">
+                                  {isEditing ? (
+                                    <input
+                                      type="number"
+                                      min="1"
+                                      max="100"
+                                      value={editCurrentRank}
+                                      onChange={(e) => setEditCurrentRank(Number(e.target.value))}
+                                      className="w-16 bg-white border border-slate-350 rounded px-1.5 py-0.5 text-center text-xs font-bold"
+                                    />
+                                  ) : (
+                                    <div className="flex items-center gap-1.5">
+                                      <span className={`font-black text-sm ${reached ? 'text-emerald-600' : closeToGoal ? 'text-amber-500' : 'text-slate-600'}`}>
+                                        {kw.currentRank > 99 ? '100+' : `TOP ${kw.currentRank}`}
+                                      </span>
+                                      
+                                      {/* Rank change indicator */}
+                                      {kw.prevRank && rankDiff !== 0 && kw.currentRank <= 99 && (
+                                        <span className={`flex items-center text-[10px] font-bold ${rankDiff > 0 ? 'text-emerald-600' : 'text-rose-500'}`}>
+                                          {rankDiff > 0 ? (
+                                            <><TrendingUp size={10} className="mr-0.5" />+{rankDiff}</>
+                                          ) : (
+                                            <><TrendingDown size={10} className="mr-0.5" />{rankDiff}</>
+                                          )}
+                                        </span>
+                                      )}
+                                    </div>
+                                  )}
+                                  <span className="text-[9px] text-slate-400">
+                                    Cập nhật: {new Date(kw.updatedAt).toLocaleDateString('vi-VN')}
+                                  </span>
+                                </div>
+                              </td>
+                              <td className="p-4 text-center">
+                                <span className={`inline-block text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                                  reached 
+                                    ? 'bg-emerald-50 text-emerald-700 border border-emerald-250' 
+                                    : closeToGoal 
+                                    ? 'bg-amber-50 text-amber-700 border border-amber-250' 
+                                    : 'bg-rose-50 text-rose-700 border border-rose-250'
+                                }`}>
+                                  {reached ? 'Đạt mục tiêu' : closeToGoal ? 'Gần đạt' : 'Chưa đạt'}
+                                </span>
+                              </td>
+                              <td className="p-4 text-right">
+                                <div className="flex items-center justify-end gap-1.5">
+                                  {isEditing ? (
+                                    <>
+                                      <button 
+                                        onClick={() => handleSaveQuickEdit(kw.id)}
+                                        className="p-1 text-emerald-600 hover:bg-emerald-50 rounded transition cursor-pointer"
+                                        title="Lưu"
+                                      >
+                                        <Check size={14} strokeWidth={3} />
+                                      </button>
+                                      <button 
+                                        onClick={() => setEditingKeywordId(null)}
+                                        className="p-1 text-slate-400 hover:bg-slate-100 rounded transition cursor-pointer"
+                                        title="Hủy"
+                                      >
+                                        <X size={14} />
+                                      </button>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <button 
+                                        onClick={() => handleStartQuickEdit(kw)}
+                                        className="p-1 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded transition cursor-pointer"
+                                        title="Sửa nhanh thứ hạng"
+                                      >
+                                        <Edit3 size={14} />
+                                      </button>
+                                      <button 
+                                        onClick={() => handleDeleteKeyword(kw.id)}
+                                        className="p-1 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded transition cursor-pointer"
+                                        title="Xóa từ khóa"
+                                      >
+                                        <Trash2 size={14} />
+                                      </button>
+                                    </>
+                                  )}
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* BLOCK HƯỚNG DẪN SETUP GOOGLE SEARCH CONSOLE */}
+            <div className="bg-slate-50 rounded-2xl border border-slate-200 p-6 space-y-6">
+              <h4 className="font-bold text-sm text-slate-800 flex items-center gap-1.5">
+                <HelpCircle size={18} className="text-blue-500" />
+                Hướng dẫn Đồng bộ Số liệu Thứ hạng và Clicks từ Google
+              </h4>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 text-xs text-slate-600 leading-relaxed font-normal">
+                <div className="space-y-3">
+                  <h5 className="font-bold text-slate-850 flex items-center gap-1">
+                    Cách 1: Sử dụng File Export từ Google Search Console (Nhanh & Tiện)
+                  </h5>
+                  <ol className="list-decimal list-inside space-y-1.5">
+                    <li>Đăng nhập vào <a href="https://search.google.com/search-console" target="_blank" className="text-blue-600 hover:underline">Google Search Console</a>.</li>
+                    <li>Chọn trang web của bạn (ví dụ: `https://prinktech.vn`).</li>
+                    <li>Vào mục <strong>Hiệu suất (Performance)</strong> → tab <strong>Cụm từ tìm kiếm (Queries)</strong>.</li>
+                    <li>Chỉnh bộ lọc thời gian mong muốn (ví dụ: 28 ngày qua).</li>
+                    <li>Click nút <strong>Xuất (Export)</strong> ở góc trên bên phải → Chọn <strong>Tải xuống tệp CSV</strong>.</li>
+                    <li>Mở file CSV đã tải, copy toàn bộ nội dung dữ liệu (Cột: Từ khóa, Clicks, Impressions, CTR, Vị trí).</li>
+                    <li>Quay lại website, click nút <strong>Import GSC Data</strong> ở góc phải phía trên bảng này, dán nội dung đã copy vào và click <strong>Đồng bộ dữ liệu</strong>.</li>
+                  </ol>
+                </div>
+
+                <div className="space-y-3">
+                  <h5 className="font-bold text-slate-850 flex items-center gap-1">
+                    Cách 2: Tự động hóa qua Search Console API (Lập trình)
+                  </h5>
+                  <p>
+                    Để đồng bộ tự động 100% hàng ngày không cần copy-paste, bạn cần setup một Service Account Google Cloud và chạy một script backend để kéo dữ liệu từ Google Search Console API.
+                  </p>
+                  <p className="bg-slate-900 text-slate-350 p-3 rounded-lg font-mono text-[10px] overflow-x-auto whitespace-pre leading-normal">
+{`# 1. Tạo Google Cloud project, bật Search Console API
+# 2. Tạo Service Account, tải file JSON credentials về máy
+# 3. Phân quyền cho Email Service Account làm 'Viewer' trong GSC
+# 4. Chạy script NodeJS hàng ngày để đồng bộ:
+
+const { google } = require('googleapis');
+const searchconsole = google.searchconsole('v1');
+// Nạp Service Account credentials & gọi API
+const auth = new google.auth.GoogleAuth({
+  keyFile: 'credentials.json',
+  scopes: ['https://www.googleapis.com/auth/webmasters.readonly']
+});`}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        )}
+
       </main>
+
+      {/* ADD KEYWORD MODAL */}
+      {showAddKeywordModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="bg-white border border-slate-200 w-full max-w-md rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
+            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+              <h3 className="text-sm font-medium text-slate-800 flex items-center gap-1.5">
+                <PlusCircle size={16} className="text-blue-500" />
+                Thêm từ khóa mục tiêu mới
+              </h3>
+              <button 
+                onClick={() => setShowAddKeywordModal(false)}
+                className="text-slate-400 hover:text-slate-600 hover:bg-slate-100 p-1.5 rounded-lg transition"
+              >
+                <X size={16} />
+              </button>
+            </div>
+            
+            <form onSubmit={handleAddKeyword} className="p-6 flex flex-col gap-4">
+              <div>
+                <label className="block text-[10px] font-medium text-slate-400 uppercase tracking-widest mb-1">Từ khóa mục tiêu *</label>
+                <input 
+                  type="text" 
+                  value={newKeywordText}
+                  onChange={(e) => setNewKeywordText(e.target.value)}
+                  placeholder="Ví dụ: in uv dtf nổi 3d"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-blue-500"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-medium text-slate-400 uppercase tracking-widest mb-1">Trang đích URL</label>
+                <input 
+                  type="url" 
+                  value={newKeywordUrl}
+                  onChange={(e) => setNewKeywordUrl(e.target.value)}
+                  placeholder="Ví dụ: https://prinktech.vn/cam-nang/..."
+                  className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-blue-500"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-[10px] font-medium text-slate-400 uppercase tracking-widest mb-1">Mục tiêu (TOP) *</label>
+                  <input 
+                    type="number" 
+                    min="1"
+                    max="100"
+                    value={newKeywordTargetRank}
+                    onChange={(e) => setNewKeywordTargetRank(Number(e.target.value))}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-blue-500"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-medium text-slate-400 uppercase tracking-widest mb-1">Thứ hạng hiện tại</label>
+                  <input 
+                    type="number" 
+                    min="1"
+                    max="100"
+                    value={newKeywordCurrentRank}
+                    onChange={(e) => setNewKeywordCurrentRank(Number(e.target.value))}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-blue-500"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-medium text-slate-400 uppercase tracking-widest mb-1">Search Volume (Tháng)</label>
+                <input 
+                  type="number" 
+                  min="0"
+                  value={newKeywordVolume}
+                  onChange={(e) => setNewKeywordVolume(Number(e.target.value))}
+                  placeholder="Ví dụ: 480"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-blue-500"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-3 mt-2 border-t border-slate-100 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setShowAddKeywordModal(false)}
+                  className="px-4 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs transition"
+                >
+                  Hủy bỏ
+                </button>
+                <button
+                  type="submit"
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium text-xs transition"
+                >
+                  <Check size={12} />
+                  Thêm từ khóa
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* GSC IMPORT MODAL */}
+      {showGscImportModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="bg-white border border-slate-200 w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
+            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+              <h3 className="text-sm font-medium text-slate-800 flex items-center gap-1.5">
+                <Upload size={16} className="text-blue-500" />
+                Đồng bộ số liệu từ Google Search Console (GSC)
+              </h3>
+              <button 
+                onClick={() => setShowGscImportModal(false)}
+                className="text-slate-400 hover:text-slate-600 hover:bg-slate-100 p-1.5 rounded-lg transition"
+              >
+                <X size={16} />
+              </button>
+            </div>
+            
+            <div className="p-6 flex flex-col gap-4">
+              <div>
+                <label className="block text-[10px] font-medium text-slate-400 uppercase tracking-widest mb-1.5">
+                  Dán nội dung copy từ file CSV hoặc bảng dữ liệu GSC *
+                </label>
+                <textarea 
+                  value={gscImportText}
+                  onChange={(e) => setGscImportText(e.target.value)}
+                  placeholder="Ví dụ dán dữ liệu copy từ file CSV:
+in uv dtf nổi 3d&#9;120&#9;1500&#9;8%&#9;3
+in uv dtf bình giữ nhiệt&#9;95&#9;850&#9;11.18%&#9;1
+..."
+                  rows={8}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-blue-500 font-mono resize-none"
+                  required
+                />
+              </div>
+
+              <div className="text-xs text-slate-500 bg-blue-50/50 border border-blue-100 p-4 rounded-xl space-y-2 leading-relaxed font-normal">
+                <p className="font-bold text-blue-800 flex items-center gap-1">
+                  <Info size={14} /> Quy tắc đọc dữ liệu của hệ thống:
+                </p>
+                <ul className="list-disc list-inside space-y-1">
+                  <li>Dòng dữ liệu được phân tách bằng phím Tab hoặc dấu phẩy (CSV).</li>
+                  <li>Cột 1: Từ khóa | Cột 2: Clicks | Cột 3: Hiển thị (Impressions) | Cột 4: CTR (%) | Cột 5: Thứ hạng thực tế (Vị trí).</li>
+                  <li>Nếu từ khóa dán vào khớp với từ khóa đang theo dõi trên website, website sẽ cập nhật tự động các số liệu thực tế này.</li>
+                </ul>
+              </div>
+
+              <div className="flex items-center justify-end gap-3 mt-2 border-t border-slate-100 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setShowGscImportModal(false)}
+                  className="px-4 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs transition"
+                >
+                  Hủy bỏ
+                </button>
+                <button
+                  onClick={handleImportGscData}
+                  disabled={!gscImportText.trim()}
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium text-xs disabled:opacity-50 transition"
+                >
+                  <Check size={12} />
+                  Đồng bộ dữ liệu
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* CREATE NEW AUDIT MODAL */}
       {showCreateModal && (

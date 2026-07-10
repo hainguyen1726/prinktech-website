@@ -27,3 +27,11 @@ Dự án này đã được Audit SEO hoàn chỉnh vào ngày 10/07/2026. Các 
 ## 5. HTTP Security Headers
 - Giữ nguyên và bảo đảm các HTTP Security Headers (Strict-Transport-Security, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy) được cấu hình chuẩn trong file [next.config.ts](file:///D:/16.%20Code/32-website-prinktech/next.config.ts).
 
+## 6. Tuân thủ Kế hoạch SEO hàng ngày (Daily SEO Execution Plan)
+- **Bắt buộc**: Khi thực hiện viết nội dung mới, tối ưu hóa on-page, hoặc đi link cho website Prink Tech, AI Agent bắt buộc phải đối chiếu và thực thi theo đúng lộ trình công việc hàng ngày trong [daily_seo_execution_plan.md](file:///d:/16.%20Code/32-website-prinktech/daily_seo_execution_plan.md).
+- **Quy tắc**: Mỗi bài viết mới được đăng lên phải tuân thủ đầy đủ checklist:
+  - Độ dài nội dung đạt từ 800 - 1200 từ, headings phân cấp logic H1->H3.
+  - Tối ưu hóa ảnh minh họa (nén định dạng `.webp` dưới 100KB, alt mô tả chứa từ khóa đích tự nhiên).
+  - Sử dụng kỹ năng **[antigravity-google-flow-imagegen](file:///C:/Users/Admin/.gemini/config/skills/antigravity-google-flow-imagegen/SKILL.md)** để sinh ảnh mockup/sản phẩm bằng AI khi thiếu ảnh thực tế.
+  - Thiết lập ít nhất 1-2 liên kết nội bộ (Internal Links) từ bài viết blog trỏ về các trang Landing Page dịch vụ chính.
+  - Gửi yêu cầu lập chỉ mục lên Google Search Console và chia sẻ bài viết lên các mạng xã hội để tăng tốc độ index và kéo traffic ban đầu.

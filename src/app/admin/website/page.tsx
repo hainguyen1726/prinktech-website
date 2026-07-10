@@ -197,6 +197,42 @@ export default function AdminWebsitePage() {
     }
   };
 
+  const getYoutubeId = (url: string) => {
+    if (!url) return null;
+    const shortsMatch = url.match(/\/shorts\/([a-zA-Z0-9_-]{11})/);
+    if (shortsMatch) return shortsMatch[1];
+    
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+    const match = url.match(regExp);
+    if (match && match[2].length === 11) {
+      return match[2];
+    }
+    return null;
+  };
+
+  const getAdminVideoThumbnail = (video: Video) => {
+    // Nếu là youtube, ưu tiên lấy trực tiếp thumbnail từ YouTube
+    if (video.platform === 'youtube') {
+      const id = getYoutubeId(video.video_url);
+      if (id) {
+        return `https://img.youtube.com/vi/${id}/hqdefault.jpg`;
+      }
+    }
+
+    // Nếu có ảnh cover_image và không phải là link trang ibb.co (không trực tiếp)
+    if (video.cover_image && !video.cover_image.includes('ibb.co/')) {
+      return video.cover_image;
+    }
+    if (video.cover_image && video.cover_image.includes('i.ibb.co')) {
+      return video.cover_image;
+    }
+
+    if (video.platform === 'reels') {
+      return 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=600&auto=format&fit=crop&q=80';
+    }
+    return 'https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=600&auto=format&fit=crop&q=80';
+  };
+
   // Auto Generate Slugs
   const generateSlug = (text: string) => {
     return text
@@ -1018,8 +1054,8 @@ export default function AdminWebsitePage() {
                     {videos.map(video => (
                       <tr key={video.id} className="hover:bg-slate-50 text-slate-700">
                         <td className="p-3 font-semibold text-slate-900 flex items-center gap-2">
-                          {video.cover_image ? (
-                            <img src={video.cover_image} alt={video.title} className="w-12 h-8 rounded object-cover border border-slate-200" />
+                          {getAdminVideoThumbnail(video) ? (
+                            <img src={getAdminVideoThumbnail(video)} alt={video.title} className="w-12 h-8 rounded object-cover border border-slate-200" />
                           ) : (
                             <div className="w-12 h-8 rounded bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-400">
                               <Video size={14} />

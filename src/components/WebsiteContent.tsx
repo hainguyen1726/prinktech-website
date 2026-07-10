@@ -84,12 +84,21 @@ export default function WebsiteContent({
   const [loading, setLoading] = useState(initialProducts.length === 0 && initialPosts.length === 0);
 
   // Universal Video Player modal state (YouTube / Facebook Reels / TikTok)
-  const [activeVideo, setActiveVideo] = useState<{ embedUrl: string; platform: string } | null>(null);
+  const [activeVideo, setActiveVideo] = useState<{ embedUrl: string; platform: string; isVertical?: boolean } | null>(null);
 
   // States cho kho ảnh mẫu thực tế
   const [samples, setSamples] = useState<{ id: string; title: string; category: string; image_url: string }[]>([]);
   const [activeCategory, setActiveCategory] = useState('Tất cả');
   const [selectedSampleUrl, setSelectedSampleUrl] = useState<string | null>(null);
+  const [selectedProductDetail, setSelectedProductDetail] = useState<{
+    item: PriceItem;
+    label: string;
+    badge: string;
+    desc: string;
+    img: string;
+    imgAlt: string;
+    lowestPrice: number;
+  } | null>(null);
   const [showAllSamples, setShowAllSamples] = useState(false);
 
   // Khởi tạo theme từ localStorage ở client-side
@@ -168,11 +177,23 @@ export default function WebsiteContent({
     fetchData();
   }, [initialProducts, initialPosts, initialVideos, initialPriceItems]);
 
-  const getYoutubeEmbedUrl = (url: string) => {
+  const getYoutubeId = (url: string) => {
+    if (!url) return null;
+    const shortsMatch = url.match(/\/shorts\/([a-zA-Z0-9_-]{11})/);
+    if (shortsMatch) return shortsMatch[1];
+    
     const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
     const match = url.match(regExp);
     if (match && match[2].length === 11) {
-      return `https://www.youtube.com/embed/${match[2]}?autoplay=1`;
+      return match[2];
+    }
+    return null;
+  };
+
+  const getYoutubeEmbedUrl = (url: string) => {
+    const id = getYoutubeId(url);
+    if (id) {
+      return `https://www.youtube.com/embed/${id}?autoplay=1`;
     }
     return null;
   };
@@ -192,14 +213,22 @@ export default function WebsiteContent({
   };
 
   const getVideoThumbnail = (video: Video) => {
-    if (video.cover_image) return video.cover_image;
+    // Nếu là youtube, ưu tiên lấy trực tiếp thumbnail từ YouTube
     if (video.platform === 'youtube') {
-      const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
-      const match = video.video_url.match(regExp);
-      if (match && match[2].length === 11) {
-        return `https://img.youtube.com/vi/${match[2]}/hqdefault.jpg`;
+      const id = getYoutubeId(video.video_url);
+      if (id) {
+        return `https://img.youtube.com/vi/${id}/hqdefault.jpg`;
       }
     }
+
+    // Nếu có ảnh cover_image và không phải là link trang ibb.co (không trực tiếp)
+    if (video.cover_image && !video.cover_image.includes('ibb.co/')) {
+      return video.cover_image;
+    }
+    if (video.cover_image && video.cover_image.includes('i.ibb.co')) {
+      return video.cover_image;
+    }
+
     if (video.platform === 'reels') {
       return 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=600&auto=format&fit=crop&q=80';
     }
@@ -492,13 +521,14 @@ export default function WebsiteContent({
                 onClick={() => {
                   if (video.platform === 'youtube') {
                     const embedUrl = getYoutubeEmbedUrl(video.video_url);
-                    if (embedUrl) setActiveVideo({ embedUrl, platform: 'youtube' });
+                    const isShorts = video.video_url.includes('/shorts/');
+                    if (embedUrl) setActiveVideo({ embedUrl, platform: 'youtube', isVertical: isShorts });
                     else window.open(video.video_url, '_blank');
                   } else if (video.platform === 'reels') {
                     setActiveVideo({ embedUrl: getReelsEmbedUrl(video.video_url), platform: 'reels' });
                   } else if (video.platform === 'tiktok') {
                     const embedUrl = getTikTokEmbedUrl(video.video_url);
-                    if (embedUrl) setActiveVideo({ embedUrl, platform: 'tiktok' });
+                    if (embedUrl) setActiveVideo({ embedUrl, platform: 'tiktok', isVertical: true });
                     else window.open(video.video_url, '_blank');
                   }
                 }}
@@ -511,13 +541,14 @@ export default function WebsiteContent({
                     e.preventDefault();
                     if (video.platform === 'youtube') {
                       const embedUrl = getYoutubeEmbedUrl(video.video_url);
-                      if (embedUrl) setActiveVideo({ embedUrl, platform: 'youtube' });
+                      const isShorts = video.video_url.includes('/shorts/');
+                      if (embedUrl) setActiveVideo({ embedUrl, platform: 'youtube', isVertical: isShorts });
                       else window.open(video.video_url, '_blank');
                     } else if (video.platform === 'reels') {
                       setActiveVideo({ embedUrl: getReelsEmbedUrl(video.video_url), platform: 'reels' });
                     } else if (video.platform === 'tiktok') {
                       const embedUrl = getTikTokEmbedUrl(video.video_url);
-                      if (embedUrl) setActiveVideo({ embedUrl, platform: 'tiktok' });
+                      if (embedUrl) setActiveVideo({ embedUrl, platform: 'tiktok', isVertical: true });
                       else window.open(video.video_url, '_blank');
                     }
                   }

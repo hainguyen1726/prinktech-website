@@ -46,3 +46,9 @@ update-*.mjs
 update-*.cjs
 print-*.mjs
 check-posts.mjs
+
+# credentials & keys
+*credentials*.json
+*credential*.json
+*key*.json
+amazon-*.json

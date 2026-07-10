@@ -17,13 +17,16 @@ export default function BaoGiaContent() {
     }
   }, []);
 
-  // Apply theme class to body và lưu vào localStorage
+  // Apply theme class to html/body và lưu vào localStorage
   useEffect(() => {
-    document.body.className = '';
     localStorage.setItem('prinktech-theme', activeTheme);
+    document.documentElement.classList.remove('theme-tech', 'theme-creative');
+    document.body.classList.remove('theme-tech', 'theme-creative');
     if (activeTheme === 'tech') {
+      document.documentElement.classList.add('theme-tech');
       document.body.classList.add('theme-tech');
     } else if (activeTheme === 'creative') {
+      document.documentElement.classList.add('theme-creative');
       document.body.classList.add('theme-creative');
     }
   }, [activeTheme]);

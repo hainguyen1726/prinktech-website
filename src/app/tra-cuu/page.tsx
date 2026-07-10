@@ -212,10 +212,13 @@ function TraCuuContent() {
     const savedTheme = localStorage.getItem('prinktech-theme') || 'elegant';
     setActiveTheme(savedTheme as any);
     
-    document.body.className = '';
+    document.documentElement.classList.remove('theme-tech', 'theme-creative');
+    document.body.classList.remove('theme-tech', 'theme-creative');
     if (savedTheme === 'tech') {
+      document.documentElement.classList.add('theme-tech');
       document.body.classList.add('theme-tech');
     } else if (savedTheme === 'creative') {
+      document.documentElement.classList.add('theme-creative');
       document.body.classList.add('theme-creative');
     }
   }, []);
@@ -223,10 +226,13 @@ function TraCuuContent() {
   const changeTheme = (theme: 'tech' | 'creative' | 'elegant') => {
     setActiveTheme(theme);
     localStorage.setItem('prinktech-theme', theme);
-    document.body.className = '';
+    document.documentElement.classList.remove('theme-tech', 'theme-creative');
+    document.body.classList.remove('theme-tech', 'theme-creative');
     if (theme === 'tech') {
+      document.documentElement.classList.add('theme-tech');
       document.body.classList.add('theme-tech');
     } else if (theme === 'creative') {
+      document.documentElement.classList.add('theme-creative');
       document.body.classList.add('theme-creative');
     }
   };

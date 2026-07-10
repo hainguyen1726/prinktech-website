@@ -78,6 +78,7 @@ export default async function Home() {
         .from('web_posts')
         .select('*')
         .eq('status', 'published')
+        .lte('created_at', new Date().toISOString())
         .order('created_at', { ascending: false }),
       supabaseAdmin
         .schema('printing')

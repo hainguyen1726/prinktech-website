@@ -54,6 +54,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       .from('web_posts')
       .select('slug, updated_at, created_at')
       .eq('status', 'published')
+      .lte('created_at', new Date().toISOString())
       .not('slug', 'is', null);
 
     if (posts) {

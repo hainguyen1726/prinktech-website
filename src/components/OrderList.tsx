@@ -26,8 +26,10 @@ export default function OrderList() {
     const finalTheme = savedTheme === 'creative' ? 'elegant' : savedTheme;
     setActiveTheme(finalTheme as any);
     
-    document.body.className = '';
+    document.documentElement.classList.remove('theme-tech', 'theme-creative');
+    document.body.classList.remove('theme-tech', 'theme-creative');
     if (finalTheme === 'tech') {
+      document.documentElement.classList.add('theme-tech');
       document.body.classList.add('theme-tech');
     }
   }, []);
@@ -35,8 +37,10 @@ export default function OrderList() {
   const changeTheme = (theme: 'tech' | 'elegant') => {
     setActiveTheme(theme);
     localStorage.setItem('prinktech-theme', theme);
-    document.body.className = '';
+    document.documentElement.classList.remove('theme-tech', 'theme-creative');
+    document.body.classList.remove('theme-tech', 'theme-creative');
     if (theme === 'tech') {
+      document.documentElement.classList.add('theme-tech');
       document.body.classList.add('theme-tech');
     }
   };

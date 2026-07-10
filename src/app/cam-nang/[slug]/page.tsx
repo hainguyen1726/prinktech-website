@@ -47,6 +47,7 @@ export async function generateMetadata({
     .select('title, summary, cover_image, created_at, updated_at')
     .eq('slug', slug)
     .eq('status', 'published')
+    .lte('created_at', new Date().toISOString())
     .single();
 
   if (!post) return { title: 'Bài viết không tồn tại' };
@@ -89,6 +90,7 @@ export default async function CamNangDetailPage({
     .select('*')
     .eq('slug', slug)
     .eq('status', 'published')
+    .lte('created_at', new Date().toISOString())
     .single<Post>();
 
   if (!post) notFound();
@@ -98,6 +100,7 @@ export default async function CamNangDetailPage({
     .from('web_posts')
     .select('id, title, slug, cover_image, summary, created_at')
     .eq('status', 'published')
+    .lte('created_at', new Date().toISOString())
     .neq('id', post.id)
     .order('created_at', { ascending: false })
     .limit(3);
@@ -149,7 +152,7 @@ export default async function CamNangDetailPage({
         '@type': 'ListItem',
         'position': 2,
         'name': 'Cẩm nang',
-        'item': `${BASE_URL}/#blog`,
+        'item': `${BASE_URL}/cam-nang`,
       },
       {
         '@type': 'ListItem',
@@ -186,7 +189,7 @@ export default async function CamNangDetailPage({
               <span>Trang chủ</span>
             </Link>
             <span className="text-foreground/20 font-light">/</span>
-            <Link href="/#blog" className="hover:text-[var(--accent)] transition-colors">
+            <Link href="/cam-nang" className="hover:text-[var(--accent)] transition-colors">
               Cẩm nang
             </Link>
             <span className="text-foreground/20 font-light">/</span>
