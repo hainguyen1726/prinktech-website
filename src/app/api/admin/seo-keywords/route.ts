@@ -10,66 +10,79 @@ const DEFAULT_KEYWORDS = [
   {
     id: 'kw-1',
     keyword: 'in uv dtf nổi 3d',
-    targetUrl: 'https://prinktech.vn/cam-nang/so-sanh-in-uv-dtf-noi-3d-va-in-uv-phang',
+    targetUrl: '/cam-nang/so-sanh-in-uv-dtf-noi-3d-va-in-uv-phang',
     targetRank: 1,
-    currentRank: 3,
-    prevRank: 4,
+    currentRank: 100,
+    prevRank: 100,
     searchVolume: 480,
-    clicks: 120,
-    impressions: 1500,
-    ctr: 8.0,
+    clicks: 0,
+    impressions: 0,
+    ctr: 0,
     updatedAt: new Date().toISOString()
   },
   {
     id: 'kw-2',
     keyword: 'in uv dtf bình giữ nhiệt',
-    targetUrl: 'https://prinktech.vn/cam-nang/in-uv-dtf-dan-binh-giu-nhiet-qua-tang-doanh-nghiep',
+    targetUrl: '/cam-nang/in-uv-dtf-dan-binh-giu-nhiet-qua-tang-doanh-nghiep',
     targetRank: 1,
-    currentRank: 1,
-    prevRank: 1,
+    currentRank: 100,
+    prevRank: 100,
     searchVolume: 320,
-    clicks: 95,
-    impressions: 850,
-    ctr: 11.18,
+    clicks: 0,
+    impressions: 0,
+    ctr: 0,
     updatedAt: new Date().toISOString()
   },
   {
     id: 'kw-3',
     keyword: 'tem uv dtf ngoài trời',
-    targetUrl: 'https://prinktech.vn/cam-nang/tem-uv-dtf-sieu-ben-ngoai-troi-do-ben-thoi-tiet',
-    targetRank: 2,
-    currentRank: 5,
-    prevRank: 7,
+    targetUrl: '/cam-nang/tem-uv-dtf-sieu-ben-ngoai-troi-do-ben-thoi-tiet',
+    targetRank: 3,
+    currentRank: 100,
+    prevRank: 100,
     searchVolume: 210,
-    clicks: 25,
-    impressions: 420,
-    ctr: 5.95,
+    clicks: 0,
+    impressions: 0,
+    ctr: 0,
     updatedAt: new Date().toISOString()
   },
   {
     id: 'kw-4',
     keyword: 'thiết kế file in uv dtf',
-    targetUrl: 'https://prinktech.vn/cam-nang/meo-thiet-ke-file-in-uv-dtf-chuan-mau-sac-net',
+    targetUrl: '/cam-nang/meo-thiet-ke-file-in-uv-dtf-chuan-mau-sac-net',
     targetRank: 3,
-    currentRank: 8,
-    prevRank: 8,
+    currentRank: 100,
+    prevRank: 100,
     searchVolume: 140,
-    clicks: 12,
-    impressions: 310,
-    ctr: 3.87,
+    clicks: 0,
+    impressions: 0,
+    ctr: 0,
     updatedAt: new Date().toISOString()
   },
   {
     id: 'kw-5',
     keyword: 'hướng dẫn dán tem uv dtf',
-    targetUrl: 'https://prinktech.vn/cam-nang/huong-dan-dan-tem-uv-dtf-dung-cach',
-    targetRank: 1,
-    currentRank: 2,
-    prevRank: 2,
+    targetUrl: '/cam-nang/huong-dan-dan-tem-uv-dtf-dung-cach',
+    targetRank: 3,
+    currentRank: 100,
+    prevRank: 100,
     searchVolume: 180,
-    clicks: 45,
-    impressions: 620,
-    ctr: 7.25,
+    clicks: 0,
+    impressions: 0,
+    ctr: 0,
+    updatedAt: new Date().toISOString()
+  },
+  {
+    id: 'kw-6',
+    keyword: 'in sticker uv dtf',
+    targetUrl: '/cam-nang/in-sticker-uv-dtf-theo-yeu-cau-lay-lien-gia-re',
+    targetRank: 1,
+    currentRank: 100,
+    prevRank: 100,
+    searchVolume: 1200,
+    clicks: 0,
+    impressions: 0,
+    ctr: 0,
     updatedAt: new Date().toISOString()
   }
 ];
@@ -118,7 +131,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { keyword, targetUrl, targetRank, currentRank, searchVolume } = body;
+    const { keyword, targetUrl, targetRank, currentRank, searchVolume, intent } = body;
 
     if (!keyword) {
       return NextResponse.json({ error: 'Từ khóa không được để trống' }, { status: 400 });
@@ -130,6 +143,7 @@ export async function POST(request: NextRequest) {
       id: `kw-${Date.now()}`,
       keyword: keyword.trim(),
       targetUrl: targetUrl ? targetUrl.trim() : '',
+      intent: intent || 'Commercial',
       targetRank: targetRank ? Number(targetRank) : 10,
       currentRank: currentRank ? Number(currentRank) : 100,
       prevRank: currentRank ? Number(currentRank) : 100,

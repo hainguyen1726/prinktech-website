@@ -943,12 +943,12 @@ export default function WebsiteContent({
           : 'bg-slate-950 text-slate-400 border-slate-900'
       }`}>
         <div className={`max-w-7xl mx-auto w-full grid grid-cols-1 md:grid-cols-3 gap-12 pb-12 border-b ${
-          activeTheme === 'elegant' ? 'border-stone-850' : 'border-slate-900'
+          activeTheme === 'elegant' ? 'border-stone-800/50' : 'border-slate-800/50'
         }`}>
           
-          <div className="space-y-4">
+          <div className="space-y-5">
             <img src="/logo-horizontal.png" alt="PrinK Tech" className="h-10 object-contain" />
-            <p className="text-xs leading-relaxed text-stone-550">
+            <p className="text-xs leading-relaxed text-stone-400">
               PrinK Tech tự hào mang tới các sản phẩm in ấn chất lượng đột phá, lớp phủ bảo vệ hoàn hảo. Chúng tôi phục vụ in ấn nhãn hàng sỉ và dán cốc lẻ tốc độ cao, hỗ trợ giao hàng toàn quốc.
             </p>
             <div className="flex items-center gap-3">
@@ -956,7 +956,7 @@ export default function WebsiteContent({
                 href="https://zalo.me/0822968412"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-9 h-9 rounded-xl bg-black/20 border border-stone-800/60 hover:border-sky-500 text-sky-400 hover:text-white flex items-center justify-center transition focus:outline-none focus:ring-2 focus:ring-sky-500/40"
+                className="w-10 h-10 rounded-xl bg-sky-500/10 border border-sky-500/30 hover:bg-sky-500/20 hover:border-sky-400 text-sky-400 hover:text-sky-300 flex items-center justify-center transition focus:outline-none focus:ring-2 focus:ring-sky-500/40"
                 aria-label="Liên hệ Zalo của xưởng (mở trong cửa sổ mới)"
               >
                 <MessageCircle size={18} aria-hidden="true" />
@@ -965,8 +965,8 @@ export default function WebsiteContent({
                 href="https://www.facebook.com/prinktechUS"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-9 h-9 rounded-xl bg-black/20 border border-stone-800/60 hover:border-pink-500 text-pink-400 hover:text-white flex items-center justify-center transition focus:outline-none focus:ring-2 focus:ring-pink-500/40"
-                aria-label="Fanpage Facebook của xưởng (mở trong cửa sổ mới)"
+                className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/30 hover:bg-blue-500/20 hover:border-blue-400 text-blue-400 hover:text-blue-300 flex items-center justify-center transition focus:outline-none focus:ring-2 focus:ring-blue-500/40"
+                aria-label="Fanpage Facebook PrinK Tech (mở trong cửa sổ mới)"
               >
                 <Facebook size={18} aria-hidden="true" />
               </a>
@@ -974,55 +974,77 @@ export default function WebsiteContent({
           </div>
 
           <div className="space-y-4">
-            <h4 className="font-bold text-xs uppercase text-white tracking-widest">Cơ sở sản xuất</h4>
-            <ul className="space-y-3 text-xs leading-relaxed">
-              <li className="flex items-start gap-2.5">
-                <MapPin size={16} className="text-sky-400 shrink-0 mt-0.5" />
+            <h4 className="font-bold text-sm text-white tracking-widest uppercase border-b border-white/10 pb-2">Cơ sở sản xuất</h4>
+            <ul className="space-y-4 text-xs leading-relaxed">
+              <li className="flex items-start gap-3">
+                <div className="w-7 h-7 rounded-lg bg-sky-500/10 border border-sky-500/20 flex items-center justify-center shrink-0 mt-0.5">
+                  <MapPin size={14} className="text-sky-400" />
+                </div>
                 <div>
-                  <strong className="text-stone-300 block">Cơ sở Phú Thọ:</strong>
-                  Khu 9, Phù Ninh, Phú Thọ
+                  <strong className="text-stone-200 block mb-0.5">Cơ sở Phú Thọ</strong>
+                  <span className="text-stone-400">Khu 9, Phù Ninh, Phú Thọ</span>
                 </div>
               </li>
-              <li className="flex items-start gap-2.5">
-                <MapPin size={16} className="text-pink-500 shrink-0 mt-0.5" />
+              <li className="flex items-start gap-3">
+                <div className="w-7 h-7 rounded-lg bg-pink-500/10 border border-pink-500/20 flex items-center justify-center shrink-0 mt-0.5">
+                  <MapPin size={14} className="text-pink-400" />
+                </div>
                 <div>
-                  <strong className="text-stone-300 block">Cơ sở Hà Nội:</strong>
-                  Nguyễn Tuân, Thanh Xuân, Hà Nội
+                  <strong className="text-stone-200 block mb-0.5">Cơ sở Hà Nội</strong>
+                  <span className="text-stone-400">Nguyễn Tuân, Thanh Xuân, Hà Nội</span>
                 </div>
               </li>
             </ul>
           </div>
 
           <div className="space-y-4">
-            <h4 className="font-bold text-xs uppercase text-white tracking-widest">Hỗ trợ khách hàng</h4>
-            <ul className="space-y-3 text-xs">
-              <li className="flex items-center gap-2">
-                <span className="text-stone-500">Zalo trực tiếp (Ưu tiên):</span>
-                <a href="https://zalo.me/0822968412" className="font-bold text-sky-400 hover:underline">0822.968.412</a>
+            <h4 className="font-bold text-sm text-white tracking-widest uppercase border-b border-white/10 pb-2">Hỗ trợ khách hàng</h4>
+            <ul className="space-y-4 text-xs">
+              <li>
+                <span className="text-stone-500 text-[10px] uppercase font-bold tracking-wider block mb-1">Zalo (Ưu tiên)</span>
+                <a href="https://zalo.me/0822968412" className="font-bold text-sky-400 hover:text-sky-300 hover:underline text-sm transition">0822.968.412</a>
               </li>
-              <li className="flex items-center gap-2">
-                <span className="text-stone-500">Hành trình:</span>
-                <Link href="/tra-cuu" className="font-bold text-[var(--accent)] hover:underline flex items-center gap-1">
-                  🔍 Tra cứu đơn hàng
+              <li>
+                <span className="text-stone-500 text-[10px] uppercase font-bold tracking-wider block mb-1">Tra cứu đơn hàng</span>
+                <Link href="/tra-cuu" className="font-bold text-[var(--accent)] hover:underline flex items-center gap-1.5 transition">
+                  🔍 Kiểm tra hành trình đơn
                 </Link>
               </li>
-              <li className="flex items-center gap-2">
-                <span className="text-stone-500">Đơn vị chủ quản:</span>
-                <span className="font-semibold text-stone-300">Công ty TNHH GMKT Việt Nam</span>
+              <li>
+                <span className="text-stone-500 text-[10px] uppercase font-bold tracking-wider block mb-1">Đơn vị chủ quản</span>
+                <span className="font-semibold text-stone-200">Công ty TNHH GMKT Việt Nam</span>
               </li>
             </ul>
-            <div className="bg-black/10 border border-stone-850/60 rounded-lg p-4">
-              <span className="text-[10px] text-stone-500 block uppercase font-bold">Giờ làm việc:</span>
-              <span className="text-xs font-semibold text-stone-300 block mt-1">Từ thứ 2 - Chủ Nhật (8h00 - 22h00)</span>
+            <div className="bg-white/5 border border-white/10 rounded-xl p-4 mt-2">
+              <span className="text-[10px] text-stone-500 block uppercase font-bold tracking-wider mb-2">Giờ làm việc</span>
+              <span className="text-base font-bold text-white block leading-tight">Thứ 2 – Chủ Nhật</span>
+              <span className="text-sm text-stone-300 block mt-0.5">08:00 – 22:00</span>
             </div>
           </div>
 
         </div>
 
-        <div className="max-w-7xl mx-auto w-full pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-[11px] text-stone-500">
+        {/* Data Privacy Section */}
+        <div className={`max-w-7xl mx-auto w-full py-8 border-b ${
+          activeTheme === 'elegant' ? 'border-stone-800/40' : 'border-slate-800/40'
+        }`}>
+          <h5 className="text-[11px] font-bold uppercase tracking-widest text-stone-300 mb-3 flex items-center gap-2">
+            <span className="inline-block w-1 h-4 rounded bg-[var(--accent)]" />
+            Chính sách bảo mật dữ liệu
+          </h5>
+          <p className="text-[11px] text-stone-500 leading-relaxed max-w-4xl">
+            PrinK Tech cam kết bảo vệ thông tin cá nhân của khách hàng theo đúng quy định của{' '}
+            <strong className="text-stone-400">Nghị định 13/2023/NĐ-CP</strong> về bảo vệ dữ liệu cá nhân tại Việt Nam.
+            Thông tin thu thập (họ tên, số điện thoại, địa chỉ giao hàng) chỉ được sử dụng để xử lý đơn hàng và liên lạc hỗ trợ.
+            Dữ liệu không được chia sẻ với bên thứ ba vì mục đích thương mại. Khách hàng có quyền yêu cầu xem, chỉnh sửa hoặc xóa dữ liệu cá nhân bằng cách liên hệ trực tiếp qua Zalo{' '}
+            <a href="https://zalo.me/0822968412" className="text-sky-400 hover:underline">0822.968.412</a>.
+          </p>
+        </div>
+
+        <div className="max-w-7xl mx-auto w-full pt-6 flex flex-col md:flex-row justify-between items-center gap-3 text-[11px] text-stone-500">
           <p>© 2026 Xưởng in UV DTF PrinK Tech. Dự án thuộc sở hữu của GMKT Việt Nam.</p>
           <div className="flex items-center gap-4">
-            <span className="text-stone-600">Designed with modern aesthetics</span>
+            <span className="text-stone-600">Designed by PrinK Tech</span>
             <Link
               href="/login"
               className="group p-1.5 rounded-md text-stone-700 hover:text-stone-400 hover:bg-stone-800/40 transition-all duration-200"

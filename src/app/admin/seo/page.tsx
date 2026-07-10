@@ -47,6 +47,7 @@ interface SEOKeyword {
   id: string;
   keyword: string;
   targetUrl: string;
+  intent?: string;
   targetRank: number;
   currentRank: number;
   prevRank: number;
@@ -164,6 +165,19 @@ export default function AdminSEOAuditPage() {
     }
     checkAuth();
   }, [router]);
+
+  // Helper: chuẩn hóa URL trang đích thành đường dẫn tương đối
+  const getRelativeUrl = (url: string): string => {
+    if (!url) return '/';
+    try {
+      // Nếu đã là relative path, trả về nguyên
+      if (url.startsWith('/')) return url;
+      const parsed = new URL(url);
+      return parsed.pathname || '/';
+    } catch {
+      return url;
+    }
+  };
 
   // 2. Fetch danh sách Audits từ API
   const fetchAudits = async () => {
@@ -1309,6 +1323,7 @@ export default function AdminSEOAuditPage() {
                       <tr className="border-b border-slate-200 bg-slate-50 text-slate-500 font-medium uppercase tracking-wider text-xs">
                         <th className="p-4 w-12 text-center font-medium">STT</th>
                         <th className="p-4 w-52">Từ khóa mục tiêu</th>
+                        <th className="p-4 w-24 text-center">Intent</th>
                         <th className="p-4">Trang đích (URL)</th>
                         <th className="p-4 w-28 text-center">Volume</th>
                         <th className="p-4 w-28 text-center">Clicks / Imp</th>
@@ -1334,14 +1349,24 @@ export default function AdminSEOAuditPage() {
                             <tr key={kw.id} className="hover:bg-slate-50/50 transition text-slate-700 text-sm">
                               <td className="p-4 text-center text-slate-400 font-mono text-xs">{idx + 1}</td>
                               <td className="p-4 font-bold text-slate-900">{kw.keyword}</td>
+                              <td className="p-4 text-center">
+                                <span className={`inline-block text-[9px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider ${
+                                  kw.intent === 'Transactional' ? 'bg-green-50 text-green-700 border border-green-200'
+                                  : kw.intent === 'Informational' ? 'bg-sky-50 text-sky-700 border border-sky-200'
+                                  : 'bg-violet-50 text-violet-700 border border-violet-200'
+                                }`}>
+                                  {kw.intent === 'Transactional' ? 'Trans' : kw.intent === 'Informational' ? 'Info' : 'Com'}
+                                </span>
+                              </td>
                               <td className="p-4">
                                 <a 
-                                  href={kw.targetUrl} 
+                                  href={getRelativeUrl(kw.targetUrl)} 
                                   target="_blank" 
                                   rel="noopener noreferrer" 
                                   className="text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-0.5 truncate max-w-xs text-xs font-normal"
+                                  title={getRelativeUrl(kw.targetUrl)}
                                 >
-                                  {kw.targetUrl.replace('https://prinktech.vn', '') || '/'}
+                                  {getRelativeUrl(kw.targetUrl)}
                                   <ArrowUpRight size={10} className="shrink-0" />
                                 </a>
                               </td>
@@ -1390,7 +1415,7 @@ export default function AdminSEOAuditPage() {
                                   ) : (
                                     <div className="flex items-center gap-1.5">
                                       <span className={`font-black text-sm ${reached ? 'text-emerald-600' : closeToGoal ? 'text-amber-500' : 'text-slate-600'}`}>
-                                        {kw.currentRank > 99 ? '100+' : `TOP ${kw.currentRank}`}
+                                        {kw.currentRank >= 100 ? 'Chưa có' : `TOP ${kw.currentRank}`}
                                       </span>
                                       
                                       {/* Rank change indicator */}
@@ -1412,13 +1437,15 @@ export default function AdminSEOAuditPage() {
                               </td>
                               <td className="p-4 text-center">
                                 <span className={`inline-block text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                                  reached 
+                                  kw.currentRank >= 100
+                                    ? 'bg-slate-50 text-slate-500 border border-slate-200'
+                                    : reached 
                                     ? 'bg-emerald-50 text-emerald-700 border border-emerald-250' 
                                     : closeToGoal 
                                     ? 'bg-amber-50 text-amber-700 border border-amber-250' 
                                     : 'bg-rose-50 text-rose-700 border border-rose-250'
                                 }`}>
-                                  {reached ? 'Đạt mục tiêu' : closeToGoal ? 'Gần đạt' : 'Chưa đạt'}
+                                  {kw.currentRank >= 100 ? 'Cần đo' : reached ? 'Đạt mục tiêu' : closeToGoal ? 'Gần đạt' : 'Cần đạt'}
                                 </span>
                               </td>
                               <td className="p-4 text-right">
@@ -1555,10 +1582,10 @@ const auth = new google.auth.GoogleAuth({
               <div>
                 <label className="block text-[10px] font-medium text-slate-400 uppercase tracking-widest mb-1">Trang đích URL</label>
                 <input 
-                  type="url" 
+                  type="text" 
                   value={newKeywordUrl}
                   onChange={(e) => setNewKeywordUrl(e.target.value)}
-                  placeholder="Ví dụ: https://prinktech.vn/cam-nang/..."
+                  placeholder="Ví dụ: /cam-nang/ten-bai-viet-slug"
                   className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-blue-500"
                 />
               </div>
