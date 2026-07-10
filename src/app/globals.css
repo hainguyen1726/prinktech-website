@@ -368,9 +368,9 @@ body.admin-panel {
 /* White paper style cho khu vực Editor */
 .admin-paper-card {
   background-color: #ffffff !important;
-  border: 1px solid #e2e8f0 !important;
+  border: 1px solid #cbd5e1 !important; /* Slate 300 - viền rõ hơn */
   border-radius: 0.75rem !important;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05) !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 16px -6px rgba(0, 0, 0, 0.05) !important; /* Đổ bóng có chiều sâu */
 }
 
 /* Glass card admin style */
@@ -389,7 +389,7 @@ body.admin-panel {
   outline: none !important;
 }
 .admin-panel textarea::placeholder {
-  color: #94a3b8 !important; /* Slate 300 */
+  color: #64748b !important; /* Slate 500 - Đậm tương phản tốt hơn */
 }
 
 /* Trình soạn thảo văn bản Rich Text */
@@ -430,15 +430,15 @@ body.admin-panel {
   font-weight: 700;
 }
 .admin-editor-content blockquote {
-  border-left: 4px solid #3b82f6 !important;
+  border-left: 4px solid #2563eb !important;
   padding-left: 1rem;
   font-style: italic;
-  color: #475569 !important;
+  color: #334155 !important;
   margin: 1.5rem 0;
 }
 .admin-editor-content code {
   background-color: #f1f5f9 !important;
-  color: #2563eb !important;
+  color: #1d4ed8 !important;
   padding: 0.2rem 0.4rem;
   border-radius: 0.25rem;
   font-size: 0.85em;
@@ -451,8 +451,8 @@ body.admin-panel {
 /* Toolbar soạn thảo */
 .admin-editor-toolbar {
   background-color: #ffffff !important;
-  border: 1px solid #e2e8f0 !important;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05) !important;
+  border: 1px solid #cbd5e1 !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
 }
 .admin-editor-toolbar button {
   color: #475569 !important;
@@ -465,10 +465,11 @@ body.admin-panel {
 /* Sidebar SEO Panel bên phải */
 .admin-seo-panel {
   background-color: #ffffff !important;
-  border-left: 1px solid #e2e8f0 !important;
+  border-left: 1px solid #cbd5e1 !important;
 }
 .admin-seo-panel label {
-  color: #475569 !important; /* Slate 600 */
+  color: #334155 !important; /* Slate 700 - Đậm và rõ */
+  font-weight: 700 !important;
 }
 .admin-seo-panel input,
 .admin-seo-panel textarea,
@@ -477,29 +478,33 @@ body.admin-panel {
   border: 1px solid #cbd5e1 !important;
   color: #0f172a !important;
 }
+.admin-seo-panel input::placeholder,
+.admin-seo-panel textarea::placeholder {
+  color: #64748b !important; /* Đậm dễ nhìn */
+}
 .admin-seo-panel input:focus,
 .admin-seo-panel textarea:focus {
-  border-color: #3b82f6 !important;
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1) !important;
+  border-color: #2563eb !important;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15) !important;
 }
 
 /* Google SERP Preview */
 .google-preview-card {
   background-color: #f8fafc !important;
-  border: 1px solid #e2e8f0 !important;
+  border: 1px solid #cbd5e1 !important;
   border-radius: 0.5rem;
 }
 
 /* SEO Checklist */
 .seo-check-item-ok {
   background-color: #f0fdf4 !important;
-  color: #166534 !important;
+  color: #15803d !important; /* Emerald 700 - Đậm hơn */
   border: 1px solid #bbf7d0 !important;
 }
 .seo-check-item-warn {
   background-color: #fffbeb !important;
-  color: #92400e !important;
-  border: 1px solid #fef3c7 !important;
+  color: #b45309 !important; /* Amber 700 - Đậm rõ ràng */
+  border: 1px solid #fde68a !important;
 }
 
 /* Table styling */
@@ -553,3 +558,81 @@ body.admin-panel {
   background-color: #e2e8f0 !important;
 }
 
+/* Tăng độ tương phản nâng cao cho trang Admin Viết Bài */
+.admin-panel textarea::placeholder {
+  color: #475569 !important; /* Slate 600 */
+}
+.admin-panel .placeholder-slate-350::placeholder,
+.admin-panel .placeholder-slate-300::placeholder {
+  color: #475569 !important;
+}
+.admin-editor-content[data-placeholder]:empty:before {
+  color: #475569 !important;
+  font-weight: 550 !important;
+}
+.admin-seo-panel label {
+  font-size: 0.75rem !important; /* 12px */
+  color: #1e293b !important; /* Slate 800 */
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+}
+.admin-seo-panel label span {
+  color: #1e293b !important;
+}
+.admin-seo-panel p {
+  color: #334155 !important; /* Slate 700 */
+  font-weight: 550 !important;
+}
+.admin-seo-panel p.text-slate-400,
+.admin-seo-panel span.text-slate-400,
+.admin-seo-panel span.text-slate-500 {
+  color: #475569 !important; /* Slate 600 */
+  font-weight: 650 !important;
+}
+.google-preview-card p:first-of-type {
+  color: #475569 !important;
+}
+.google-preview-card p:nth-of-type(2) {
+  color: #1d4ed8 !important; /* Link blue 700 */
+  font-weight: 700 !important;
+}
+.google-preview-card p:last-of-type {
+  color: #1e293b !important;
+  font-weight: 550 !important;
+}
+.seo-check-item-ok p {
+  color: #166534 !important;
+  font-weight: 750 !important;
+}
+.seo-check-item-ok p:last-of-type {
+  color: #15803d !important;
+  font-weight: 600 !important;
+}
+.seo-check-item-warn p {
+  color: #9a3412 !important;
+  font-weight: 750 !important;
+}
+.seo-check-item-warn p:last-of-type {
+  color: #b45309 !important;
+  font-weight: 600 !important;
+}
+.admin-seo-panel button {
+  color: #475569 !important;
+  font-weight: 700 !important;
+}
+.admin-seo-panel button[class*="text-blue"] {
+  color: #1d4ed8 !important;
+  font-weight: 800 !important;
+  border-bottom-color: #1d4ed8 !important;
+}
+.admin-paper-card textarea {
+  color: #0f172a !important;
+}
+.admin-paper-card textarea:last-of-type {
+  color: #334155 !important;
+}
+.admin-panel header p.text-slate-400 {
+  color: #475569 !important;
+  font-weight: 700 !important;
+}

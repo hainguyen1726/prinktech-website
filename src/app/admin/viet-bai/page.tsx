@@ -237,7 +237,7 @@ function VietBaiContent() {
   const scoreBg = seo.score >= 75 ? 'bg-emerald-500' : seo.score >= 50 ? 'bg-amber-500' : 'bg-red-500';
 
   if (authLoading) return (
-    <div className="min-h-screen bg-[#080d1a] flex items-center justify-center">
+    <div className="min-h-screen bg-[#f8fafc] flex items-center justify-center">
       <Loader2 className="animate-spin text-sky-400" size={32} />
     </div>
   );
