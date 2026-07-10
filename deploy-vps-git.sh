@@ -64,24 +64,16 @@ fi
 step "3️⃣  CÀI ĐẶT & BUILD NEXT.JS (DOCKER)"
 
 info "Đang cài đặt node_modules..."
-docker run --rm \
-    -v "$APP_DIR:/app" \
-    -w /app \
-    node:20 \
-    npm install --include=dev --no-audit --no-fund --legacy-peer-deps
+npm install --include=dev --no-audit --no-fund --legacy-peer-deps
 
 info "Đang dọn dẹp cache Next.js cũ (.next)..."
 rm -rf .next
 
 info "Đang build Next.js (chế độ Production)..."
-docker run --rm \
-    -v "$APP_DIR:/app" \
-    -w /app \
-    -e NODE_ENV=production \
-    -e NODE_OPTIONS="--max-old-space-size=4096" \
-    -e NEXT_TELEMETRY_DISABLED=1 \
-    node:20 \
-    npm run build
+export NODE_ENV=production
+export NODE_OPTIONS="--max-old-space-size=4096"
+export NEXT_TELEMETRY_DISABLED=1
+npm run build
 
 if [ ! -f ".next/BUILD_ID" ]; then
     error "Build Next.js thất bại (không xuất hiện thư mục .next/BUILD_ID)"
