@@ -128,7 +128,7 @@ export default function OrderList() {
   };
 
   return (
-    <div className="admin-panel min-h-screen bg-[#070b13] text-slate-200 transition-colors duration-300">
+    <div className="admin-panel min-h-screen bg-[#f1f5f9] text-slate-900 transition-colors duration-300">
       {/* Header Admin Nav */}
       <nav className="sticky top-0 z-40 border-b border-card-border bg-background/85 backdrop-blur-xl">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">

@@ -244,7 +244,7 @@ function VietBaiContent() {
   if (!authorized) return null;
 
   return (
-    <div className="admin-panel min-h-screen bg-[#0a0f1e] text-slate-200 flex flex-col">
+    <div className="admin-panel min-h-screen bg-[#f1f5f9] text-slate-900 flex flex-col">
 
       {/* Top Bar */}
       <header className="sticky top-0 z-50 border-b border-slate-800/60 bg-[#0a0f1e]/95 backdrop-blur-md">
