@@ -313,7 +313,7 @@ export default function WebsiteContent({
           <div className="w-full max-w-[400px] aspect-square relative glass-card p-4 overflow-hidden shadow-2xl flex items-center justify-center">
             <div className="absolute w-64 h-64 bg-[var(--accent-glow)] rounded-full blur-2xl z-0"></div>
             <img 
-              src="/images/hero_official_mockup.png" 
+              src="/images/hero_official_mockup.webp" 
               alt="Tem UV DTF Nổi 3D dán bình giữ nhiệt PrinK Tech" 
               className="w-full h-full object-cover rounded-lg relative z-10 shadow-lg border border-[var(--card-border)]"
             />
