@@ -173,23 +173,23 @@ body:not(.theme-tech):not(.theme-creative) .side-drawer {
 
 /* ── Elegant Dark Header & Nav (Mặc định khi ở theme Elegant sáng) ── */
 header,
-nav {
+header nav {
   background-color: #1c1917 !important; /* Stone 900 */
   color: #e7e5e4 !important; /* Stone 200 */
   border-color: #2c2520 !important; /* Stone 800 */
 }
 header a,
-nav a,
+header nav a,
 header span,
-nav span,
+header nav span,
 header div.text-foreground,
-nav div.text-foreground,
+header nav div.text-foreground,
 header span.text-foreground,
-nav span.text-foreground {
+header nav span.text-foreground {
   color: #e7e5e4 !important; /* Stone 200 */
 }
 header a:hover,
-nav a:hover {
+header nav a:hover {
   color: #ffffff !important;
 }
 
@@ -220,23 +220,23 @@ nav a:hover {
 
 /* ── Override for Theme Tech (Tối) ── */
 .theme-tech header,
-.theme-tech nav {
+.theme-tech header nav {
   background-color: rgba(3, 7, 18, 0.85) !important;
   color: #f8fafc !important;
   border-color: rgba(255, 255, 255, 0.06) !important;
 }
 .theme-tech header a,
-.theme-tech nav a,
+.theme-tech header nav a,
 .theme-tech header span,
-.theme-tech nav span,
+.theme-tech header nav span,
 .theme-tech header div.text-foreground,
-.theme-tech nav div.text-foreground,
+.theme-tech header nav div.text-foreground,
 .theme-tech header span.text-foreground,
-.theme-tech nav span.text-foreground {
+.theme-tech header nav span.text-foreground {
   color: #94a3b8 !important;
 }
 .theme-tech header a:hover,
-.theme-tech nav a:hover {
+.theme-tech header nav a:hover {
   color: #f8fafc !important;
 }
 .theme-tech .btn-primary {
@@ -260,23 +260,23 @@ nav a:hover {
 
 /* ── Override for Theme Creative (Tối) ── */
 .theme-creative header,
-.theme-creative nav {
+.theme-creative header nav {
   background-color: rgba(8, 3, 21, 0.85) !important;
   color: #fdfaff !important;
   border-color: rgba(255, 255, 255, 0.07) !important;
 }
 .theme-creative header a,
-.theme-creative nav a,
+.theme-creative header nav a,
 .theme-creative header span,
-.theme-creative nav span,
+.theme-creative header nav span,
 .theme-creative header div.text-foreground,
-.theme-creative nav div.text-foreground,
+.theme-creative header nav div.text-foreground,
 .theme-creative header span.text-foreground,
-.theme-creative nav span.text-foreground {
+.theme-creative header nav span.text-foreground {
   color: #c084fc !important;
 }
 .theme-creative header a:hover,
-.theme-creative nav a:hover {
+.theme-creative header nav a:hover {
   color: #fdfaff !important;
 }
 .theme-creative .btn-primary {

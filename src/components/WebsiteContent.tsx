@@ -971,6 +971,15 @@ export default function WebsiteContent({
                 <Facebook size={18} aria-hidden="true" />
               </a>
             </div>
+            <div className="pt-2">
+              <Link
+                href="/chinh-sach-bao-mat"
+                className="text-sm font-bold text-stone-200 hover:text-white hover:underline underline-offset-4 transition flex items-center gap-2"
+              >
+                <ShieldCheck size={16} className="text-sky-400" />
+                Chính sách bảo mật dữ liệu
+              </Link>
+            </div>
           </div>
 
           <div className="space-y-4">
@@ -1022,23 +1031,6 @@ export default function WebsiteContent({
             </div>
           </div>
 
-        </div>
-
-        {/* Data Privacy Section */}
-        <div className={`max-w-7xl mx-auto w-full py-8 border-b ${
-          activeTheme === 'elegant' ? 'border-stone-800/40' : 'border-slate-800/40'
-        }`}>
-          <h5 className="text-[11px] font-bold uppercase tracking-widest text-stone-300 mb-3 flex items-center gap-2">
-            <span className="inline-block w-1 h-4 rounded bg-[var(--accent)]" />
-            Chính sách bảo mật dữ liệu
-          </h5>
-          <p className="text-[11px] text-stone-500 leading-relaxed max-w-4xl">
-            PrinK Tech cam kết bảo vệ thông tin cá nhân của khách hàng theo đúng quy định của{' '}
-            <strong className="text-stone-400">Nghị định 13/2023/NĐ-CP</strong> về bảo vệ dữ liệu cá nhân tại Việt Nam.
-            Thông tin thu thập (họ tên, số điện thoại, địa chỉ giao hàng) chỉ được sử dụng để xử lý đơn hàng và liên lạc hỗ trợ.
-            Dữ liệu không được chia sẻ với bên thứ ba vì mục đích thương mại. Khách hàng có quyền yêu cầu xem, chỉnh sửa hoặc xóa dữ liệu cá nhân bằng cách liên hệ trực tiếp qua Zalo{' '}
-            <a href="https://zalo.me/0822968412" className="text-sky-400 hover:underline">0822.968.412</a>.
-          </p>
         </div>
 
         <div className="max-w-7xl mx-auto w-full pt-6 flex flex-col md:flex-row justify-between items-center gap-3 text-[11px] text-stone-500">

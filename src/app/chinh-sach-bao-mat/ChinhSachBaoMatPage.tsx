@@ -44,12 +44,19 @@ export default function ChinhSachBaoMatPage() {
         >
           <div className="max-w-5xl mx-auto">
             {/* Breadcrumb */}
-            <nav className="flex items-center gap-2 text-xs mb-6" style={{ color: 'var(--text-muted)' }} aria-label="Breadcrumb">
-              <Link href="/" className="hover:opacity-80 transition flex items-center gap-1">
-                <Home size={12} /> Trang chủ
+            <nav
+              aria-label="Breadcrumb"
+              className="mb-8 flex flex-wrap items-center gap-2 text-xs font-semibold text-foreground/50 bg-foreground/5 px-4 py-2.5 rounded-xl border border-card-border/30 w-fit"
+            >
+              <Link href="/" className="flex items-center gap-1.5 hover:text-[var(--accent)] transition-colors">
+                <Home size={13} />
+                <span>Trang chủ</span>
               </Link>
-              <ChevronRight size={12} />
-              <span style={{ color: 'var(--foreground)', opacity: 0.7 }}>Chính sách bảo mật</span>
+              <span className="text-foreground/20 font-light">/</span>
+              <span className="text-foreground/80 font-medium flex items-center gap-1.5">
+                <ShieldCheck size={13} />
+                Chính sách bảo mật
+              </span>
             </nav>
 
             <div className="flex items-start gap-4">
