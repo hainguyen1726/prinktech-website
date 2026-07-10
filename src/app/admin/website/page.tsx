@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { 
   FileText, Layers, Calculator, PhoneCall, Plus, Edit2, Trash2, Save, LogOut, Globe,
   CheckCircle, Loader2, X, PlusCircle, ArrowUpRight, Check, RefreshCw, AlertCircle, Video,
-  BarChart, ShoppingBag, PenTool
+  BarChart, ShoppingBag, PenTool, Search, ChevronLeft, ChevronRight
 } from 'lucide-react';
 
 interface Product {
@@ -87,6 +87,40 @@ export default function AdminWebsitePage() {
   const [quotes, setQuotes] = useState<QuoteRequest[]>([]);
   const [videos, setVideos] = useState<Video[]>([]);
   const [refreshKey, setRefreshKey] = useState(0);
+
+  // Search & Pagination States
+  const [postsSearch, setPostsSearch] = useState('');
+  const [postsPage, setPostsPage] = useState(1);
+
+  const [productsSearch, setProductsSearch] = useState('');
+  const [productsPage, setProductsPage] = useState(1);
+
+  const [quotesSearch, setQuotesSearch] = useState('');
+  const [quotesStatus, setQuotesStatus] = useState('all');
+  const [quotesPage, setQuotesPage] = useState(1);
+
+  const [videosSearch, setVideosSearch] = useState('');
+  const [videosPage, setVideosPage] = useState(1);
+
+  const pageSize = 10;
+
+  // Helper cho phân trang thu gọn thông minh
+  const getPageNumbers = (currentPage: number, totalPages: number): (number | string)[] => {
+    const pages: (number | string)[] = [];
+    if (totalPages <= 7) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else {
+      if (currentPage <= 4) {
+        pages.push(1, 2, 3, 4, 5, '...', totalPages);
+      } else if (currentPage >= totalPages - 3) {
+        pages.push(1, '...', totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
+      } else {
+        pages.push(1, '...', currentPage - 1, currentPage, currentPage + 1, '...', totalPages);
+      }
+    }
+    return pages;
+  };
+
 
   // Drawer Panel Control States
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -754,53 +788,124 @@ export default function AdminWebsitePage() {
                   <Plus size={14} /> Viết bài mới
                 </Link>
               </div>
- 
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse text-xs">
-                  <thead>
-                    <tr className="border-b border-slate-200 bg-slate-50 text-slate-500 font-semibold">
-                      <th className="p-3">Bài viết</th>
-                      <th className="p-3">Đường dẫn (Slug)</th>
-                      <th className="p-3">Trạng thái</th>
-                      <th className="p-3">Tác giả</th>
-                      <th className="p-3">Ngày tạo</th>
-                      <th className="p-3 text-right">Thao tác</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    {posts.map(post => (
-                      <tr key={post.id} className="hover:bg-slate-50 text-slate-700">
-                        <td className="p-3 font-semibold text-slate-900 max-w-[200px] truncate">{post.title}</td>
-                        <td className="p-3 text-slate-500">{post.slug}</td>
-                        <td className="p-3">
-                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                            post.status === 'published' 
-                              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                              : 'bg-amber-50 text-amber-700 border border-amber-200'
-                          }`}>
-                            {post.status === 'published' ? 'Đã đăng' : 'Bản nháp'}
-                          </span>
-                        </td>
-                        <td className="p-3 text-slate-500">{post.author}</td>
-                        <td className="p-3 text-slate-400">{new Date(post.created_at).toLocaleDateString('vi-VN')}</td>
-                        <td className="p-3 text-right flex justify-end gap-2">
-                          <Link href={`/admin/viet-bai?id=${post.id}`} className="p-1.5 bg-slate-50 hover:bg-blue-50 text-slate-600 hover:text-blue-600 border border-slate-200 rounded transition cursor-pointer flex items-center justify-center">
-                            <Edit2 size={12} />
-                          </Link>
-                          <button onClick={() => handleDeletePost(post.id)} className="p-1.5 bg-slate-50 hover:bg-red-50 text-slate-600 hover:text-red-600 border border-slate-200 rounded transition cursor-pointer">
-                            <Trash2 size={12} />
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                    {posts.length === 0 && (
-                      <tr>
-                        <td colSpan={6} className="p-4 text-center text-slate-400">Không có bài viết nào.</td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
+              {/* Search Bar for Posts */}
+              <div className="flex items-center justify-between gap-4 p-3 bg-slate-50 border border-slate-200 rounded-xl">
+                <div className="relative w-full max-w-xs">
+                  <span className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-slate-400">
+                    <Search size={14} />
+                  </span>
+                  <input
+                    type="text"
+                    placeholder="Tìm kiếm bài viết..."
+                    value={postsSearch}
+                    onChange={(e) => {
+                      setPostsSearch(e.target.value);
+                      setPostsPage(1);
+                    }}
+                    className="w-full pl-9 pr-4 py-1.5 border border-slate-200 rounded-lg text-xs focus:outline-none focus:border-blue-500 bg-white text-slate-900"
+                  />
+                </div>
               </div>
+
+              {(() => {
+                const filteredPosts = posts.filter(post =>
+                  post.title.toLowerCase().includes(postsSearch.toLowerCase()) ||
+                  post.slug.toLowerCase().includes(postsSearch.toLowerCase()) ||
+                  (post.summary && post.summary.toLowerCase().includes(postsSearch.toLowerCase()))
+                );
+                const totalPostsPages = Math.ceil(filteredPosts.length / pageSize);
+                const paginatedPosts = filteredPosts.slice((postsPage - 1) * pageSize, postsPage * pageSize);
+
+                return (
+                  <>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left border-collapse text-xs">
+                        <thead>
+                          <tr className="border-b border-slate-200 bg-slate-50 text-slate-500 font-semibold">
+                            <th className="p-3">Bài viết</th>
+                            <th className="p-3">Đường dẫn (Slug)</th>
+                            <th className="p-3">Trạng thái</th>
+                            <th className="p-3">Tác giả</th>
+                            <th className="p-3">Ngày tạo</th>
+                            <th className="p-3 text-right">Thao tác</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100">
+                          {paginatedPosts.map(post => (
+                            <tr key={post.id} className="hover:bg-slate-50 text-slate-700">
+                              <td className="p-3 font-semibold text-slate-900 max-w-[200px] truncate">{post.title}</td>
+                              <td className="p-3 text-slate-500">{post.slug}</td>
+                              <td className="p-3">
+                                <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                                  post.status === 'published' 
+                                    ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                                    : 'bg-amber-50 text-amber-700 border border-amber-200'
+                                }`}>
+                                  {post.status === 'published' ? 'Đã đăng' : 'Bản nháp'}
+                                </span>
+                              </td>
+                              <td className="p-3 text-slate-500">{post.author}</td>
+                              <td className="p-3 text-slate-400">{new Date(post.created_at).toLocaleDateString('vi-VN')}</td>
+                              <td className="p-3 text-right flex justify-end gap-2">
+                                <Link href={`/admin/viet-bai?id=${post.id}`} className="p-1.5 bg-slate-50 hover:bg-blue-50 text-slate-600 hover:text-blue-600 border border-slate-200 rounded transition cursor-pointer flex items-center justify-center">
+                                  <Edit2 size={12} />
+                                </Link>
+                                <button onClick={() => handleDeletePost(post.id)} className="p-1.5 bg-slate-50 hover:bg-red-50 text-slate-600 hover:text-red-600 border border-slate-200 rounded transition cursor-pointer">
+                                  <Trash2 size={12} />
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                          {filteredPosts.length === 0 && (
+                            <tr>
+                              <td colSpan={6} className="p-4 text-center text-slate-400">Không tìm thấy bài viết nào.</td>
+                            </tr>
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    {/* Pagination Bar for Posts */}
+                    {totalPostsPages > 1 && (
+                      <div className="flex flex-col sm:flex-row justify-between items-center mt-5 pt-4 border-t border-slate-200 text-xs text-slate-500 font-semibold gap-3">
+                        <span>Hiển thị {(postsPage - 1) * pageSize + 1} - {Math.min(postsPage * pageSize, filteredPosts.length)} trong {filteredPosts.length} bài viết</span>
+                        <div className="flex items-center gap-1">
+                          <button
+                            disabled={postsPage === 1}
+                            onClick={() => setPostsPage(p => Math.max(1, p - 1))}
+                            className="p-1.5 rounded-lg border border-slate-200 hover:bg-slate-100 disabled:opacity-40 disabled:hover:bg-transparent transition cursor-pointer flex items-center justify-center bg-white"
+                          >
+                            <ChevronLeft size={14} />
+                          </button>
+                          {getPageNumbers(postsPage, totalPostsPages).map((pNo, i) => (
+                            <button
+                              key={i}
+                              disabled={pNo === '...'}
+                              onClick={() => typeof pNo === 'number' && setPostsPage(pNo)}
+                              className={`w-8 h-8 rounded-lg text-xs font-semibold transition ${
+                                pNo === '...' ? 'cursor-default text-slate-400 bg-transparent' : 'cursor-pointer'
+                              } ${
+                                postsPage === pNo 
+                                  ? 'bg-blue-600 text-white shadow-sm font-bold border-transparent' 
+                                  : pNo === '...' ? 'border-transparent' : 'border border-slate-200 hover:bg-slate-100 bg-white text-slate-700'
+                              }`}
+                            >
+                              {pNo}
+                            </button>
+                          ))}
+                          <button
+                            disabled={postsPage === totalPostsPages}
+                            onClick={() => setPostsPage(p => Math.min(totalPostsPages, p + 1))}
+                            className="p-1.5 rounded-lg border border-slate-200 hover:bg-slate-100 disabled:opacity-40 disabled:hover:bg-transparent transition cursor-pointer flex items-center justify-center bg-white"
+                          >
+                            <ChevronRight size={14} />
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </>
+                );
+              })()}
             </div>
           )}
 
@@ -820,59 +925,131 @@ export default function AdminWebsitePage() {
                 </button>
               </div>
 
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse text-xs">
-                  <thead>
-                    <tr className="border-b border-slate-200 bg-slate-50 text-slate-500 font-semibold">
-                      <th className="p-3">Sản phẩm</th>
-                      <th className="p-3">Phân loại</th>
-                      <th className="p-3 text-right">Đơn giá khởi điểm</th>
-                      <th className="p-3 text-center">Nổi bật</th>
-                      <th className="p-3 text-right">Thao tác</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    {products.map(prod => (
-                      <tr key={prod.id} className="hover:bg-slate-50 text-slate-700">
-                        <td className="p-3 font-semibold text-slate-900 flex items-center gap-2">
-                          {prod.image_url && (
-                            <img src={prod.image_url} alt={prod.name} className="w-8 h-8 rounded object-cover border border-slate-200" />
-                          )}
-                          <span>{prod.name}</span>
-                        </td>
-                        <td className="p-3">
-                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-600">
-                            {prod.category === 'standard' ? 'UV DTF Thường' : prod.category === 'embossed' ? 'UV DTF Nổi 3D' : 'Khác'}
-                          </span>
-                        </td>
-                        <td className="p-3 text-right font-bold text-blue-600 tabular-nums">{Number(prod.price).toLocaleString()}đ / A3</td>
-                        <td className="p-3 text-center">
-                          {prod.is_featured ? (
-                            <span className="inline-flex items-center justify-center p-1 bg-blue-50 text-blue-600 rounded-full">
-                              <Check size={12} />
-                            </span>
-                          ) : (
-                            <span className="text-slate-400">-</span>
-                          )}
-                        </td>
-                        <td className="p-3 text-right flex justify-end gap-2">
-                          <button onClick={() => handleEditProduct(prod)} className="p-1.5 bg-slate-50 hover:bg-blue-50 text-slate-600 hover:text-blue-600 border border-slate-200 rounded transition cursor-pointer">
-                            <Edit2 size={12} />
-                          </button>
-                          <button onClick={() => handleDeleteProduct(prod.id)} className="p-1.5 bg-slate-50 hover:bg-red-50 text-slate-600 hover:text-red-600 border border-slate-200 rounded transition cursor-pointer">
-                            <Trash2 size={12} />
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                    {products.length === 0 && (
-                      <tr>
-                        <td colSpan={5} className="p-4 text-center text-slate-400">Không có sản phẩm nào.</td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
+              {/* Search Bar for Products */}
+              <div className="flex items-center justify-between gap-4 p-3 bg-slate-50 border border-slate-200 rounded-xl">
+                <div className="relative w-full max-w-xs">
+                  <span className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-slate-400">
+                    <Search size={14} />
+                  </span>
+                  <input
+                    type="text"
+                    placeholder="Tìm kiếm sản phẩm..."
+                    value={productsSearch}
+                    onChange={(e) => {
+                      setProductsSearch(e.target.value);
+                      setProductsPage(1);
+                    }}
+                    className="w-full pl-9 pr-4 py-1.5 border border-slate-200 rounded-lg text-xs focus:outline-none focus:border-blue-500 bg-white text-slate-900"
+                  />
+                </div>
               </div>
+
+              {(() => {
+                const filteredProducts = products.filter(prod =>
+                  prod.name.toLowerCase().includes(productsSearch.toLowerCase()) ||
+                  prod.slug.toLowerCase().includes(productsSearch.toLowerCase()) ||
+                  (prod.description && prod.description.toLowerCase().includes(productsSearch.toLowerCase()))
+                );
+                const totalProductsPages = Math.ceil(filteredProducts.length / pageSize);
+                const paginatedProducts = filteredProducts.slice((productsPage - 1) * pageSize, productsPage * pageSize);
+
+                return (
+                  <>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left border-collapse text-xs">
+                        <thead>
+                          <tr className="border-b border-slate-200 bg-slate-50 text-slate-500 font-semibold">
+                            <th className="p-3">Sản phẩm</th>
+                            <th className="p-3">Phân loại</th>
+                            <th className="p-3 text-right">Đơn giá khởi điểm</th>
+                            <th className="p-3 text-center">Nổi bật</th>
+                            <th className="p-3 text-right">Thao tác</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100">
+                          {paginatedProducts.map(prod => (
+                            <tr key={prod.id} className="hover:bg-slate-50 text-slate-700">
+                              <td className="p-3 font-semibold text-slate-900 flex items-center gap-2">
+                                {prod.image_url && (
+                                  <img src={prod.image_url} alt={prod.name} className="w-8 h-8 rounded object-cover border border-slate-200" />
+                                )}
+                                <span>{prod.name}</span>
+                              </td>
+                              <td className="p-3">
+                                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-600">
+                                  {prod.category === 'standard' ? 'UV DTF Thường' : prod.category === 'embossed' ? 'UV DTF Nổi 3D' : 'Khác'}
+                                </span>
+                              </td>
+                              <td className="p-3 text-right font-bold text-blue-600 tabular-nums">{Number(prod.price).toLocaleString()}đ / A3</td>
+                              <td className="p-3 text-center">
+                                {prod.is_featured ? (
+                                  <span className="inline-flex items-center justify-center p-1 bg-blue-50 text-blue-600 rounded-full">
+                                    <Check size={12} />
+                                  </span>
+                                ) : (
+                                  <span className="text-slate-400">-</span>
+                                )}
+                              </td>
+                              <td className="p-3 text-right flex justify-end gap-2">
+                                <button onClick={() => handleEditProduct(prod)} className="p-1.5 bg-slate-50 hover:bg-blue-50 text-slate-600 hover:text-blue-600 border border-slate-200 rounded transition cursor-pointer">
+                                  <Edit2 size={12} />
+                                </button>
+                                <button onClick={() => handleDeleteProduct(prod.id)} className="p-1.5 bg-slate-50 hover:bg-red-50 text-slate-600 hover:text-red-600 border border-slate-200 rounded transition cursor-pointer">
+                                  <Trash2 size={12} />
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                          {filteredProducts.length === 0 && (
+                            <tr>
+                              <td colSpan={5} className="p-4 text-center text-slate-400">Không tìm thấy sản phẩm nào.</td>
+                            </tr>
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    {/* Pagination Bar for Products */}
+                    {totalProductsPages > 1 && (
+                      <div className="flex flex-col sm:flex-row justify-between items-center mt-5 pt-4 border-t border-slate-200 text-xs text-slate-500 font-semibold gap-3">
+                        <span>Hiển thị {(productsPage - 1) * pageSize + 1} - {Math.min(productsPage * pageSize, filteredProducts.length)} trong {filteredProducts.length} sản phẩm</span>
+                        <div className="flex items-center gap-1">
+                          <button
+                            disabled={productsPage === 1}
+                            onClick={() => setProductsPage(p => Math.max(1, p - 1))}
+                            className="p-1.5 rounded-lg border border-slate-200 hover:bg-slate-100 disabled:opacity-40 disabled:hover:bg-transparent transition cursor-pointer flex items-center justify-center bg-white"
+                          >
+                            <ChevronLeft size={14} />
+                          </button>
+                          {getPageNumbers(productsPage, totalProductsPages).map((pNo, i) => (
+                            <button
+                              key={i}
+                              disabled={pNo === '...'}
+                              onClick={() => typeof pNo === 'number' && setProductsPage(pNo)}
+                              className={`w-8 h-8 rounded-lg text-xs font-semibold transition ${
+                                pNo === '...' ? 'cursor-default text-slate-400 bg-transparent' : 'cursor-pointer'
+                              } ${
+                                productsPage === pNo 
+                                  ? 'bg-blue-600 text-white shadow-sm font-bold border-transparent' 
+                                  : pNo === '...' ? 'border-transparent' : 'border border-slate-200 hover:bg-slate-100 bg-white text-slate-700'
+                              }`}
+                            >
+                              {pNo}
+                            </button>
+                          ))}
+                          <button
+                            disabled={productsPage === totalProductsPages}
+                            onClick={() => setProductsPage(p => Math.min(totalProductsPages, p + 1))}
+                            className="p-1.5 rounded-lg border border-slate-200 hover:bg-slate-100 disabled:opacity-40 disabled:hover:bg-transparent transition cursor-pointer flex items-center justify-center bg-white"
+                          >
+                            <ChevronRight size={14} />
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </>
+                );
+              })()}
             </div>
           )}
 
@@ -959,66 +1136,158 @@ export default function AdminWebsitePage() {
           {/* TAB 4: QUOTE REQUESTS */}
           {activeTab === 'quotes' && (
             <div className="glass-card p-6 space-y-6">
-              <div className="border-b border-slate-800 pb-4">
-                <h3 className="font-bold text-base text-white">Yêu cầu báo giá từ Website</h3>
-                <p className="text-[10px] text-slate-500 mt-1">Thông tin liên hệ của khách hàng vãng lai gửi yêu cầu báo giá.</p>
+              <div className="border-b border-slate-200 pb-4">
+                <h3 className="font-bold text-base text-slate-900">Yêu cầu báo giá từ Website</h3>
+                <p className="text-[10px] text-slate-400 mt-1">Thông tin liên hệ của khách hàng vãng lai gửi yêu cầu báo giá.</p>
               </div>
 
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse text-xs">
-                  <thead>
-                    <tr className="border-b border-slate-800 bg-slate-950/20 text-slate-400 font-semibold">
-                      <th className="p-3">Khách hàng</th>
-                      <th className="p-3">Số điện thoại</th>
-                      <th className="p-3">Sản phẩm / Số lượng</th>
-                      <th className="p-3">Ghi chú yêu cầu</th>
-                      <th className="p-3">Trạng thái</th>
-                      <th className="p-3 text-right">Thao tác</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-800/40">
-                    {quotes.map(req => (
-                      <tr key={req.id} className="hover:bg-slate-900/10 text-slate-300">
-                        <td className="p-3">
-                          <strong className="text-white block">{req.customer_name}</strong>
-                          <span className="text-[10px] text-slate-500">{req.email || 'Không có email'}</span>
-                        </td>
-                        <td className="p-3 font-semibold text-slate-200 tabular-nums">
-                          <a href={`tel:${req.phone}`} className="hover:underline text-sky-400" aria-label={`Gọi điện cho ${req.customer_name} qua số ${req.phone}`}>{req.phone}</a>
-                        </td>
-                        <td className="p-3">
-                          <span className="text-slate-300 font-medium block">{req.material_type}</span>
-                          <span className="text-[10px] text-slate-500">Số lượng: <span className="tabular-nums font-semibold text-slate-300">{req.quantity}</span> {req.dimensions}</span>
-                        </td>
-                        <td className="p-3 max-w-[200px] truncate" title={req.notes || ''}>
-                          {req.notes || '-'}
-                        </td>
-                        <td className="p-3">
-                          <select
-                            value={req.status}
-                            onChange={e => handleUpdateQuoteStatus(req.id, e.target.value)}
-                            className="bg-slate-900 border border-slate-800 rounded p-1 text-[10px] text-slate-300 font-bold focus:outline-none"
-                          >
-                            <option value="pending" className="text-amber-500 font-bold">Chờ xử lý</option>
-                            <option value="contacted" className="text-sky-500 font-bold">Đã liên hệ</option>
-                            <option value="completed" className="text-emerald-500 font-bold">Hoàn thành</option>
-                          </select>
-                        </td>
-                        <td className="p-3 text-right">
-                          <button onClick={() => handleDeleteQuote(req.id)} className="p-1.5 bg-slate-800 hover:bg-rose-500/10 text-slate-300 hover:text-rose-400 rounded transition cursor-pointer">
-                            <Trash2 size={12} />
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                    {quotes.length === 0 && (
-                      <tr>
-                        <td colSpan={6} className="p-4 text-center text-slate-500">Chưa tiếp nhận yêu cầu báo giá nào.</td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
+              {/* Search & Filter Bar for Quotes */}
+              <div className="flex flex-col sm:flex-row items-center gap-3 p-3 bg-slate-50 border border-slate-200 rounded-xl">
+                <div className="relative w-full max-w-xs">
+                  <span className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-slate-400">
+                    <Search size={14} />
+                  </span>
+                  <input
+                    type="text"
+                    placeholder="Tìm tên, SĐT, email, ghi chú..."
+                    value={quotesSearch}
+                    onChange={(e) => {
+                      setQuotesSearch(e.target.value);
+                      setQuotesPage(1);
+                    }}
+                    className="w-full pl-9 pr-4 py-1.5 border border-slate-200 rounded-lg text-xs focus:outline-none focus:border-blue-500 bg-white text-slate-900"
+                  />
+                </div>
+                <select
+                  value={quotesStatus}
+                  onChange={(e) => {
+                    setQuotesStatus(e.target.value);
+                    setQuotesPage(1);
+                  }}
+                  className="px-3 py-1.5 border border-slate-200 rounded-lg text-xs focus:outline-none focus:border-blue-500 bg-white text-slate-700 font-semibold"
+                >
+                  <option value="all">Tất cả trạng thái</option>
+                  <option value="pending">Chờ xử lý</option>
+                  <option value="contacted">Đã liên hệ</option>
+                  <option value="completed">Hoàn thành</option>
+                </select>
               </div>
+
+              {(() => {
+                const filteredQuotes = quotes.filter(req => {
+                  const matchesSearch = 
+                    req.customer_name.toLowerCase().includes(quotesSearch.toLowerCase()) ||
+                    req.phone.includes(quotesSearch) ||
+                    (req.email && req.email.toLowerCase().includes(quotesSearch.toLowerCase())) ||
+                    (req.notes && req.notes.toLowerCase().includes(quotesSearch.toLowerCase())) ||
+                    (req.material_type && req.material_type.toLowerCase().includes(quotesSearch.toLowerCase()));
+                  
+                  const matchesStatus = quotesStatus === 'all' || req.status === quotesStatus;
+                  return matchesSearch && matchesStatus;
+                });
+
+                const totalQuotesPages = Math.ceil(filteredQuotes.length / pageSize);
+                const paginatedQuotes = filteredQuotes.slice((quotesPage - 1) * pageSize, quotesPage * pageSize);
+
+                return (
+                  <>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left border-collapse text-xs">
+                        <thead>
+                          <tr className="border-b border-slate-200 bg-slate-50 text-slate-500 font-semibold">
+                            <th className="p-3">Khách hàng</th>
+                            <th className="p-3">Số điện thoại</th>
+                            <th className="p-3">Sản phẩm / Số lượng</th>
+                            <th className="p-3">Ghi chú yêu cầu</th>
+                            <th className="p-3">Trạng thái</th>
+                            <th className="p-3 text-right">Thao tác</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100">
+                          {paginatedQuotes.map(req => (
+                            <tr key={req.id} className="hover:bg-slate-50 text-slate-700">
+                              <td className="p-3">
+                                <strong className="text-slate-900 block">{req.customer_name}</strong>
+                                <span className="text-[10px] text-slate-400">{req.email || 'Không có email'}</span>
+                              </td>
+                              <td className="p-3 font-semibold text-slate-700 tabular-nums">
+                                <a href={`tel:${req.phone}`} className="hover:underline text-blue-600" aria-label={`Gọi điện cho ${req.customer_name} qua số ${req.phone}`}>{req.phone}</a>
+                              </td>
+                              <td className="p-3">
+                                <span className="text-slate-800 font-medium block">{req.material_type}</span>
+                                <span className="text-[10px] text-slate-400">Số lượng: <span className="tabular-nums font-semibold text-slate-700">{req.quantity}</span> {req.dimensions}</span>
+                              </td>
+                              <td className="p-3 max-w-[200px] truncate text-slate-600" title={req.notes || ''}>
+                                {req.notes || '-'}
+                              </td>
+                              <td className="p-3">
+                                <select
+                                  value={req.status}
+                                  onChange={e => handleUpdateQuoteStatus(req.id, e.target.value)}
+                                  className="bg-white border border-slate-200 rounded p-1 text-[10px] text-slate-700 font-bold focus:outline-none focus:border-blue-500 cursor-pointer"
+                                >
+                                  <option value="pending" className="text-amber-600 font-bold">Chờ xử lý</option>
+                                  <option value="contacted" className="text-sky-600 font-bold">Đã liên hệ</option>
+                                  <option value="completed" className="text-emerald-600 font-bold">Hoàn thành</option>
+                                </select>
+                              </td>
+                              <td className="p-3 text-right">
+                                <button onClick={() => handleDeleteQuote(req.id)} className="p-1.5 bg-slate-50 hover:bg-red-50 text-slate-600 hover:text-red-700 border border-slate-200 rounded transition cursor-pointer">
+                                  <Trash2 size={12} />
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                          {filteredQuotes.length === 0 && (
+                            <tr>
+                              <td colSpan={6} className="p-4 text-center text-slate-400">Không tìm thấy yêu cầu báo giá nào.</td>
+                            </tr>
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    {/* Pagination Bar for Quotes */}
+                    {totalQuotesPages > 1 && (
+                      <div className="flex flex-col sm:flex-row justify-between items-center mt-5 pt-4 border-t border-slate-200 text-xs text-slate-500 font-semibold gap-3">
+                        <span>Hiển thị {(quotesPage - 1) * pageSize + 1} - {Math.min(quotesPage * pageSize, filteredQuotes.length)} trong {filteredQuotes.length} yêu cầu</span>
+                        <div className="flex items-center gap-1">
+                          <button
+                            disabled={quotesPage === 1}
+                            onClick={() => setQuotesPage(p => Math.max(1, p - 1))}
+                            className="p-1.5 rounded-lg border border-slate-200 hover:bg-slate-100 disabled:opacity-40 disabled:hover:bg-transparent transition cursor-pointer flex items-center justify-center bg-white"
+                          >
+                            <ChevronLeft size={14} />
+                          </button>
+                          {getPageNumbers(quotesPage, totalQuotesPages).map((pNo, i) => (
+                            <button
+                              key={i}
+                              disabled={pNo === '...'}
+                              onClick={() => typeof pNo === 'number' && setQuotesPage(pNo)}
+                              className={`w-8 h-8 rounded-lg text-xs font-semibold transition ${
+                                pNo === '...' ? 'cursor-default text-slate-400 bg-transparent' : 'cursor-pointer'
+                              } ${
+                                quotesPage === pNo 
+                                  ? 'bg-blue-600 text-white shadow-sm font-bold border-transparent' 
+                                  : pNo === '...' ? 'border-transparent' : 'border border-slate-200 hover:bg-slate-100 bg-white text-slate-700'
+                              }`}
+                            >
+                              {pNo}
+                            </button>
+                          ))}
+                          <button
+                            disabled={quotesPage === totalQuotesPages}
+                            onClick={() => setQuotesPage(p => Math.min(totalQuotesPages, p + 1))}
+                            className="p-1.5 rounded-lg border border-slate-200 hover:bg-slate-100 disabled:opacity-40 disabled:hover:bg-transparent transition cursor-pointer flex items-center justify-center bg-white"
+                          >
+                            <ChevronRight size={14} />
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </>
+                );
+              })()}
             </div>
           )}
 
@@ -1038,75 +1307,147 @@ export default function AdminWebsitePage() {
                 </button>
               </div>
 
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse text-xs">
-                  <thead>
-                    <tr className="border-b border-slate-200 bg-slate-50 text-slate-500 font-semibold">
-                      <th className="p-3">Video</th>
-                      <th className="p-3">Nền tảng</th>
-                      <th className="p-3">Đường dẫn URL</th>
-                      <th className="p-3 text-center">Thứ tự</th>
-                      <th className="p-3 text-center">Trạng thái</th>
-                      <th className="p-3 text-right">Thao tác</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    {videos.map(video => (
-                      <tr key={video.id} className="hover:bg-slate-50 text-slate-700">
-                        <td className="p-3 font-semibold text-slate-900 flex items-center gap-2">
-                          {getAdminVideoThumbnail(video) ? (
-                            <img src={getAdminVideoThumbnail(video)} alt={video.title} className="w-12 h-8 rounded object-cover border border-slate-200" />
-                          ) : (
-                            <div className="w-12 h-8 rounded bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-400">
-                              <Video size={14} />
-                            </div>
-                          )}
-                          <span className="max-w-[200px] truncate text-slate-900" title={video.title}>{video.title}</span>
-                        </td>
-                        <td className="p-3">
-                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                            video.platform === 'youtube'
-                              ? 'bg-red-50 text-red-700 border border-red-200'
-                              : video.platform === 'reels'
-                              ? 'bg-pink-50 text-pink-700 border border-pink-200'
-                              : 'bg-slate-100 text-slate-700 border border-slate-200'
-                          }`}>
-                            {video.platform === 'youtube' ? 'YouTube' : video.platform === 'reels' ? 'Reels' : 'TikTok'}
-                          </span>
-                        </td>
-                        <td className="p-3 text-slate-500 truncate max-w-[200px]" title={video.video_url}>
-                          <a href={video.video_url} target="_blank" rel="noopener noreferrer" className="hover:underline hover:text-blue-600 flex items-center gap-1">
-                            {video.video_url} <ArrowUpRight size={10} />
-                          </a>
-                        </td>
-                        <td className="p-3 text-center font-semibold tabular-nums">{video.display_order}</td>
-                        <td className="p-3 text-center">
-                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                            video.is_visible
-                              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                              : 'bg-slate-100 text-slate-400 border border-slate-200'
-                          }`}>
-                            {video.is_visible ? 'Hiển thị' : 'Ẩn'}
-                          </span>
-                        </td>
-                        <td className="p-3 text-right flex justify-end gap-2">
-                          <button onClick={() => handleEditVideo(video)} className="p-1.5 bg-slate-50 hover:bg-blue-50 text-slate-600 hover:text-blue-600 border border-slate-200 rounded transition cursor-pointer">
-                            <Edit2 size={12} />
-                          </button>
-                          <button onClick={() => handleDeleteVideo(video.id)} className="p-1.5 bg-slate-50 hover:bg-red-50 text-slate-600 hover:text-red-600 border border-slate-200 rounded transition cursor-pointer">
-                            <Trash2 size={12} />
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                    {videos.length === 0 && (
-                      <tr>
-                        <td colSpan={6} className="p-4 text-center text-slate-400">Chưa có video nào trong thư viện.</td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
+              {/* Search Bar for Videos */}
+              <div className="flex items-center justify-between gap-4 p-3 bg-slate-50 border border-slate-200 rounded-xl">
+                <div className="relative w-full max-w-xs">
+                  <span className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-slate-400">
+                    <Search size={14} />
+                  </span>
+                  <input
+                    type="text"
+                    placeholder="Tìm kiếm video..."
+                    value={videosSearch}
+                    onChange={(e) => {
+                      setVideosSearch(e.target.value);
+                      setVideosPage(1);
+                    }}
+                    className="w-full pl-9 pr-4 py-1.5 border border-slate-200 rounded-lg text-xs focus:outline-none focus:border-blue-500 bg-white text-slate-900"
+                  />
+                </div>
               </div>
+
+              {(() => {
+                const filteredVideos = videos.filter(video =>
+                  video.title.toLowerCase().includes(videosSearch.toLowerCase()) ||
+                  video.video_url.toLowerCase().includes(videosSearch.toLowerCase()) ||
+                  video.platform.toLowerCase().includes(videosSearch.toLowerCase())
+                );
+                const totalVideosPages = Math.ceil(filteredVideos.length / pageSize);
+                const paginatedVideos = filteredVideos.slice((videosPage - 1) * pageSize, videosPage * pageSize);
+
+                return (
+                  <>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left border-collapse text-xs">
+                        <thead>
+                          <tr className="border-b border-slate-200 bg-slate-50 text-slate-500 font-semibold">
+                            <th className="p-3">Video</th>
+                            <th className="p-3">Nền tảng</th>
+                            <th className="p-3">Đường dẫn URL</th>
+                            <th className="p-3 text-center">Thứ tự</th>
+                            <th className="p-3 text-center">Trạng thái</th>
+                            <th className="p-3 text-right">Thao tác</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100">
+                          {paginatedVideos.map(video => (
+                            <tr key={video.id} className="hover:bg-slate-50 text-slate-700">
+                              <td className="p-3 font-semibold text-slate-900 flex items-center gap-2">
+                                {getAdminVideoThumbnail(video) ? (
+                                  <img src={getAdminVideoThumbnail(video)} alt={video.title} className="w-12 h-8 rounded object-cover border border-slate-200" />
+                                ) : (
+                                  <div className="w-12 h-8 rounded bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-400">
+                                    <Video size={14} />
+                                  </div>
+                                )}
+                                <span className="max-w-[200px] truncate text-slate-900" title={video.title}>{video.title}</span>
+                              </td>
+                              <td className="p-3">
+                                <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                                  video.platform === 'youtube'
+                                    ? 'bg-red-50 text-red-700 border border-red-200'
+                                    : video.platform === 'reels'
+                                    ? 'bg-pink-50 text-pink-700 border border-pink-200'
+                                    : 'bg-slate-100 text-slate-700 border border-slate-200'
+                                }`}>
+                                  {video.platform === 'youtube' ? 'YouTube' : video.platform === 'reels' ? 'Reels' : 'TikTok'}
+                                </span>
+                              </td>
+                              <td className="p-3 text-slate-500 truncate max-w-[200px]" title={video.video_url}>
+                                <a href={video.video_url} target="_blank" rel="noopener noreferrer" className="hover:underline hover:text-blue-600 flex items-center gap-1">
+                                  {video.video_url} <ArrowUpRight size={10} />
+                                </a>
+                              </td>
+                              <td className="p-3 text-center font-semibold tabular-nums">{video.display_order}</td>
+                              <td className="p-3 text-center">
+                                <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                                  video.is_visible
+                                    ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                                    : 'bg-slate-100 text-slate-400 border border-slate-200'
+                                }`}>
+                                  {video.is_visible ? 'Hiển thị' : 'Ẩn'}
+                                </span>
+                              </td>
+                              <td className="p-3 text-right flex justify-end gap-2">
+                                <button onClick={() => handleEditVideo(video)} className="p-1.5 bg-slate-50 hover:bg-blue-50 text-slate-600 hover:text-blue-600 border border-slate-200 rounded transition cursor-pointer">
+                                  <Edit2 size={12} />
+                                </button>
+                                <button onClick={() => handleDeleteVideo(video.id)} className="p-1.5 bg-slate-50 hover:bg-red-50 text-slate-600 hover:text-red-600 border border-slate-200 rounded transition cursor-pointer">
+                                  <Trash2 size={12} />
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                          {filteredVideos.length === 0 && (
+                            <tr>
+                              <td colSpan={6} className="p-4 text-center text-slate-400">Không tìm thấy video nào.</td>
+                            </tr>
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    {/* Pagination Bar for Videos */}
+                    {totalVideosPages > 1 && (
+                      <div className="flex flex-col sm:flex-row justify-between items-center mt-5 pt-4 border-t border-slate-200 text-xs text-slate-500 font-semibold gap-3">
+                        <span>Hiển thị {(videosPage - 1) * pageSize + 1} - {Math.min(videosPage * pageSize, filteredVideos.length)} trong {filteredVideos.length} video</span>
+                        <div className="flex items-center gap-1">
+                          <button
+                            disabled={videosPage === 1}
+                            onClick={() => setVideosPage(p => Math.max(1, p - 1))}
+                            className="p-1.5 rounded-lg border border-slate-200 hover:bg-slate-100 disabled:opacity-40 disabled:hover:bg-transparent transition cursor-pointer flex items-center justify-center bg-white"
+                          >
+                            <ChevronLeft size={14} />
+                          </button>
+                          {getPageNumbers(videosPage, totalVideosPages).map((pNo, i) => (
+                            <button
+                              key={i}
+                              disabled={pNo === '...'}
+                              onClick={() => typeof pNo === 'number' && setVideosPage(pNo)}
+                              className={`w-8 h-8 rounded-lg text-xs font-semibold transition ${
+                                pNo === '...' ? 'cursor-default text-slate-400 bg-transparent' : 'cursor-pointer'
+                              } ${
+                                videosPage === pNo 
+                                  ? 'bg-blue-600 text-white shadow-sm font-bold border-transparent' 
+                                  : pNo === '...' ? 'border-transparent' : 'border border-slate-200 hover:bg-slate-100 bg-white text-slate-700'
+                              }`}
+                            >
+                              {pNo}
+                            </button>
+                          ))}
+                          <button
+                            disabled={videosPage === totalVideosPages}
+                            onClick={() => setVideosPage(p => Math.min(totalVideosPages, p + 1))}
+                            className="p-1.5 rounded-lg border border-slate-200 hover:bg-slate-100 disabled:opacity-40 disabled:hover:bg-transparent transition cursor-pointer flex items-center justify-center bg-white"
+                          >
+                            <ChevronRight size={14} />
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </>
+                );
+              })()}
             </div>
           )}
 

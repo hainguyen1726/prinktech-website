@@ -88,6 +88,7 @@ export const metadata: Metadata = {
 // Schema đã được chuyển sang trang chủ để tránh ảnh hưởng trang con
 
 import BottomNav from '@/components/BottomNav';
+import BackToTop from '@/components/BackToTop';
 
 export default function RootLayout({
   children,
@@ -120,8 +121,10 @@ export default function RootLayout({
       </head>
       <body className={`${inter.variable} ${outfit.variable} ${playfair.variable} min-h-screen flex flex-col relative overflow-x-hidden antialiased pb-16 md:pb-0`}>
         {children}
+        <BackToTop />
         <BottomNav />
       </body>
     </html>
   );
 }
+

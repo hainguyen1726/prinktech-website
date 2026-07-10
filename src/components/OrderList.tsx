@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
+import { ChevronLeft, ChevronRight, Search } from 'lucide-react';
 import {
   Order,
   ORDER_STATUS_LABELS,
@@ -14,11 +15,31 @@ export default function OrderList() {
   const [error, setError] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
+  const [localSearchTerm, setLocalSearchTerm] = useState('');
   const [page, setPage] = useState(1);
   const [totalOrders, setTotalOrders] = useState(0);
+  const totalPages = Math.ceil(totalOrders / 20);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [activeTheme, setActiveTheme] = useState<'tech' | 'elegant'>('elegant');
+
+  // Helper cho phân trang thu gọn thông minh
+  const getPageNumbers = (currentPage: number, totalPages: number): (number | string)[] => {
+    const pages: (number | string)[] = [];
+    if (totalPages <= 7) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else {
+      if (currentPage <= 4) {
+        pages.push(1, 2, 3, 4, 5, '...', totalPages);
+      } else if (currentPage >= totalPages - 3) {
+        pages.push(1, '...', totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
+      } else {
+        pages.push(1, '...', currentPage - 1, currentPage, currentPage + 1, '...', totalPages);
+      }
+    }
+    return pages;
+  };
+
 
   // Load theme từ localStorage
   useEffect(() => {
@@ -72,6 +93,18 @@ export default function OrderList() {
   useEffect(() => {
     fetchOrders();
   }, [fetchOrders]);
+
+  const handleSearchSubmit = () => {
+    setSearchTerm(localSearchTerm);
+    setPage(1);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleSearchSubmit();
+    }
+  };
+
 
   const handleStatusChange = async (orderId: string, newStatus: string) => {
     setUpdatingId(orderId);
@@ -203,30 +236,37 @@ export default function OrderList() {
 
         {/* Filters */}
         <div className="rounded-2xl border border-card-border bg-card-bg p-4 mb-6 flex flex-col sm:flex-row gap-3 shadow-sm">
-          <input
-            type="text"
-            placeholder="Tìm theo tên, SĐT, hoặc mã đơn..."
-            value={searchTerm}
-            onChange={e => setSearchTerm(e.target.value)}
-            className="flex-1 h-10 px-3 rounded-xl border border-card-border bg-background text-foreground text-sm placeholder-text-muted/40 focus:outline-none focus:border-[var(--accent)] font-semibold"
-          />
+          <div className="flex-1 relative">
+            <span className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-slate-400">
+              <Search size={16} />
+            </span>
+            <input
+              type="text"
+              placeholder="Tìm theo tên, SĐT, hoặc mã đơn..."
+              value={localSearchTerm}
+              onChange={e => setLocalSearchTerm(e.target.value)}
+              onKeyDown={handleKeyDown}
+              className="w-full h-10 pl-10 pr-3 rounded-xl border border-card-border bg-background text-slate-900 text-sm placeholder-text-muted/40 focus:outline-none focus:border-[var(--accent)] font-semibold"
+            />
+          </div>
           <select
             value={statusFilter}
-            onChange={e => setStatusFilter(e.target.value)}
-            className="h-10 px-3 rounded-xl border border-card-border bg-background text-foreground text-sm font-semibold focus:outline-none focus:border-[var(--accent)]"
+            onChange={e => { setStatusFilter(e.target.value); setPage(1); }}
+            className="h-10 px-3 rounded-xl border border-card-border bg-background text-slate-900 text-sm font-semibold focus:outline-none focus:border-[var(--accent)]"
           >
-            <option value="all" className="bg-card-bg text-foreground">Tất cả trạng thái</option>
+            <option value="all" className="bg-card-bg text-slate-900">Tất cả trạng thái</option>
             {Object.entries(ORDER_STATUS_LABELS).map(([k, v]) => (
-              <option key={k} value={k} className="bg-card-bg text-foreground">{v.label}</option>
+              <option key={k} value={k} className="bg-card-bg text-slate-900">{v.label}</option>
             ))}
           </select>
           <button
-            onClick={() => { setPage(1); fetchOrders(); }}
+            onClick={handleSearchSubmit}
             className="h-10 px-5 rounded-xl bg-purple-650 hover:bg-purple-550 text-white text-sm font-bold transition-all shrink-0 cursor-pointer"
           >
             Lọc / Tìm kiếm
           </button>
         </div>
+
 
         {/* Grid layout */}
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-6 items-start">
@@ -302,22 +342,38 @@ export default function OrderList() {
 
             {/* Pagination */}
             {totalOrders > 20 && (
-              <div className="flex justify-between items-center mt-5 pt-4 border-t border-card-border text-xs text-text-muted font-medium">
-                <span>Tổng cộng: {totalOrders} đơn hàng</span>
-                <div className="flex gap-2">
+              <div className="flex flex-col sm:flex-row justify-between items-center mt-5 pt-4 border-t border-card-border text-xs text-text-muted font-medium gap-3">
+                <span>Hiển thị {(page - 1) * 20 + 1} - {Math.min(page * 20, totalOrders)} trong tổng số {totalOrders} đơn hàng</span>
+                <div className="flex items-center gap-1">
                   <button
                     disabled={page === 1}
-                    onClick={() => setPage(p => p - 1)}
-                    className="px-3 h-8 rounded-lg border border-card-border hover:bg-block-bg transition disabled:opacity-40"
+                    onClick={() => setPage(p => Math.max(1, p - 1))}
+                    className="p-1.5 rounded-lg border border-card-border hover:bg-block-bg disabled:opacity-40 disabled:hover:bg-transparent transition cursor-pointer flex items-center justify-center"
                   >
-                    Trước
+                    <ChevronLeft size={16} />
                   </button>
+                  {getPageNumbers(page, totalPages).map((pNo, i) => (
+                    <button
+                      key={i}
+                      disabled={pNo === '...'}
+                      onClick={() => typeof pNo === 'number' && setPage(pNo)}
+                      className={`w-8 h-8 rounded-lg text-xs font-semibold transition ${
+                        pNo === '...' ? 'cursor-default text-text-muted/40 bg-transparent' : 'cursor-pointer'
+                      } ${
+                        page === pNo 
+                          ? 'bg-purple-650 text-white shadow-sm font-bold border-transparent' 
+                          : pNo === '...' ? 'border-transparent' : 'border border-card-border hover:bg-block-bg'
+                      }`}
+                    >
+                      {pNo}
+                    </button>
+                  ))}
                   <button
-                    disabled={page * 20 >= totalOrders}
-                    onClick={() => setPage(p => p + 1)}
-                    className="px-3 h-8 rounded-lg border border-card-border hover:bg-block-bg transition disabled:opacity-40"
+                    disabled={page === totalPages}
+                    onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                    className="p-1.5 rounded-lg border border-card-border hover:bg-block-bg disabled:opacity-40 disabled:hover:bg-transparent transition cursor-pointer flex items-center justify-center"
                   >
-                    Sau
+                    <ChevronRight size={16} />
                   </button>
                 </div>
               </div>
