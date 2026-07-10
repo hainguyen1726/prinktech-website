@@ -385,7 +385,35 @@ export default function WebsiteContent({
                 return (
                   <div key={item.id} className="glass-card flex flex-col overflow-hidden h-full group">
                     {/* Ảnh */}
-                    <div className="relative aspect-video w-full overflow-hidden bg-black/10">
+                    <div 
+                      onClick={() => setSelectedProductDetail({
+                        item,
+                        label: cfg.label,
+                        badge: cfg.badge,
+                        desc: cfg.desc,
+                        img: cfg.img,
+                        imgAlt: cfg.imgAlt,
+                        lowestPrice
+                      })}
+                      className="relative aspect-video w-full overflow-hidden bg-black/10 cursor-pointer"
+                      role="button"
+                      tabIndex={0}
+                      aria-label={`Xem chi tiết ${cfg.label}`}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          setSelectedProductDetail({
+                            item,
+                            label: cfg.label,
+                            badge: cfg.badge,
+                            desc: cfg.desc,
+                            img: cfg.img,
+                            imgAlt: cfg.imgAlt,
+                            lowestPrice
+                          });
+                        }
+                      }}
+                    >
                       <img
                         src={cfg.img}
                         alt={cfg.imgAlt}
@@ -398,7 +426,20 @@ export default function WebsiteContent({
                     {/* Nội dung */}
                     <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
                       <div className="space-y-2">
-                        <h4 className="font-bold text-md text-[var(--foreground)] leading-tight">{cfg.label}</h4>
+                        <h4 
+                          onClick={() => setSelectedProductDetail({
+                            item,
+                            label: cfg.label,
+                            badge: cfg.badge,
+                            desc: cfg.desc,
+                            img: cfg.img,
+                            imgAlt: cfg.imgAlt,
+                            lowestPrice
+                          })}
+                          className="font-bold text-md text-[var(--foreground)] leading-tight hover:text-[var(--accent)] hover:underline cursor-pointer transition-colors"
+                        >
+                          {cfg.label}
+                        </h4>
                         <p className="text-xs text-[var(--text-muted)] line-clamp-3 leading-relaxed">{cfg.desc}</p>
                       </div>
                       <div className="flex justify-between items-center pt-2 border-t border-[var(--card-border)]/40">
@@ -413,10 +454,18 @@ export default function WebsiteContent({
                         </div>
                         <div className="flex gap-1.5">
                           <button
-                            onClick={() => setSelectedSampleUrl(cfg.img)}
+                            onClick={() => setSelectedProductDetail({
+                              item,
+                              label: cfg.label,
+                              badge: cfg.badge,
+                              desc: cfg.desc,
+                              img: cfg.img,
+                              imgAlt: cfg.imgAlt,
+                              lowestPrice
+                            })}
                             className="p-2.5 bg-[var(--card-bg)] hover:bg-[var(--accent)] hover:text-white border border-[var(--card-border)] hover:border-[var(--accent)] text-[var(--foreground)] rounded-lg transition focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/40 flex items-center justify-center cursor-pointer"
-                            title="Xem ảnh thật"
-                            aria-label={`Xem ảnh thật ${cfg.label}`}
+                            title="Xem chi tiết"
+                            aria-label={`Xem chi tiết ${cfg.label}`}
                           >
                             <Eye size={16} aria-hidden="true" />
                           </button>
@@ -666,6 +715,106 @@ export default function WebsiteContent({
           )}
         </div>
       </section>
+
+      {/* Product Details Modal (Summary and Price Tiers) */}
+      {selectedProductDetail && (
+        <div 
+          className="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-100 flex items-center justify-center p-4 animate-fadeIn"
+          onClick={() => setSelectedProductDetail(null)}
+          role="dialog"
+          aria-modal="true"
+          aria-label={`Chi tiết sản phẩm ${selectedProductDetail.label}`}
+        >
+          <div 
+            className="w-full max-w-3xl bg-[var(--card-bg)]/95 backdrop-blur-xl border border-[var(--card-border)] rounded-3xl overflow-hidden shadow-2xl p-6 md:p-8 flex flex-col md:flex-row gap-6 md:gap-8 relative animate-fadeIn"
+            onClick={e => e.stopPropagation()}
+            style={{ maxHeight: '90vh', overflowY: 'auto' }}
+          >
+            {/* Close button */}
+            <button
+              onClick={() => setSelectedProductDetail(null)}
+              className="absolute top-4 right-4 z-110 w-10 h-10 flex items-center justify-center bg-black/40 hover:bg-black/60 text-slate-400 hover:text-white rounded-full transition focus:outline-none cursor-pointer"
+              aria-label="Đóng chi tiết"
+            >
+              <X size={20} aria-hidden="true" />
+            </button>
+
+            {/* Left column: Product Image */}
+            <div className="w-full md:w-5/12 aspect-video md:aspect-square rounded-2xl overflow-hidden border border-[var(--card-border)] bg-black/10 shrink-0 shadow-inner flex items-center justify-center">
+              <img
+                src={selectedProductDetail.img}
+                alt={selectedProductDetail.imgAlt}
+                className="w-full h-full object-cover"
+              />
+            </div>
+
+            {/* Right column: Content & Details */}
+            <div className="flex-1 flex flex-col justify-between space-y-5">
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <span className="inline-block bg-[var(--accent)]/15 border border-[var(--accent)]/30 rounded px-2.5 py-0.5 text-[9px] font-bold text-[var(--accent)] uppercase tracking-wider">
+                    {selectedProductDetail.badge}
+                  </span>
+                  <h3 className="text-xl md:text-2xl font-black tracking-tight text-[var(--foreground)] leading-tight">
+                    {selectedProductDetail.label}
+                  </h3>
+                </div>
+
+                <div className="space-y-2">
+                  <h4 className="text-[10px] font-bold uppercase tracking-wider text-[var(--foreground)]/80">
+                    Thông tin tóm tắt
+                  </h4>
+                  <p className="text-xs text-[var(--text-muted)] leading-relaxed">
+                    {selectedProductDetail.desc}
+                  </p>
+                </div>
+
+                {/* Price list table */}
+                <div className="space-y-2.5">
+                  <h4 className="text-[10px] font-bold uppercase tracking-wider text-[var(--foreground)]/80 border-b border-[var(--card-border)]/40 pb-1.5">
+                    Đơn giá tham khảo (Bảng giá sỉ bậc thang)
+                  </h4>
+                  <div className="space-y-1.5 max-h-[180px] overflow-y-auto pr-1">
+                    {selectedProductDetail.item.price_sheet && selectedProductDetail.item.price_sheet
+                      .filter((range: any) => range.price > 0)
+                      .map((range: any, idx: number) => (
+                        <div 
+                          key={idx} 
+                          className="flex justify-between items-center py-2 px-3 rounded-xl bg-[var(--foreground)]/5 border border-[var(--card-border)]/20 transition-all hover:bg-[var(--foreground)]/10"
+                        >
+                          <span className="font-semibold text-[11px] text-[var(--foreground)]">
+                            {range.max && range.max < 999999
+                              ? `Từ ${range.min} đến ${range.max} ${selectedProductDetail.item.unit}`
+                              : `Từ ${range.min} ${selectedProductDetail.item.unit} trở lên`}
+                          </span>
+                          <span className="font-black text-[var(--accent)] text-xs md:text-sm">
+                            {range.price.toLocaleString('vi-VN')}đ
+                            <span className="text-[10px] text-[var(--text-muted)] font-normal"> / {selectedProductDetail.item.unit}</span>
+                          </span>
+                        </div>
+                      ))}
+                    {(!selectedProductDetail.item.price_sheet || selectedProductDetail.item.price_sheet.length === 0) && (
+                      <div className="text-xs text-[var(--text-muted)] py-2">Liên hệ xưởng để nhận báo giá chi tiết.</div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Order Button */}
+              <div className="pt-3">
+                <Link
+                  href="/bao-gia"
+                  onClick={() => setSelectedProductDetail(null)}
+                  className="w-full flex items-center justify-center gap-2 py-3 rounded-xl btn-primary font-bold text-xs md:text-sm tracking-wide transition shadow-lg hover:scale-[1.02] cursor-pointer"
+                >
+                  <Calculator size={16} />
+                  <span>Tính giá chi tiết & Đặt hàng</span>
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Lightbox Modal Player Popup */}
       {selectedSampleUrl && (
