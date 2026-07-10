@@ -297,3 +297,112 @@ nav a:hover {
   background-color: rgba(255, 255, 255, 0.08) !important;
   border-color: rgba(255, 255, 255, 0.18) !important;
 }
+
+/* ══════════════════════════════════════════
+   ADMIN PANEL — Dark Professional Theme
+   ══════════════════════════════════════════ */
+.admin-panel {
+  --card-bg: rgba(15, 23, 42, 0.7);
+  --card-border: rgba(148, 163, 184, 0.10);
+  --card-radius: 0.75rem;
+  --block-bg: rgba(30, 41, 59, 0.5);
+  --accent: #38bdf8;
+  --accent-rgb: 56, 189, 248;
+  --text-muted: #64748b;
+}
+
+/* Override body background cho admin */
+.admin-panel body,
+body.admin-panel {
+  background-color: #070b13;
+  color: #e2e8f0;
+}
+
+/* Admin glass card — không được dùng --card-bg của root */
+.admin-panel .glass-card {
+  background: rgba(15, 23, 42, 0.65) !important;
+  border: 1px solid rgba(148, 163, 184, 0.10) !important;
+  border-radius: 0.75rem !important;
+  backdrop-filter: blur(12px);
+}
+
+/* Admin table rows */
+.admin-panel table thead tr {
+  background: rgba(15, 23, 42, 0.8) !important;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.12) !important;
+}
+.admin-panel table thead th {
+  color: #94a3b8 !important;
+  font-weight: 600;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 10px 12px !important;
+}
+.admin-panel table tbody tr {
+  border-bottom: 1px solid rgba(148, 163, 184, 0.06) !important;
+  transition: background 0.15s;
+}
+.admin-panel table tbody tr:hover {
+  background: rgba(56, 189, 248, 0.04) !important;
+}
+.admin-panel table tbody td {
+  color: #cbd5e1 !important;
+  font-size: 12px;
+}
+
+/* Admin header override — không bị global header CSS ghi đè */
+.admin-panel header {
+  background-color: rgba(7, 11, 19, 0.95) !important;
+  border-color: rgba(148, 163, 184, 0.10) !important;
+  color: #e2e8f0 !important;
+}
+.admin-panel header a,
+.admin-panel header span {
+  color: inherit !important;
+}
+
+/* Admin sidebar */
+.admin-panel aside .glass-card {
+  background: rgba(10, 16, 30, 0.8) !important;
+  border-color: rgba(148, 163, 184, 0.08) !important;
+}
+
+/* Admin badge status */
+.badge-published {
+  background: rgba(16, 185, 129, 0.12);
+  color: #34d399;
+  border: 1px solid rgba(52, 211, 153, 0.25);
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 10px;
+  font-weight: 700;
+}
+.badge-draft {
+  background: rgba(251, 191, 36, 0.12);
+  color: #fbbf24;
+  border: 1px solid rgba(251, 191, 36, 0.25);
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+/* Toast notifications */
+.toast-success {
+  background: rgba(16, 185, 129, 0.12) !important;
+  border-color: rgba(52, 211, 153, 0.3) !important;
+  color: #34d399 !important;
+}
+.toast-error {
+  background: rgba(239, 68, 68, 0.12) !important;
+  border-color: rgba(239, 68, 68, 0.3) !important;
+  color: #f87171 !important;
+}
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+.animate-slideIn {
+  animation: slideIn 0.25s ease forwards;
+}

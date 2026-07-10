@@ -822,9 +822,15 @@ export default function WebsiteContent({ initialTheme, hideSwitcher = false }: W
         <div className="max-w-7xl mx-auto w-full pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-[11px] text-stone-500">
           <p>© 2026 Xưởng in UV DTF PrinK Tech. Dự án thuộc sở hữu của GMKT Việt Nam.</p>
           <div className="flex items-center gap-4">
-            <Link href="/login" className="hover:text-stone-300 transition">Portal Quản trị</Link>
-            <span className="text-stone-700">|</span>
             <span className="text-stone-600">Designed with modern aesthetics</span>
+            <Link
+              href="/login"
+              className="group p-1.5 rounded-md text-stone-700 hover:text-stone-400 hover:bg-stone-800/40 transition-all duration-200"
+              title="Đăng nhập quản trị"
+              aria-label="Trang đăng nhập quản trị"
+            >
+              <Lock size={13} className="group-hover:scale-110 transition-transform duration-200" />
+            </Link>
           </div>
         </div>
       </footer>
