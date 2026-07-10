@@ -576,13 +576,13 @@ export default function AdminWebsitePage() {
   return (
     <div className="admin-panel flex-1 flex flex-col min-h-screen bg-[#f1f5f9] text-slate-900 relative">
       {/* Glow decorations */}
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-sky-500/5 rounded-full blur-3xl pointer-events-none"></div>
+      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl pointer-events-none"></div>
       <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none"></div>
 
       {/* Toast Notification */}
       {toastMsg.text && (
         <div className={`fixed top-6 right-6 z-50 border p-4 rounded-xl shadow-2xl flex items-center gap-2.5 animate-slideIn ${
-          toastMsg.type === 'success' ? 'toast-success' : 'toast-error'
+          toastMsg.type === 'success' ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-rose-50 border-rose-200 text-rose-800'
         }`}>
           <AlertCircle size={16} />
           <span className="text-xs font-bold">{toastMsg.text}</span>
@@ -590,18 +590,18 @@ export default function AdminWebsitePage() {
       )}
 
       {/* Top Header */}
-      <header className="glass-card rounded-none border-0 border-b border-slate-800/80 py-4 px-6 sticky top-0 z-30 bg-slate-950/70 backdrop-blur-md flex justify-between items-center w-full">
+      <header className="glass-card rounded-none border-0 border-b border-slate-200 py-4 px-6 sticky top-0 z-30 bg-white/90 backdrop-blur-md flex justify-between items-center w-full">
         <div className="flex items-center gap-3">
           <img src="/logo-horizontal.png" alt="PrinK Tech" className="h-10 object-contain" />
-          <span className="h-4 w-px bg-slate-800"></span>
-          <h2 className="font-bold text-sm tracking-wider text-slate-300 uppercase">Quản trị Website PrinK Tech</h2>
+          <span className="h-4 w-px bg-slate-200"></span>
+          <h2 className="font-bold text-sm tracking-wider text-slate-800 uppercase">Quản trị Website PrinK Tech</h2>
         </div>
         <div className="flex items-center gap-4">
-          <span className="text-xs font-semibold text-slate-400">Chào, <strong className="text-slate-200">{adminUser?.name || 'Admin'}</strong></span>
-          <Link href="/" target="_blank" className="text-xs font-bold text-sky-400 hover:text-sky-300 transition flex items-center gap-1">
+          <span className="text-xs font-semibold text-slate-600">Chào, <strong className="text-slate-900">{adminUser?.name || 'Admin'}</strong></span>
+          <Link href="/" target="_blank" className="text-xs font-bold text-blue-600 hover:text-blue-700 transition flex items-center gap-1">
             <Globe size={14} /> Xem Website
           </Link>
-          <button onClick={handleLogout} className="p-2 bg-rose-500/10 text-rose-400 border border-rose-500/20 rounded-lg hover:bg-rose-500/20 transition cursor-pointer" title="Đăng xuất">
+          <button onClick={handleLogout} className="p-2 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 rounded-lg transition cursor-pointer" title="Đăng xuất">
             <LogOut size={14} />
           </button>
         </div>
@@ -698,14 +698,14 @@ export default function AdminWebsitePage() {
           {/* TAB 1: POSTS */}
           {activeTab === 'posts' && (
             <div className="glass-card p-6 space-y-6">
-              <div className="flex justify-between items-center border-b border-slate-800 pb-4">
+              <div className="flex justify-between items-center border-b border-slate-200 pb-4">
                 <div>
-                  <h3 className="font-bold text-base text-white">Quản lý Bài viết / Cẩm nang in ấn</h3>
-                  <p className="text-[10px] text-slate-500 mt-1">Viết các cẩm nang, hướng dẫn dán tem nhãn UV DTF thường & nổi.</p>
+                  <h3 className="font-bold text-base text-slate-900">Quản lý Bài viết / Cẩm nang in ấn</h3>
+                  <p className="text-[10px] text-slate-400 mt-1">Viết các cẩm nang, hướng dẫn dán tem nhãn UV DTF thường & nổi.</p>
                 </div>
                 <Link
                   href="/admin/viet-bai"
-                  className="px-4 py-2 bg-sky-500 hover:bg-sky-400 text-slate-950 font-black text-xs rounded-lg transition flex items-center gap-1.5 cursor-pointer"
+                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-black text-xs rounded-lg transition flex items-center gap-1.5 cursor-pointer shadow-sm"
                 >
                   <Plus size={14} /> Viết bài mới
                 </Link>
@@ -714,7 +714,7 @@ export default function AdminWebsitePage() {
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse text-xs">
                   <thead>
-                    <tr className="border-b border-slate-800 bg-slate-950/20 text-slate-400 font-semibold">
+                    <tr className="border-b border-slate-200 bg-slate-50 text-slate-500 font-semibold">
                       <th className="p-3">Bài viết</th>
                       <th className="p-3">Đường dẫn (Slug)</th>
                       <th className="p-3">Trạng thái</th>
@@ -723,27 +723,27 @@ export default function AdminWebsitePage() {
                       <th className="p-3 text-right">Thao tác</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-800/40">
+                  <tbody className="divide-y divide-slate-100">
                     {posts.map(post => (
-                      <tr key={post.id} className="hover:bg-slate-900/10 text-slate-300">
-                        <td className="p-3 font-semibold text-white max-w-[200px] truncate">{post.title}</td>
-                        <td className="p-3 text-slate-400">{post.slug}</td>
+                      <tr key={post.id} className="hover:bg-slate-50 text-slate-700">
+                        <td className="p-3 font-semibold text-slate-900 max-w-[200px] truncate">{post.title}</td>
+                        <td className="p-3 text-slate-500">{post.slug}</td>
                         <td className="p-3">
                           <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
                             post.status === 'published' 
-                              ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                              : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+                              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                              : 'bg-amber-50 text-amber-700 border border-amber-200'
                           }`}>
                             {post.status === 'published' ? 'Đã đăng' : 'Bản nháp'}
                           </span>
                         </td>
-                        <td className="p-3 text-slate-400">{post.author}</td>
-                        <td className="p-3 text-slate-500">{new Date(post.created_at).toLocaleDateString('vi-VN')}</td>
+                        <td className="p-3 text-slate-500">{post.author}</td>
+                        <td className="p-3 text-slate-400">{new Date(post.created_at).toLocaleDateString('vi-VN')}</td>
                         <td className="p-3 text-right flex justify-end gap-2">
-                          <Link href={`/admin/viet-bai?id=${post.id}`} className="p-1.5 bg-slate-800 hover:bg-sky-500/10 text-slate-300 hover:text-sky-400 rounded transition cursor-pointer flex items-center justify-center">
+                          <Link href={`/admin/viet-bai?id=${post.id}`} className="p-1.5 bg-slate-50 hover:bg-blue-50 text-slate-600 hover:text-blue-600 border border-slate-200 rounded transition cursor-pointer flex items-center justify-center">
                             <Edit2 size={12} />
                           </Link>
-                          <button onClick={() => handleDeletePost(post.id)} className="p-1.5 bg-slate-800 hover:bg-rose-500/10 text-slate-300 hover:text-rose-400 rounded transition cursor-pointer">
+                          <button onClick={() => handleDeletePost(post.id)} className="p-1.5 bg-slate-50 hover:bg-red-50 text-slate-600 hover:text-red-600 border border-slate-200 rounded transition cursor-pointer">
                             <Trash2 size={12} />
                           </button>
                         </td>
@@ -751,7 +751,7 @@ export default function AdminWebsitePage() {
                     ))}
                     {posts.length === 0 && (
                       <tr>
-                        <td colSpan={6} className="p-4 text-center text-slate-500">Không có bài viết nào.</td>
+                        <td colSpan={6} className="p-4 text-center text-slate-400">Không có bài viết nào.</td>
                       </tr>
                     )}
                   </tbody>
@@ -763,14 +763,14 @@ export default function AdminWebsitePage() {
           {/* TAB 2: PRODUCTS */}
           {activeTab === 'products' && (
             <div className="glass-card p-6 space-y-6">
-              <div className="flex justify-between items-center border-b border-slate-800 pb-4">
+              <div className="flex justify-between items-center border-b border-slate-200 pb-4">
                 <div>
-                  <h3 className="font-bold text-base text-white">Quản lý danh sách sản phẩm</h3>
-                  <p className="text-[10px] text-slate-500 mt-1">Trưng bày các mẫu sản phẩm in tiêu biểu tại xưởng.</p>
+                  <h3 className="font-bold text-base text-slate-900">Quản lý danh sách sản phẩm</h3>
+                  <p className="text-[10px] text-slate-400 mt-1">Trưng bày các mẫu sản phẩm in tiêu biểu tại xưởng.</p>
                 </div>
                 <button
                   onClick={handleNewProduct}
-                  className="px-4 py-2 bg-sky-500 hover:bg-sky-400 text-slate-950 font-black text-xs rounded-lg transition flex items-center gap-1.5 cursor-pointer"
+                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-black text-xs rounded-lg transition flex items-center gap-1.5 cursor-pointer shadow-sm"
                 >
                   <Plus size={14} /> Thêm sản phẩm
                 </button>
@@ -779,7 +779,7 @@ export default function AdminWebsitePage() {
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse text-xs">
                   <thead>
-                    <tr className="border-b border-slate-800 bg-slate-950/20 text-slate-400 font-semibold">
+                    <tr className="border-b border-slate-200 bg-slate-50 text-slate-500 font-semibold">
                       <th className="p-3">Sản phẩm</th>
                       <th className="p-3">Phân loại</th>
                       <th className="p-3 text-right">Đơn giá khởi điểm</th>
@@ -787,35 +787,35 @@ export default function AdminWebsitePage() {
                       <th className="p-3 text-right">Thao tác</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-800/40">
+                  <tbody className="divide-y divide-slate-100">
                     {products.map(prod => (
-                      <tr key={prod.id} className="hover:bg-slate-900/10 text-slate-300">
-                        <td className="p-3 font-semibold text-white flex items-center gap-2">
+                      <tr key={prod.id} className="hover:bg-slate-50 text-slate-700">
+                        <td className="p-3 font-semibold text-slate-900 flex items-center gap-2">
                           {prod.image_url && (
-                            <img src={prod.image_url} alt={prod.name} className="w-8 h-8 rounded object-cover border border-slate-800" />
+                            <img src={prod.image_url} alt={prod.name} className="w-8 h-8 rounded object-cover border border-slate-200" />
                           )}
                           <span>{prod.name}</span>
                         </td>
                         <td className="p-3">
-                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-slate-300">
+                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-600">
                             {prod.category === 'standard' ? 'UV DTF Thường' : prod.category === 'embossed' ? 'UV DTF Nổi 3D' : 'Khác'}
                           </span>
                         </td>
-                        <td className="p-3 text-right font-bold text-sky-400 tabular-nums">{Number(prod.price).toLocaleString()}đ / A3</td>
+                        <td className="p-3 text-right font-bold text-blue-600 tabular-nums">{Number(prod.price).toLocaleString()}đ / A3</td>
                         <td className="p-3 text-center">
                           {prod.is_featured ? (
-                            <span className="inline-flex items-center justify-center p-1 bg-sky-500/10 text-sky-400 rounded-full">
+                            <span className="inline-flex items-center justify-center p-1 bg-blue-50 text-blue-600 rounded-full">
                               <Check size={12} />
                             </span>
                           ) : (
-                            <span className="text-slate-600">-</span>
+                            <span className="text-slate-400">-</span>
                           )}
                         </td>
                         <td className="p-3 text-right flex justify-end gap-2">
-                          <button onClick={() => handleEditProduct(prod)} className="p-1.5 bg-slate-800 hover:bg-sky-500/10 text-slate-300 hover:text-sky-400 rounded transition cursor-pointer">
+                          <button onClick={() => handleEditProduct(prod)} className="p-1.5 bg-slate-50 hover:bg-blue-50 text-slate-600 hover:text-blue-600 border border-slate-200 rounded transition cursor-pointer">
                             <Edit2 size={12} />
                           </button>
-                          <button onClick={() => handleDeleteProduct(prod.id)} className="p-1.5 bg-slate-800 hover:bg-rose-500/10 text-slate-300 hover:text-rose-400 rounded transition cursor-pointer">
+                          <button onClick={() => handleDeleteProduct(prod.id)} className="p-1.5 bg-slate-50 hover:bg-red-50 text-slate-600 hover:text-red-600 border border-slate-200 rounded transition cursor-pointer">
                             <Trash2 size={12} />
                           </button>
                         </td>
@@ -823,7 +823,7 @@ export default function AdminWebsitePage() {
                     ))}
                     {products.length === 0 && (
                       <tr>
-                        <td colSpan={5} className="p-4 text-center text-slate-500">Không có sản phẩm nào.</td>
+                        <td colSpan={5} className="p-4 text-center text-slate-400">Không có sản phẩm nào.</td>
                       </tr>
                     )}
                   </tbody>
@@ -835,15 +835,15 @@ export default function AdminWebsitePage() {
           {/* TAB 3: PRICING CONFIG */}
           {activeTab === 'pricing' && (
             <div className="glass-card p-6 space-y-6">
-              <div className="flex justify-between items-center border-b border-slate-800 pb-4">
+              <div className="flex justify-between items-center border-b border-slate-200 pb-4">
                 <div>
-                  <h3 className="font-bold text-base text-white">Cấu hình Bảng giá dịch vụ in</h3>
-                  <p className="text-[10px] text-slate-500 mt-1">Cấu hình giá in tự động cho calculator ngoài trang chủ.</p>
+                  <h3 className="font-bold text-base text-slate-900">Cấu hình Bảng giá dịch vụ in</h3>
+                  <p className="text-[10px] text-slate-400 mt-1">Cấu hình giá in tự động cho calculator ngoài trang chủ.</p>
                 </div>
                 <button
                   onClick={handleSavePricing}
                   disabled={actionLoading}
-                  className="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs rounded-lg transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs rounded-lg transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50 shadow-sm"
                 >
                   {actionLoading ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />} 
                   Lưu thay đổi bảng giá
@@ -852,15 +852,15 @@ export default function AdminWebsitePage() {
 
               <div className="space-y-6">
                 {priceItems.map((item, itemIdx) => (
-                  <div key={item.id} className="p-4 bg-slate-950/20 border border-slate-800/80 rounded-xl space-y-4">
-                    <div className="flex justify-between items-center border-b border-slate-800 pb-2.5">
+                  <div key={item.id} className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-4">
+                    <div className="flex justify-between items-center border-b border-slate-200 pb-2.5">
                       <div className="flex items-center gap-2">
-                        <strong className="text-white text-xs uppercase tracking-wide">{item.material_name}</strong>
-                        <span className="text-[10px] text-slate-500">Đơn vị: {item.unit}</span>
+                        <strong className="text-slate-900 text-xs uppercase tracking-wide">{item.material_name}</strong>
+                        <span className="text-[10px] text-slate-400">Đơn vị: {item.unit}</span>
                       </div>
                       <button
                         onClick={() => handleAddPriceRange(itemIdx)}
-                        className="px-2 py-1 border border-slate-800 hover:border-sky-500 text-slate-400 hover:text-sky-400 rounded text-[10px] font-bold flex items-center gap-1 transition cursor-pointer"
+                        className="px-2 py-1 border border-slate-200 hover:border-blue-500 text-slate-500 hover:text-blue-600 rounded text-[10px] font-bold bg-white flex items-center gap-1 transition cursor-pointer"
                       >
                         <PlusCircle size={12} /> Thêm khoảng số lượng
                       </button>
@@ -868,21 +868,21 @@ export default function AdminWebsitePage() {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                       {item.price_sheet && item.price_sheet.map((range, rangeIdx) => (
-                        <div key={rangeIdx} className="p-3 bg-slate-950/50 border border-slate-800/60 rounded-lg flex items-center justify-between gap-3 text-xs">
+                        <div key={rangeIdx} className="p-3 bg-white border border-slate-200 rounded-lg flex items-center justify-between gap-3 text-xs shadow-sm">
                           <div className="flex items-center gap-1">
                             <input
                               type="number"
                               value={range.min}
                               onChange={e => handlePriceValueChange(itemIdx, rangeIdx, 'min', Number(e.target.value))}
-                              className="w-12 bg-slate-900 border border-slate-800 rounded p-1.5 text-center font-semibold text-white focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500/30 tabular-nums transition"
+                              className="w-12 bg-white border border-slate-200 rounded p-1.5 text-center font-semibold text-slate-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 tabular-nums transition"
                               placeholder="Min"
                             />
-                            <span className="text-slate-500">-</span>
+                            <span className="text-slate-400">-</span>
                             <input
                               type="number"
                               value={range.max}
                               onChange={e => handlePriceValueChange(itemIdx, rangeIdx, 'max', Number(e.target.value))}
-                              className="w-16 bg-slate-900 border border-slate-800 rounded p-1.5 text-center font-semibold text-white focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500/30 tabular-nums transition"
+                              className="w-16 bg-white border border-slate-200 rounded p-1.5 text-center font-semibold text-slate-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 tabular-nums transition"
                               placeholder="Max"
                             />
                           </div>
@@ -891,13 +891,13 @@ export default function AdminWebsitePage() {
                               type="number"
                               value={range.price}
                               onChange={e => handlePriceValueChange(itemIdx, rangeIdx, 'price', Number(e.target.value))}
-                              className="w-20 bg-slate-900 border border-slate-800 rounded p-1.5 text-right font-black text-sky-400 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500/30 tabular-nums transition"
+                              className="w-20 bg-white border border-slate-200 rounded p-1.5 text-right font-black text-blue-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 tabular-nums transition"
                               placeholder="Giá"
                             />
-                            <span className="text-slate-500">đ</span>
+                            <span className="text-slate-400">đ</span>
                             <button
                               onClick={() => handleRemovePriceRange(itemIdx, rangeIdx)}
-                              className="p-1 hover:bg-rose-500/10 text-slate-500 hover:text-rose-400 rounded transition cursor-pointer"
+                              className="p-1 hover:bg-red-50 text-slate-400 hover:text-red-600 rounded transition cursor-pointer"
                               title="Xóa"
                             >
                               <X size={14} />
@@ -981,14 +981,14 @@ export default function AdminWebsitePage() {
           {/* TAB 5: VIDEOS */}
           {activeTab === 'videos' && (
             <div className="glass-card p-6 space-y-6">
-              <div className="flex justify-between items-center border-b border-slate-800 pb-4">
+              <div className="flex justify-between items-center border-b border-slate-200 pb-4">
                 <div>
-                  <h3 className="font-bold text-base text-white">Quản lý Kho thư viện Video thực tế</h3>
-                  <p className="text-[10px] text-slate-500 mt-1">Quản lý danh sách các video YouTube, Reels, TikTok hiển thị ngoài trang chủ.</p>
+                  <h3 className="font-bold text-base text-slate-900">Quản lý Kho thư viện Video thực tế</h3>
+                  <p className="text-[10px] text-slate-400 mt-1">Quản lý danh sách các video YouTube, Reels, TikTok hiển thị ngoài trang chủ.</p>
                 </div>
                 <button
                   onClick={handleNewVideo}
-                  className="px-4 py-2 bg-sky-500 hover:bg-sky-400 text-slate-950 font-black text-xs rounded-lg transition flex items-center gap-1.5 cursor-pointer"
+                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-black text-xs rounded-lg transition flex items-center gap-1.5 cursor-pointer shadow-sm"
                 >
                   <Plus size={14} /> Thêm Video mới
                 </button>
@@ -997,7 +997,7 @@ export default function AdminWebsitePage() {
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse text-xs">
                   <thead>
-                    <tr className="border-b border-slate-800 bg-slate-950/20 text-slate-400 font-semibold">
+                    <tr className="border-b border-slate-200 bg-slate-50 text-slate-500 font-semibold">
                       <th className="p-3">Video</th>
                       <th className="p-3">Nền tảng</th>
                       <th className="p-3">Đường dẫn URL</th>
@@ -1006,32 +1006,32 @@ export default function AdminWebsitePage() {
                       <th className="p-3 text-right">Thao tác</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-800/40">
+                  <tbody className="divide-y divide-slate-100">
                     {videos.map(video => (
-                      <tr key={video.id} className="hover:bg-slate-900/10 text-slate-300">
-                        <td className="p-3 font-semibold text-white flex items-center gap-2">
+                      <tr key={video.id} className="hover:bg-slate-50 text-slate-700">
+                        <td className="p-3 font-semibold text-slate-900 flex items-center gap-2">
                           {video.cover_image ? (
-                            <img src={video.cover_image} alt={video.title} className="w-12 h-8 rounded object-cover border border-slate-800" />
+                            <img src={video.cover_image} alt={video.title} className="w-12 h-8 rounded object-cover border border-slate-200" />
                           ) : (
-                            <div className="w-12 h-8 rounded bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-500">
+                            <div className="w-12 h-8 rounded bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-400">
                               <Video size={14} />
                             </div>
                           )}
-                          <span className="max-w-[200px] truncate" title={video.title}>{video.title}</span>
+                          <span className="max-w-[200px] truncate text-slate-900" title={video.title}>{video.title}</span>
                         </td>
                         <td className="p-3">
                           <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
                             video.platform === 'youtube'
-                              ? 'bg-red-500/10 text-red-400 border border-red-500/20'
+                              ? 'bg-red-50 text-red-700 border border-red-200'
                               : video.platform === 'reels'
-                              ? 'bg-pink-500/10 text-pink-400 border border-pink-500/20'
-                              : 'bg-slate-800 text-slate-300 border border-slate-700'
+                              ? 'bg-pink-50 text-pink-700 border border-pink-200'
+                              : 'bg-slate-100 text-slate-700 border border-slate-200'
                           }`}>
                             {video.platform === 'youtube' ? 'YouTube' : video.platform === 'reels' ? 'Reels' : 'TikTok'}
                           </span>
                         </td>
-                        <td className="p-3 text-slate-400 truncate max-w-[200px]" title={video.video_url}>
-                          <a href={video.video_url} target="_blank" rel="noopener noreferrer" className="hover:underline hover:text-sky-400 flex items-center gap-1">
+                        <td className="p-3 text-slate-500 truncate max-w-[200px]" title={video.video_url}>
+                          <a href={video.video_url} target="_blank" rel="noopener noreferrer" className="hover:underline hover:text-blue-600 flex items-center gap-1">
                             {video.video_url} <ArrowUpRight size={10} />
                           </a>
                         </td>
@@ -1039,17 +1039,17 @@ export default function AdminWebsitePage() {
                         <td className="p-3 text-center">
                           <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
                             video.is_visible
-                              ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                              : 'bg-slate-800 text-slate-500 border border-slate-700'
+                              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                              : 'bg-slate-100 text-slate-400 border border-slate-200'
                           }`}>
                             {video.is_visible ? 'Hiển thị' : 'Ẩn'}
                           </span>
                         </td>
                         <td className="p-3 text-right flex justify-end gap-2">
-                          <button onClick={() => handleEditVideo(video)} className="p-1.5 bg-slate-800 hover:bg-sky-500/10 text-slate-300 hover:text-sky-400 rounded transition cursor-pointer">
+                          <button onClick={() => handleEditVideo(video)} className="p-1.5 bg-slate-50 hover:bg-blue-50 text-slate-600 hover:text-blue-600 border border-slate-200 rounded transition cursor-pointer">
                             <Edit2 size={12} />
                           </button>
-                          <button onClick={() => handleDeleteVideo(video.id)} className="p-1.5 bg-slate-800 hover:bg-rose-500/10 text-slate-300 hover:text-rose-400 rounded transition cursor-pointer">
+                          <button onClick={() => handleDeleteVideo(video.id)} className="p-1.5 bg-slate-50 hover:bg-red-50 text-slate-600 hover:text-red-600 border border-slate-200 rounded transition cursor-pointer">
                             <Trash2 size={12} />
                           </button>
                         </td>
@@ -1057,7 +1057,7 @@ export default function AdminWebsitePage() {
                     ))}
                     {videos.length === 0 && (
                       <tr>
-                        <td colSpan={6} className="p-4 text-center text-slate-500">Chưa có video nào trong thư viện.</td>
+                        <td colSpan={6} className="p-4 text-center text-slate-400">Chưa có video nào trong thư viện.</td>
                       </tr>
                     )}
                   </tbody>
@@ -1077,25 +1077,25 @@ export default function AdminWebsitePage() {
       }`} style={{ display: isDrawerOpen ? 'flex' : 'none' }}>
         
         {/* Drawer Header */}
-        <div className="p-4 border-b border-slate-800 flex justify-between items-center bg-slate-950/60">
-          <h3 className="font-bold text-sm uppercase text-slate-200">
+        <div className="p-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
+          <h3 className="font-bold text-sm uppercase text-slate-900">
             {drawerMode === 'post' 
               ? (editId ? 'Sửa bài viết / Cẩm nang' : 'Đăng bài viết mới')
               : (editId ? 'Cấu hình chi tiết sản phẩm' : 'Thêm sản phẩm mới')}
           </h3>
-          <button onClick={() => setIsDrawerOpen(false)} className="p-1.5 hover:bg-slate-800 text-slate-400 hover:text-white rounded-lg transition cursor-pointer">
+          <button onClick={() => setIsDrawerOpen(false)} className="p-1.5 hover:bg-slate-200 text-slate-500 hover:text-slate-900 rounded-lg transition cursor-pointer">
             <X size={16} />
           </button>
         </div>
 
         {/* Drawer Form Body */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-4">
+        <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-white">
           
           {/* POST FORM */}
           {drawerMode === 'post' && (
             <form onSubmit={handleSavePost} className="space-y-4">
               <div className="space-y-1.5">
-                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Tiêu đề bài viết *</label>
+                <label className="block text-[10px] font-bold text-slate-600 uppercase tracking-wider">Tiêu đề bài viết *</label>
                 <input
                   type="text"
                   required
@@ -1105,71 +1105,71 @@ export default function AdminWebsitePage() {
                     if (!editId) setPostSlug(generateSlug(e.target.value));
                   }}
                   placeholder="Ví dụ: Hướng dẫn dán tem nhãn bền lâu…"
-                  className="w-full bg-slate-950/40 border border-slate-800 rounded-xl py-2.5 px-4 text-xs text-white focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 custom-input transition"
+                  className="w-full bg-white border border-slate-200 rounded-xl py-2.5 px-4 text-xs text-slate-900 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Đường dẫn tĩnh (Slug) *</label>
+                <label className="block text-[10px] font-bold text-slate-600 uppercase tracking-wider">Đường dẫn tĩnh (Slug) *</label>
                 <input
                   type="text"
                   required
                   value={postSlug}
                   onChange={e => setPostSlug(e.target.value)}
                   placeholder="huong-dan-dan-tem-nhan-ben-lau"
-                  className="w-full bg-slate-950/40 border border-slate-800 rounded-xl py-2.5 px-4 text-xs text-white focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 custom-input transition"
+                  className="w-full bg-white border border-slate-200 rounded-xl py-2.5 px-4 text-xs text-slate-900 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Mô tả tóm tắt</label>
+                <label className="block text-[10px] font-bold text-slate-600 uppercase tracking-wider">Mô tả tóm tắt</label>
                 <textarea
                   value={postSummary}
                   onChange={e => setPostSummary(e.target.value)}
                   rows={2}
                   placeholder="Tóm tắt nội dung bài đăng…"
-                  className="w-full bg-slate-950/40 border border-slate-800 rounded-xl py-2.5 px-4 text-xs text-white focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 custom-input transition resize-none"
+                  className="w-full bg-white border border-slate-200 rounded-xl py-2.5 px-4 text-xs text-slate-900 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition resize-none"
                 ></textarea>
               </div>
 
               <div className="space-y-1.5">
-                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Ảnh đại diện (URL)</label>
+                <label className="block text-[10px] font-bold text-slate-600 uppercase tracking-wider">Ảnh đại diện (URL)</label>
                 <input
                   type="text"
                   value={postCoverImage}
                   onChange={e => setPostCoverImage(e.target.value)}
                   placeholder="Ví dụ: https://images.unsplash.com/photo-…"
-                  className="w-full bg-slate-950/40 border border-slate-800 rounded-xl py-2.5 px-4 text-xs text-white focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 custom-input transition"
+                  className="w-full bg-white border border-slate-200 rounded-xl py-2.5 px-4 text-xs text-slate-900 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Nội dung chi tiết</label>
+                <label className="block text-[10px] font-bold text-slate-600 uppercase tracking-wider">Nội dung chi tiết</label>
                 <textarea
                   value={postContent}
                   onChange={e => setPostContent(e.target.value)}
                   rows={8}
                   placeholder="Nội dung bài viết hỗ trợ Markdown…"
-                  className="w-full bg-slate-950/40 border border-slate-800 rounded-xl py-2.5 px-4 text-xs text-white focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 custom-input transition"
+                  className="w-full bg-white border border-slate-200 rounded-xl py-2.5 px-4 text-xs text-slate-900 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition"
                 ></textarea>
               </div>
 
               <div className="space-y-1.5">
-                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Trạng thái xuất bản</label>
+                <label className="block text-[10px] font-bold text-slate-600 uppercase tracking-wider">Trạng thái xuất bản</label>
                 <select
                   value={postStatus}
                   onChange={e => setPostStatus(e.target.value as any)}
-                  className="w-full bg-slate-950/40 border border-slate-800 rounded-xl py-2.5 px-4 text-xs text-white focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 custom-input transition"
+                  className="w-full bg-white border border-slate-200 rounded-xl py-2.5 px-4 text-xs text-slate-900 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition"
                 >
-                  <option value="draft" className="bg-[#070b13]">Bản nháp (Draft)</option>
-                  <option value="published" className="bg-[#070b13]">Công khai (Published)</option>
+                  <option value="draft">Bản nháp (Draft)</option>
+                  <option value="published">Công khai (Published)</option>
                 </select>
               </div>
 
               <button
                 type="submit"
                 disabled={actionLoading}
-                className="w-full bg-sky-500 hover:bg-sky-400 text-slate-950 font-black py-2.5 rounded-lg text-xs transition flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-2.5 rounded-lg text-xs transition flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 shadow-sm"
               >
                 {actionLoading ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />} 
                 Lưu bài viết
@@ -1181,7 +1181,7 @@ export default function AdminWebsitePage() {
           {drawerMode === 'product' && (
             <form onSubmit={handleSaveProduct} className="space-y-4">
               <div className="space-y-1.5">
-                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Tên sản phẩm *</label>
+                <label className="block text-[10px] font-bold text-slate-600 uppercase tracking-wider">Tên sản phẩm *</label>
                 <input
                   type="text"
                   required
@@ -1191,64 +1191,64 @@ export default function AdminWebsitePage() {
                     if (!editId) setProdSlug(generateSlug(e.target.value));
                   }}
                   placeholder="Ví dụ: Tem nổi dán ly cốc…"
-                  className="w-full bg-slate-950/40 border border-slate-800 rounded-xl py-2.5 px-4 text-xs text-white focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 custom-input transition"
+                  className="w-full bg-white border border-slate-200 rounded-xl py-2.5 px-4 text-xs text-slate-900 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Đường dẫn tĩnh (Slug) *</label>
+                <label className="block text-[10px] font-bold text-slate-600 uppercase tracking-wider">Đường dẫn tĩnh (Slug) *</label>
                 <input
                   type="text"
                   required
                   value={prodSlug}
                   onChange={e => setProdSlug(e.target.value)}
                   placeholder="tem-noi-dan-ly-coc"
-                  className="w-full bg-slate-950/40 border border-slate-800 rounded-xl py-2.5 px-4 text-xs text-white focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 custom-input transition"
+                  className="w-full bg-white border border-slate-200 rounded-xl py-2.5 px-4 text-xs text-slate-900 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Phân loại in</label>
+                <label className="block text-[10px] font-bold text-slate-600 uppercase tracking-wider">Phân loại in</label>
                 <select
                   value={prodCategory}
                   onChange={e => setProdCategory(e.target.value as any)}
-                  className="w-full bg-slate-950/40 border border-slate-800 rounded-xl py-2.5 px-4 text-xs text-white focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 custom-input transition"
+                  className="w-full bg-white border border-slate-200 rounded-xl py-2.5 px-4 text-xs text-slate-900 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition"
                 >
-                  <option value="standard" className="bg-[#070b13]">UV DTF Thường (Standard)</option>
-                  <option value="embossed" className="bg-[#070b13]">UV DTF Nổi 3D (Embossed)</option>
-                  <option value="others" className="bg-[#070b13]">Khác (Others)</option>
+                  <option value="standard">UV DTF Thường (Standard)</option>
+                  <option value="embossed">UV DTF Nổi 3D (Embossed)</option>
+                  <option value="others">Khác (Others)</option>
                 </select>
               </div>
 
               <div className="space-y-1.5">
-                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Đơn giá cơ bản (đ) / A3</label>
+                <label className="block text-[10px] font-bold text-slate-600 uppercase tracking-wider">Đơn giá cơ bản (đ) / A3</label>
                 <input
                   type="number"
                   value={prodPrice}
                   onChange={e => setProdPrice(Number(e.target.value) || 0)}
-                  className="w-full bg-slate-950/40 border border-slate-800 rounded-xl py-2.5 px-4 text-xs text-white focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 custom-input transition tabular-nums"
+                  className="w-full bg-white border border-slate-200 rounded-xl py-2.5 px-4 text-xs text-slate-900 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition tabular-nums"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Ảnh minh họa (URL)</label>
+                <label className="block text-[10px] font-bold text-slate-600 uppercase tracking-wider">Ảnh minh họa (URL)</label>
                 <input
                   type="text"
                   value={prodImageUrl}
                   onChange={e => setProdImageUrl(e.target.value)}
                   placeholder="Ví dụ: https://images.unsplash.com/photo-…"
-                  className="w-full bg-slate-950/40 border border-slate-800 rounded-xl py-2.5 px-4 text-xs text-white focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 custom-input transition"
+                  className="w-full bg-white border border-slate-200 rounded-xl py-2.5 px-4 text-xs text-slate-900 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Mô tả sản phẩm</label>
+                <label className="block text-[10px] font-bold text-slate-600 uppercase tracking-wider">Mô tả sản phẩm</label>
                 <textarea
                   value={prodDesc}
                   onChange={e => setProdDesc(e.target.value)}
                   rows={4}
                   placeholder="Mô tả đặc điểm sản phẩm, quy cách keo dán…"
-                  className="w-full bg-slate-950/40 border border-slate-800 rounded-xl py-2.5 px-4 text-xs text-white focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 custom-input transition"
+                  className="w-full bg-white border border-slate-200 rounded-xl py-2.5 px-4 text-xs text-slate-900 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition resize-none"
                 ></textarea>
               </div>
 
@@ -1258,9 +1258,9 @@ export default function AdminWebsitePage() {
                   id="prodIsFeatured"
                   checked={prodIsFeatured}
                   onChange={e => setProdIsFeatured(e.target.checked)}
-                  className="bg-slate-950 border border-slate-800 rounded focus:ring-sky-500 text-sky-500 w-4 h-4 cursor-pointer"
+                  className="border border-slate-300 rounded focus:ring-blue-500 text-blue-600 w-4 h-4 cursor-pointer"
                 />
-                <label htmlFor="prodIsFeatured" className="text-xs font-bold text-slate-300 cursor-pointer">
+                <label htmlFor="prodIsFeatured" className="text-xs font-bold text-slate-700 cursor-pointer">
                   Trưng bày nổi bật trên Trang chủ
                 </label>
               </div>
@@ -1268,7 +1268,7 @@ export default function AdminWebsitePage() {
               <button
                 type="submit"
                 disabled={actionLoading}
-                className="w-full bg-sky-500 hover:bg-sky-400 text-slate-950 font-black py-2.5 rounded-lg text-xs transition flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-2.5 rounded-lg text-xs transition flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 shadow-sm"
               >
                 {actionLoading ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />} 
                 Lưu sản phẩm
@@ -1280,19 +1280,19 @@ export default function AdminWebsitePage() {
           {drawerMode === 'video' && (
             <form onSubmit={handleSaveVideo} className="space-y-4">
               <div className="space-y-1.5">
-                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Tiêu đề Video *</label>
+                <label className="block text-[10px] font-bold text-slate-600 uppercase tracking-wider">Tiêu đề Video *</label>
                 <input
                   type="text"
                   required
                   value={videoTitle}
                   onChange={e => setVideoTitle(e.target.value)}
                   placeholder="Ví dụ: Quy trình dán tem lên bình giữ nhiệt…"
-                  className="w-full bg-slate-950/40 border border-slate-800 rounded-xl py-2.5 px-4 text-xs text-white focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 custom-input transition"
+                  className="w-full bg-white border border-slate-200 rounded-xl py-2.5 px-4 text-xs text-slate-900 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Đường dẫn Video URL *</label>
+                <label className="block text-[10px] font-bold text-slate-600 uppercase tracking-wider">Đường dẫn Video URL *</label>
                 <input
                   type="url"
                   required
@@ -1302,52 +1302,52 @@ export default function AdminWebsitePage() {
                     detectPlatform(e.target.value);
                   }}
                   placeholder="YouTube, Reels hoặc TikTok URL…"
-                  className="w-full bg-slate-950/40 border border-slate-800 rounded-xl py-2.5 px-4 text-xs text-white focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 custom-input transition"
+                  className="w-full bg-white border border-slate-200 rounded-xl py-2.5 px-4 text-xs text-slate-900 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Nền tảng</label>
+                <label className="block text-[10px] font-bold text-slate-600 uppercase tracking-wider">Nền tảng</label>
                 <select
                   value={videoPlatform}
                   onChange={e => setVideoPlatform(e.target.value as any)}
-                  className="w-full bg-slate-950/40 border border-slate-800 rounded-xl py-2.5 px-4 text-xs text-white focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 custom-input transition"
+                  className="w-full bg-white border border-slate-200 rounded-xl py-2.5 px-4 text-xs text-slate-900 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition"
                 >
-                  <option value="youtube" className="bg-[#070b13]">YouTube</option>
-                  <option value="reels" className="bg-[#070b13]">Facebook Reels</option>
-                  <option value="tiktok" className="bg-[#070b13]">TikTok</option>
+                  <option value="youtube">YouTube</option>
+                  <option value="reels">Facebook Reels</option>
+                  <option value="tiktok">TikTok</option>
                 </select>
               </div>
 
               <div className="space-y-1.5">
-                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Ảnh đại diện cover (tùy chọn)</label>
+                <label className="block text-[10px] font-bold text-slate-600 uppercase tracking-wider">Ảnh đại diện cover (tùy chọn)</label>
                 <input
                   type="text"
                   value={videoCoverImage}
                   onChange={e => setVideoCoverImage(e.target.value)}
                   placeholder="Mặc định lấy thumbnail YouTube nếu dán link YouTube…"
-                  className="w-full bg-slate-950/40 border border-slate-800 rounded-xl py-2.5 px-4 text-xs text-white focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 custom-input transition"
+                  className="w-full bg-white border border-slate-200 rounded-xl py-2.5 px-4 text-xs text-slate-900 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Thứ tự hiển thị</label>
+                <label className="block text-[10px] font-bold text-slate-600 uppercase tracking-wider">Thứ tự hiển thị</label>
                 <input
                   type="number"
                   value={videoDisplayOrder}
                   onChange={e => setVideoDisplayOrder(Number(e.target.value) || 0)}
-                  className="w-full bg-slate-950/40 border border-slate-800 rounded-xl py-2.5 px-4 text-xs text-white focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 custom-input transition tabular-nums"
+                  className="w-full bg-white border border-slate-200 rounded-xl py-2.5 px-4 text-xs text-slate-900 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition tabular-nums"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Mô tả video</label>
+                <label className="block text-[10px] font-bold text-slate-600 uppercase tracking-wider">Mô tả video</label>
                 <textarea
                   value={videoDesc}
                   onChange={e => setVideoDesc(e.target.value)}
                   rows={3}
                   placeholder="Nhập mô tả ngắn gọn về nội dung video…"
-                  className="w-full bg-slate-950/40 border border-slate-800 rounded-xl py-2.5 px-4 text-xs text-white focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 custom-input transition"
+                  className="w-full bg-white border border-slate-200 rounded-xl py-2.5 px-4 text-xs text-slate-900 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition resize-none"
                 ></textarea>
               </div>
 
@@ -1357,9 +1357,9 @@ export default function AdminWebsitePage() {
                   id="videoIsVisible"
                   checked={videoIsVisible}
                   onChange={e => setVideoIsVisible(e.target.checked)}
-                  className="bg-slate-950 border border-slate-800 rounded focus:ring-sky-500 text-sky-500 w-4 h-4 cursor-pointer"
+                  className="border border-slate-300 rounded focus:ring-blue-500 text-blue-600 w-4 h-4 cursor-pointer"
                 />
-                <label htmlFor="videoIsVisible" className="text-xs font-bold text-slate-300 cursor-pointer">
+                <label htmlFor="videoIsVisible" className="text-xs font-bold text-slate-700 cursor-pointer">
                   Hiển thị công khai ngoài trang chủ
                 </label>
               </div>
@@ -1367,7 +1367,7 @@ export default function AdminWebsitePage() {
               <button
                 type="submit"
                 disabled={actionLoading}
-                className="w-full bg-sky-500 hover:bg-sky-400 text-slate-950 font-black py-2.5 rounded-lg text-xs transition flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-2.5 rounded-lg text-xs transition flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 shadow-sm"
               >
                 {actionLoading ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />} 
                 Lưu Video

@@ -244,20 +244,20 @@ function VietBaiContent() {
   if (!authorized) return null;
 
   return (
-    <div className="admin-panel min-h-screen bg-[#f1f5f9] text-slate-900 flex flex-col">
+    <div className="admin-panel min-h-screen bg-[#f8fafc] text-slate-900 flex flex-col">
 
       {/* Top Bar */}
-      <header className="sticky top-0 z-50 border-b border-slate-800/60 bg-[#0a0f1e]/95 backdrop-blur-md">
+      <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/95 backdrop-blur-md">
         <div className="max-w-[1600px] mx-auto px-4 py-3 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <Link href="/admin/website" className="p-1.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition">
+            <Link href="/admin/website" className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-500 hover:text-slate-900 transition">
               <ArrowLeft size={18} />
             </Link>
             <div>
-              <h1 className="text-sm font-black text-white">
+              <h1 className="text-sm font-black text-slate-950">
                 {editId ? '✏️ Chỉnh sửa bài viết' : '✍️ Viết bài mới'}
               </h1>
-              <p className="text-[10px] text-slate-500">
+              <p className="text-[10px] text-slate-400">
                 {status === 'published' ? '🟢 Đã đăng' : '🟡 Bản nháp'} · {countWords(stripHtml(content))} từ
               </p>
             </div>
@@ -265,25 +265,25 @@ function VietBaiContent() {
 
           <div className="flex items-center gap-2">
             {/* SEO score badge */}
-            <div className={`hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800`}>
+            <div className={`hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200`}>
               <BarChart2 size={13} className={scoreColor} />
               <span className={`text-xs font-black ${scoreColor}`}>{seo.score}%</span>
-              <span className="text-[10px] text-slate-500">SEO</span>
+              <span className="text-[10px] text-slate-400">SEO</span>
             </div>
 
             <button onClick={() => setShowPreview(true)}
-              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-700 hover:border-slate-600 text-slate-300 text-xs font-bold transition">
+              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 hover:border-slate-300 text-slate-700 bg-white text-xs font-bold transition">
               <Eye size={14} /> Xem trước
             </button>
 
             <button onClick={() => handleSave(false)} disabled={saving}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-700 hover:border-slate-600 text-slate-300 text-xs font-bold transition disabled:opacity-50">
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 hover:border-slate-300 text-slate-700 bg-white text-xs font-bold transition disabled:opacity-50">
               {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
               {saved ? 'Đã lưu ✓' : 'Lưu nháp'}
             </button>
 
             <button onClick={() => handleSave(true)} disabled={saving}
-              className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-sky-500 hover:bg-sky-400 text-white text-xs font-bold transition disabled:opacity-50 shadow-lg shadow-sky-500/20">
+              className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-sky-500 hover:bg-sky-400 text-white text-xs font-bold transition disabled:opacity-50 shadow-md">
               <Globe size={14} /> Đăng bài
             </button>
           </div>
@@ -291,7 +291,7 @@ function VietBaiContent() {
       </header>
 
       {error && (
-        <div className="bg-red-500/10 border-b border-red-500/30 px-6 py-2 text-xs text-red-400 flex items-center gap-2">
+        <div className="bg-red-50 border-b border-red-200 px-6 py-2 text-xs text-red-600 flex items-center gap-2">
           <AlertCircle size={14} /> {error}
           <button onClick={() => setError('')} className="ml-auto"><X size={14} /></button>
         </div>
@@ -301,24 +301,33 @@ function VietBaiContent() {
       <div className="flex-1 flex max-w-[1600px] mx-auto w-full">
 
         {/* === CENTER: Editor === */}
-        <main className="flex-1 min-w-0 flex flex-col">
+        <main className="flex-1 min-w-0 flex flex-col p-6 md:p-8">
+          
+          {/* Editor Paper Sheet Container */}
+          <div className="admin-paper-card max-w-3xl mx-auto w-full p-8 md:p-12 space-y-6">
+            
+            {/* Cover image preview */}
+            {coverImage && (
+              <div className="relative h-48 overflow-hidden rounded-xl border border-slate-200">
+                <img src={coverImage} alt="Cover" className="w-full h-full object-cover" />
+                <button
+                  type="button"
+                  onClick={() => setCoverImage('')}
+                  className="absolute top-2 right-2 p-1.5 rounded-full bg-black/60 text-white hover:bg-black/80 transition"
+                  title="Xóa ảnh bìa"
+                >
+                  <X size={14} />
+                </button>
+              </div>
+            )}
 
-          {/* Cover image preview */}
-          {coverImage && (
-            <div className="relative h-48 overflow-hidden border-b border-slate-800/60">
-              <img src={coverImage} alt="Cover" className="w-full h-full object-cover opacity-60" />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#0a0f1e] via-transparent to-transparent" />
-            </div>
-          )}
-
-          <div className="flex-1 p-6 md:p-10 max-w-3xl mx-auto w-full space-y-6">
             {/* Tiêu đề bài */}
             <textarea
               value={title}
               onChange={e => setTitle(e.target.value)}
               placeholder="Tiêu đề bài viết (nên chứa từ khóa chính)…"
               rows={2}
-              className="w-full bg-transparent text-3xl md:text-4xl font-black text-white placeholder-slate-700 border-none outline-none resize-none leading-tight"
+              className="w-full bg-transparent text-3xl md:text-4xl font-black text-slate-900 placeholder-slate-300 border-none outline-none resize-none leading-tight"
             />
 
             {/* Tóm tắt */}
@@ -327,25 +336,25 @@ function VietBaiContent() {
               onChange={e => setSummary(e.target.value)}
               placeholder="Tóm tắt bài viết (excerpt) — 120–160 ký tự, hiển thị dưới title trên Google…"
               rows={2}
-              className="w-full bg-transparent text-sm text-slate-400 placeholder-slate-700 border-b border-slate-800/60 pb-4 outline-none resize-none leading-relaxed"
+              className="w-full bg-transparent text-sm text-slate-600 placeholder-slate-300 border-b border-slate-100 pb-4 outline-none resize-none leading-relaxed"
             />
 
             {/* Toolbar */}
-            <div className="flex flex-wrap items-center gap-0.5 p-1.5 rounded-xl bg-slate-900/60 border border-slate-800/60 sticky top-16 z-10">
-              <ToolbarBtn title="In đậm" onClick={() => exec('bold')}><Bold size={15} /></ToolbarBtn>
-              <ToolbarBtn title="In nghiêng" onClick={() => exec('italic')}><Italic size={15} /></ToolbarBtn>
-              <ToolbarBtn title="Gạch chân" onClick={() => exec('underline')}><Underline size={15} /></ToolbarBtn>
-              <div className="w-px h-5 bg-slate-700 mx-1" />
-              <ToolbarBtn title="Heading H2" onClick={() => insertBlock('h2')}><Heading2 size={15} /></ToolbarBtn>
-              <ToolbarBtn title="Heading H3" onClick={() => insertBlock('h3')}><Heading3 size={15} /></ToolbarBtn>
-              <div className="w-px h-5 bg-slate-700 mx-1" />
-              <ToolbarBtn title="Danh sách gạch đầu dòng" onClick={() => exec('insertUnorderedList')}><List size={15} /></ToolbarBtn>
-              <ToolbarBtn title="Danh sách số" onClick={() => exec('insertOrderedList')}><ListOrdered size={15} /></ToolbarBtn>
-              <div className="w-px h-5 bg-slate-700 mx-1" />
-              <ToolbarBtn title="Trích dẫn" onClick={() => insertBlock('blockquote')}><Quote size={15} /></ToolbarBtn>
-              <ToolbarBtn title="Code" onClick={() => insertBlock('code')}><Code size={15} /></ToolbarBtn>
-              <ToolbarBtn title="Thêm liên kết" onClick={insertLink}><LinkIcon size={15} /></ToolbarBtn>
-              <div className="ml-auto text-[10px] text-slate-600 pr-2">
+            <div className="admin-editor-toolbar flex flex-wrap items-center gap-0.5 p-1.5 rounded-xl sticky top-16 z-10">
+              <button type="button" title="In đậm" onMouseDown={(e) => { e.preventDefault(); exec('bold'); }} className="p-1.5 rounded hover:bg-slate-100 text-slate-600 hover:text-slate-900 transition"><Bold size={15} /></button>
+              <button type="button" title="In nghiêng" onMouseDown={(e) => { e.preventDefault(); exec('italic'); }} className="p-1.5 rounded hover:bg-slate-100 text-slate-600 hover:text-slate-900 transition"><Italic size={15} /></button>
+              <button type="button" title="Gạch chân" onMouseDown={(e) => { e.preventDefault(); exec('underline'); }} className="p-1.5 rounded hover:bg-slate-100 text-slate-600 hover:text-slate-900 transition"><Underline size={15} /></button>
+              <div className="w-px h-5 bg-slate-200 mx-1" />
+              <button type="button" title="Heading H2" onMouseDown={(e) => { e.preventDefault(); insertBlock('h2'); }} className="p-1.5 rounded hover:bg-slate-100 text-slate-600 hover:text-slate-900 transition"><Heading2 size={15} /></button>
+              <button type="button" title="Heading H3" onMouseDown={(e) => { e.preventDefault(); insertBlock('h3'); }} className="p-1.5 rounded hover:bg-slate-100 text-slate-600 hover:text-slate-900 transition"><Heading3 size={15} /></button>
+              <div className="w-px h-5 bg-slate-200 mx-1" />
+              <button type="button" title="Danh sách gạch đầu dòng" onMouseDown={(e) => { e.preventDefault(); exec('insertUnorderedList'); }} className="p-1.5 rounded hover:bg-slate-100 text-slate-600 hover:text-slate-900 transition"><List size={15} /></button>
+              <button type="button" title="Danh sách số" onMouseDown={(e) => { e.preventDefault(); exec('insertOrderedList'); }} className="p-1.5 rounded hover:bg-slate-100 text-slate-600 hover:text-slate-900 transition"><ListOrdered size={15} /></button>
+              <div className="w-px h-5 bg-slate-200 mx-1" />
+              <button type="button" title="Trích dẫn" onMouseDown={(e) => { e.preventDefault(); insertBlock('blockquote'); }} className="p-1.5 rounded hover:bg-slate-100 text-slate-600 hover:text-slate-900 transition"><Quote size={15} /></button>
+              <button type="button" title="Code" onMouseDown={(e) => { e.preventDefault(); insertBlock('code'); }} className="p-1.5 rounded hover:bg-slate-100 text-slate-600 hover:text-slate-900 transition"><Code size={15} /></button>
+              <button type="button" title="Thêm liên kết" onMouseDown={(e) => { e.preventDefault(); insertLink(); }} className="p-1.5 rounded hover:bg-slate-100 text-slate-600 hover:text-slate-900 transition"><LinkIcon size={15} /></button>
+              <div className="ml-auto text-[10px] text-slate-400 pr-2">
                 {countWords(stripHtml(content))} từ
               </div>
             </div>
@@ -357,29 +366,29 @@ function VietBaiContent() {
               suppressContentEditableWarning
               onInput={handleEditorInput}
               data-placeholder="Bắt đầu viết nội dung bài viết tại đây…&#10;&#10;💡 Gợi ý cấu trúc bài chuẩn SEO:&#10;• H2: Giới thiệu vấn đề / từ khóa chính&#10;• H2: Nội dung chi tiết (chia nhỏ thành H3)&#10;• H2: Lợi ích / So sánh&#10;• H2: FAQ (câu hỏi thường gặp)&#10;• H2: Kết luận + CTA"
-              className={`min-h-[500px] outline-none text-sm text-slate-200 leading-relaxed
-                [&_h2]:text-xl [&_h2]:font-black [&_h2]:text-white [&_h2]:mt-8 [&_h2]:mb-3
-                [&_h3]:text-base [&_h3]:font-bold [&_h3]:text-slate-100 [&_h3]:mt-6 [&_h3]:mb-2
-                [&_p]:mb-4 [&_p]:leading-relaxed
-                [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:mb-4 [&_ul]:space-y-1
-                [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:mb-4 [&_ol]:space-y-1
-                [&_blockquote]:border-l-4 [&_blockquote]:border-sky-500/50 [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:text-slate-400 [&_blockquote]:my-4
-                [&_code]:bg-slate-800 [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-sky-400 [&_code]:text-xs
-                [&_a]:text-sky-400 [&_a]:underline
-                [&_strong]:text-white [&_strong]:font-bold
-                empty:before:content-[attr(data-placeholder)] empty:before:text-slate-700 empty:before:whitespace-pre-wrap empty:before:pointer-events-none`}
+              className="admin-editor-content min-h-[500px] outline-none text-sm leading-relaxed
+                [&_h2]:text-xl [&_h2]:font-black [&_h2]:text-slate-900 [&_h2]:mt-8 [&_h2]:mb-3
+                [&_h3]:text-base [&_h3]:font-bold [&_h3]:text-slate-800 [&_h3]:mt-6 [&_h3]:mb-2
+                [&_p]:mb-4 [&_p]:leading-relaxed [&_p]:text-slate-700
+                [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:mb-4 [&_ul]:space-y-1 [&_ul]:text-slate-700
+                [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:mb-4 [&_ol]:space-y-1 [&_ol]:text-slate-700
+                [&_blockquote]:border-l-4 [&_blockquote]:border-blue-500 [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:text-slate-500 [&_blockquote]:my-4
+                [&_code]:bg-slate-100 [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-blue-600 [&_code]:text-xs
+                [&_a]:text-blue-600 [&_a]:underline
+                [&_strong]:text-slate-950 [&_strong]:font-bold
+                empty:before:content-[attr(data-placeholder)] empty:before:text-slate-300 empty:before:whitespace-pre-wrap empty:before:pointer-events-none"
             />
           </div>
         </main>
 
         {/* === RIGHT: SEO Panel === */}
-        <aside className="hidden lg:flex flex-col w-80 xl:w-96 border-l border-slate-800/60 bg-[#080d1a]/60 sticky top-[57px] h-[calc(100vh-57px)] overflow-y-auto">
+        <aside className="admin-seo-panel hidden lg:flex flex-col w-80 xl:w-96 bg-white sticky top-[57px] h-[calc(100vh-57px)] overflow-y-auto">
 
           {/* Panel tabs */}
-          <div className="flex border-b border-slate-800/60">
+          <div className="flex border-b border-slate-200">
             {(['seo', 'settings'] as const).map(tab => (
               <button key={tab} onClick={() => setActivePanel(tab)}
-                className={`flex-1 py-3 text-xs font-bold transition ${activePanel === tab ? 'text-sky-400 border-b-2 border-sky-400' : 'text-slate-500 hover:text-slate-300'}`}>
+                className={`flex-1 py-3 text-xs font-bold transition ${activePanel === tab ? 'text-blue-600 border-b-2 border-blue-600' : 'text-slate-400 hover:text-slate-700'}`}>
                 {tab === 'seo' ? '🔍 SEO' : '⚙️ Cài đặt'}
               </button>
             ))}
@@ -389,12 +398,12 @@ function VietBaiContent() {
             {activePanel === 'seo' ? (
               <>
                 {/* SEO Score */}
-                <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800/60 space-y-3">
+                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-slate-300">Điểm SEO</span>
+                    <span className="text-xs font-bold text-slate-700">Điểm SEO</span>
                     <span className={`text-2xl font-black ${scoreColor}`}>{seo.score}%</span>
                   </div>
-                  <div className="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
+                  <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
                     <div className={`h-full rounded-full transition-all duration-500 ${scoreBg}`} style={{ width: `${seo.score}%` }} />
                   </div>
                   <p className="text-[10px] text-slate-500">
@@ -406,21 +415,21 @@ function VietBaiContent() {
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Từ khóa chính (Focus keyword)</label>
                   <div className="relative">
-                    <Search size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+                    <Search size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                     <input
                       value={keyword} onChange={e => setKeyword(e.target.value)}
                       placeholder="vd: in uv dtf nổi 3d"
-                      className="w-full bg-slate-950/60 border border-slate-800 rounded-lg py-2 pl-8 pr-3 text-xs text-white focus:outline-none focus:border-sky-500/50 transition"
+                      className="w-full bg-white border border-slate-200 rounded-lg py-2 pl-8 pr-3 text-xs text-slate-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 transition"
                     />
                   </div>
-                  <p className="text-[10px] text-slate-600">Từ khóa cần xuất hiện trong tiêu đề, mô tả và nội dung</p>
+                  <p className="text-[10px] text-slate-400">Từ khóa cần xuất hiện trong tiêu đề, mô tả và nội dung</p>
                 </div>
 
                 {/* Meta title preview */}
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500 flex justify-between">
                     <span>Tiêu đề SEO (Title tag)</span>
-                    <span className={title.length > 65 ? 'text-red-400' : title.length >= 50 ? 'text-emerald-400' : 'text-amber-400'}>
+                    <span className={title.length > 65 ? 'text-red-500' : title.length >= 50 ? 'text-emerald-600' : 'text-amber-600'}>
                       {title.length}/65
                     </span>
                   </label>
@@ -430,7 +439,7 @@ function VietBaiContent() {
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500 flex justify-between">
                     <span>Meta Description</span>
-                    <span className={metaDesc.length > 165 ? 'text-red-400' : metaDesc.length >= 120 ? 'text-emerald-400' : 'text-amber-400'}>
+                    <span className={metaDesc.length > 165 ? 'text-red-500' : metaDesc.length >= 120 ? 'text-emerald-600' : 'text-amber-600'}>
                       {metaDesc.length}/160
                     </span>
                   </label>
@@ -439,19 +448,19 @@ function VietBaiContent() {
                     onChange={e => { setMetaDesc(e.target.value); setMetaDescManual(true); }}
                     rows={3}
                     placeholder="Mô tả hiển thị trên Google (150–160 ký tự)…"
-                    className="w-full bg-slate-950/60 border border-slate-800 rounded-lg py-2 px-3 text-xs text-white focus:outline-none focus:border-sky-500/50 transition resize-none"
+                    className="w-full bg-white border border-slate-200 rounded-lg py-2 px-3 text-xs text-slate-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 transition resize-none"
                   />
                 </div>
 
                 {/* Google SERP Preview */}
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Google Preview</label>
-                  <div className="p-3 rounded-xl bg-white/5 border border-slate-800/60 space-y-1">
-                    <p className="text-[11px] text-slate-500">https://prinktech.netslive.com/cam-nang/<span className="text-emerald-400">{slug || 'tieu-de-bai-viet'}</span></p>
-                    <p className="text-sm text-sky-400 font-medium leading-snug hover:underline cursor-pointer">
+                  <div className="google-preview-card p-3 space-y-1">
+                    <p className="text-[11px] text-slate-400">https://prinktech.netslive.com/cam-nang/<span className="text-emerald-600">{slug || 'tieu-de-bai-viet'}</span></p>
+                    <p className="text-sm text-blue-600 font-medium leading-snug hover:underline cursor-pointer">
                       {title || 'Tiêu đề bài viết của bạn sẽ hiển thị ở đây'} | PrinK Tech
                     </p>
-                    <p className="text-[11px] text-slate-400 leading-relaxed">
+                    <p className="text-[11px] text-slate-600 leading-relaxed">
                       {metaDesc || 'Mô tả meta sẽ hiển thị ở đây. Nên viết 150–160 ký tự mô tả hấp dẫn, chứa từ khóa chính.'}
                     </p>
                   </div>
@@ -462,14 +471,14 @@ function VietBaiContent() {
                   <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Checklist SEO</label>
                   <div className="space-y-1.5">
                     {seo.checks.map((c, i) => (
-                      <div key={i} className={`flex items-start gap-2 p-2 rounded-lg text-[10px] ${c.ok ? 'bg-emerald-500/5 text-emerald-300' : 'bg-slate-900/40 text-slate-500'}`}>
+                      <div key={i} className={`flex items-start gap-2 p-2 rounded-lg text-[10px] ${c.ok ? 'seo-check-item-ok' : 'seo-check-item-warn'}`}>
                         {c.ok
-                          ? <CheckCircle size={12} className="text-emerald-400 shrink-0 mt-0.5" />
-                          : <AlertCircle size={12} className="text-slate-600 shrink-0 mt-0.5" />
+                          ? <CheckCircle size={12} className="text-emerald-600 shrink-0 mt-0.5" />
+                          : <AlertCircle size={12} className="text-amber-600 shrink-0 mt-0.5" />
                         }
                         <div>
-                          <p className="font-semibold">{c.label}</p>
-                          <p className="opacity-70">{c.info}</p>
+                          <p className="font-bold">{c.label}</p>
+                          <p className="opacity-80">{c.info}</p>
                         </div>
                       </div>
                     ))}
@@ -487,15 +496,15 @@ function VietBaiContent() {
                       <input
                         value={slug} onChange={e => { setSlug(slugify(e.target.value)); setSlugManual(true); }}
                         placeholder="tieu-de-bai-viet"
-                        className="flex-1 bg-slate-950/60 border border-slate-800 rounded-lg py-2 px-3 text-xs text-white focus:outline-none focus:border-sky-500/50 transition"
+                        className="flex-1 bg-white border border-slate-200 rounded-lg py-2 px-3 text-xs text-slate-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 transition"
                       />
                       <button onClick={() => { setSlug(slugify(title)); setSlugManual(false); }}
                         title="Tạo lại từ tiêu đề"
-                        className="p-2 rounded-lg border border-slate-700 hover:border-slate-600 text-slate-400 hover:text-white transition">
+                        className="p-2 rounded-lg border border-slate-200 hover:border-slate-300 text-slate-500 hover:text-slate-900 bg-white transition">
                         <RefreshCw size={13} />
                       </button>
                     </div>
-                    <p className="text-[10px] text-slate-600">/cam-nang/<span className="text-sky-400">{slug || '...'}</span></p>
+                    <p className="text-[10px] text-slate-400">/cam-nang/<span className="text-blue-600">{slug || '...'}</span></p>
                   </div>
 
                   {/* Ảnh bìa */}
@@ -504,10 +513,10 @@ function VietBaiContent() {
                     <input
                       value={coverImage} onChange={e => setCoverImage(e.target.value)}
                       placeholder="https://... (link ảnh)"
-                      className="w-full bg-slate-950/60 border border-slate-800 rounded-lg py-2 px-3 text-xs text-white focus:outline-none focus:border-sky-500/50 transition"
+                      className="w-full bg-white border border-slate-200 rounded-lg py-2 px-3 text-xs text-slate-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 transition"
                     />
                     {coverImage && (
-                      <img src={coverImage} alt="Cover" className="w-full h-28 object-cover rounded-lg border border-slate-800" onError={e => (e.currentTarget.style.display = 'none')} />
+                      <img src={coverImage} alt="Cover" className="w-full h-28 object-cover rounded-lg border border-slate-200" onError={e => (e.currentTarget.style.display = 'none')} />
                     )}
                   </div>
 
@@ -516,7 +525,7 @@ function VietBaiContent() {
                     <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Tác giả</label>
                     <input
                       value={author} onChange={e => setAuthor(e.target.value)}
-                      className="w-full bg-slate-950/60 border border-slate-800 rounded-lg py-2 px-3 text-xs text-white focus:outline-none focus:border-sky-500/50 transition"
+                      className="w-full bg-white border border-slate-200 rounded-lg py-2 px-3 text-xs text-slate-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 transition"
                     />
                   </div>
 
@@ -526,7 +535,7 @@ function VietBaiContent() {
                     <div className="grid grid-cols-2 gap-2">
                       {(['draft', 'published'] as const).map(s => (
                         <button key={s} onClick={() => setStatus(s)}
-                          className={`py-2 rounded-lg text-xs font-bold border transition ${status === s ? 'border-sky-500 bg-sky-500/10 text-sky-400' : 'border-slate-700 text-slate-500 hover:border-slate-600'}`}>
+                          className={`py-2 rounded-lg text-xs font-bold border transition ${status === s ? 'border-blue-600 bg-blue-50 text-blue-600' : 'border-slate-200 text-slate-400 hover:border-slate-300'}`}>
                           {s === 'draft' ? '🟡 Nháp' : '🟢 Đã đăng'}
                         </button>
                       ))}
@@ -536,7 +545,7 @@ function VietBaiContent() {
                   {/* Xem trước trên web */}
                   {editId && status === 'published' && slug && (
                     <a href={`/cam-nang/${slug}`} target="_blank" rel="noopener noreferrer"
-                      className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-slate-700 hover:border-sky-500/50 text-slate-400 hover:text-sky-400 text-xs font-bold transition">
+                      className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-slate-200 hover:border-blue-500 text-slate-500 hover:text-blue-600 bg-white text-xs font-bold transition">
                       <Globe size={13} /> Xem bài đăng trên web
                     </a>
                   )}
@@ -549,19 +558,19 @@ function VietBaiContent() {
 
       {/* Preview Modal */}
       {showPreview && (
-        <div className="fixed inset-0 z-50 bg-black/80 flex items-start justify-center overflow-y-auto p-4 pt-10">
-          <div className="w-full max-w-3xl bg-[#080d1a] rounded-2xl border border-slate-800 overflow-hidden">
-            <div className="p-4 border-b border-slate-800 flex items-center justify-between">
-              <span className="text-sm font-bold text-white">Xem trước bài viết</span>
-              <button onClick={() => setShowPreview(false)} className="text-slate-400 hover:text-white"><X size={18} /></button>
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-start justify-center overflow-y-auto p-4 pt-10">
+          <div className="w-full max-w-3xl bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-2xl">
+            <div className="p-4 border-b border-slate-200 flex items-center justify-between">
+              <span className="text-sm font-bold text-slate-900">Xem trước bài viết</span>
+              <button onClick={() => setShowPreview(false)} className="text-slate-400 hover:text-slate-900"><X size={18} /></button>
             </div>
             <div className="p-8">
-              {coverImage && <img src={coverImage} alt={title} className="w-full h-48 object-cover rounded-xl mb-6" />}
-              <h1 className="text-2xl font-black text-white mb-3">{title || 'Tiêu đề bài viết'}</h1>
-              {summary && <p className="text-slate-400 italic border-l-4 border-sky-500/50 pl-4 mb-6">{summary}</p>}
+              {coverImage && <img src={coverImage} alt={title} className="w-full h-48 object-cover rounded-xl mb-6 border border-slate-200" />}
+              <h1 className="text-2xl font-black text-slate-900 mb-3">{title || 'Tiêu đề bài viết'}</h1>
+              {summary && <p className="text-slate-500 italic border-l-4 border-blue-500 pl-4 mb-6">{summary}</p>}
               <div
-                className="prose prose-invert prose-slate max-w-none text-sm [&_h2]:text-lg [&_h2]:font-black [&_h2]:text-white [&_h2]:mt-6 [&_h3]:font-bold [&_h3]:text-slate-100"
-                dangerouslySetInnerHTML={{ __html: content || '<p class="text-slate-500">Chưa có nội dung...</p>' }}
+                className="prose prose-slate max-w-none text-sm [&_h2]:text-lg [&_h2]:font-black [&_h2]:text-slate-900 [&_h2]:mt-6 [&_h3]:font-bold [&_h3]:text-slate-800"
+                dangerouslySetInnerHTML={{ __html: content || '<p class="text-slate-400">Chưa có nội dung...</p>' }}
               />
             </div>
           </div>
@@ -575,7 +584,7 @@ function VietBaiContent() {
 export default function VietBaiPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-[#080d1a] flex items-center justify-center">
+      <div className="min-h-screen bg-[#f8fafc] flex items-center justify-center">
         <Loader2 className="animate-spin text-sky-400" size={32} />
       </div>
     }>

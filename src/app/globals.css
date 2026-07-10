@@ -299,216 +299,253 @@ nav a:hover {
 }
 
 /* ══════════════════════════════════════════
-   ADMIN PANEL — Light Professional Theme
+   ADMIN PANEL — Light Professional Theme (Notion/Ghost Style)
    ══════════════════════════════════════════ */
 .admin-panel {
-  background-color: #f1f5f9 !important;
+  background-color: #f8fafc !important; /* Slate 50 - nền canvas */
+  color: #0f172a !important; /* Slate 900 - chữ chính */
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+/* Base Body cho Admin */
+.admin-panel body,
+body.admin-panel {
+  background-color: #f8fafc !important;
   color: #0f172a !important;
-  font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
 }
 
-/* Admin glass-card → white card với shadow nhẹ */
-.admin-panel .glass-card {
-  background: #ffffff !important;
-  border: 1px solid #e2e8f0 !important;
-  border-radius: 0.75rem !important;
-  box-shadow: 0 1px 3px 0 rgba(0,0,0,0.06), 0 1px 2px -1px rgba(0,0,0,0.04) !important;
-  backdrop-filter: none !important;
-}
-
-/* Admin header — trắng với border bottom */
+/* Header Admin */
 .admin-panel header {
   background-color: #ffffff !important;
-  border-color: #e2e8f0 !important;
+  border-bottom: 1px solid #e2e8f0 !important;
   color: #0f172a !important;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.06) !important;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03) !important;
 }
-.admin-panel header a {
-  color: #334155 !important;
-}
-.admin-panel header a:hover {
+.admin-panel header h1,
+.admin-panel header h2,
+.admin-panel header span,
+.admin-panel header p {
   color: #0f172a !important;
 }
-.admin-panel header span {
-  color: inherit !important;
+.admin-panel header .text-slate-400,
+.admin-panel header .text-slate-500 {
+  color: #64748b !important;
 }
 
-/* Sidebar */
+/* Sidebar & Aside Navigation */
+.admin-panel aside {
+  background-color: #ffffff !important;
+  border-right: 1px solid #e2e8f0 !important;
+}
 .admin-panel aside .glass-card {
   background: #ffffff !important;
-  border-color: #e2e8f0 !important;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: 0 1px 3px 0 rgba(0,0,0,0.05) !important;
 }
-
-/* Sidebar nav buttons — override màu tối thành màu sáng */
 .admin-panel aside button,
 .admin-panel aside a {
-  color: #475569 !important;
+  color: #475569 !important; /* Slate 600 */
+  transition: all 0.2s ease;
 }
 .admin-panel aside button:hover,
 .admin-panel aside a:hover {
   color: #0f172a !important;
-  background-color: #f1f5f9 !important;
+  background-color: #f1f5f9 !important; /* Slate 100 */
 }
 
-/* Active tab trong sidebar */
+/* Active navigation item */
 .admin-panel aside .bg-sky-500\/10 {
-  background-color: #eff6ff !important;
+  background-color: #f0f5ff !important;
+  color: #1d4ed8 !important;
 }
 .admin-panel aside .text-sky-400 {
   color: #2563eb !important;
 }
 .admin-panel aside .border-sky-500\/20 {
-  border-color: #bfdbfe !important;
+  border-color: #cbd5e1 !important;
 }
 
-/* Admin table */
-.admin-panel table {
-  background: #ffffff;
+/* White paper style cho khu vực Editor */
+.admin-paper-card {
+  background-color: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 0.75rem !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05) !important;
+}
+
+/* Glass card admin style */
+.admin-panel .glass-card {
+  background-color: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 0.75rem !important;
+  box-shadow: 0 1px 3px 0 rgba(0,0,0,0.05) !important;
+}
+
+/* Typography Overrides cho admin soạn thảo */
+.admin-panel textarea {
+  color: #0f172a !important;
+  background-color: transparent !important;
+  border: none !important;
+  outline: none !important;
+}
+.admin-panel textarea::placeholder {
+  color: #94a3b8 !important; /* Slate 300 */
+}
+
+/* Trình soạn thảo văn bản Rich Text */
+.admin-editor-content {
+  color: #1e293b !important; /* Slate 800 */
+  background-color: #ffffff !important;
+}
+.admin-editor-content h2 {
+  color: #0f172a !important;
+  font-weight: 800;
+  font-size: 1.5rem;
+  margin-top: 2rem;
+  margin-bottom: 0.75rem;
+}
+.admin-editor-content h3 {
+  color: #1e293b !important;
+  font-weight: 700;
+  font-size: 1.25rem;
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+.admin-editor-content p {
+  margin-bottom: 1rem;
+  line-height: 1.65;
+}
+.admin-editor-content ul {
+  list-style-type: disc;
+  padding-left: 1.5rem;
+  margin-bottom: 1rem;
+}
+.admin-editor-content ol {
+  list-style-type: decimal;
+  padding-left: 1.5rem;
+  margin-bottom: 1rem;
+}
+.admin-editor-content strong {
+  color: #0f172a !important;
+  font-weight: 700;
+}
+.admin-editor-content blockquote {
+  border-left: 4px solid #3b82f6 !important;
+  padding-left: 1rem;
+  font-style: italic;
+  color: #475569 !important;
+  margin: 1.5rem 0;
+}
+.admin-editor-content code {
+  background-color: #f1f5f9 !important;
+  color: #2563eb !important;
+  padding: 0.2rem 0.4rem;
+  border-radius: 0.25rem;
+  font-size: 0.85em;
+}
+.admin-editor-content a {
+  color: #2563eb !important;
+  text-decoration: underline;
+}
+
+/* Toolbar soạn thảo */
+.admin-editor-toolbar {
+  background-color: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05) !important;
+}
+.admin-editor-toolbar button {
+  color: #475569 !important;
+}
+.admin-editor-toolbar button:hover {
+  background-color: #f1f5f9 !important;
+  color: #0f172a !important;
+}
+
+/* Sidebar SEO Panel bên phải */
+.admin-seo-panel {
+  background-color: #ffffff !important;
+  border-left: 1px solid #e2e8f0 !important;
+}
+.admin-seo-panel label {
+  color: #475569 !important; /* Slate 600 */
+}
+.admin-seo-panel input,
+.admin-seo-panel textarea,
+.admin-seo-panel select {
+  background-color: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #0f172a !important;
+}
+.admin-seo-panel input:focus,
+.admin-seo-panel textarea:focus {
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1) !important;
+}
+
+/* Google SERP Preview */
+.google-preview-card {
+  background-color: #f8fafc !important;
+  border: 1px solid #e2e8f0 !important;
   border-radius: 0.5rem;
-  overflow: hidden;
+}
+
+/* SEO Checklist */
+.seo-check-item-ok {
+  background-color: #f0fdf4 !important;
+  color: #166534 !important;
+  border: 1px solid #bbf7d0 !important;
+}
+.seo-check-item-warn {
+  background-color: #fffbeb !important;
+  color: #92400e !important;
+  border: 1px solid #fef3c7 !important;
+}
+
+/* Table styling */
+.admin-panel table {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
 }
 .admin-panel table thead tr {
-  background: #f8fafc !important;
+  background-color: #f8fafc !important;
   border-bottom: 1px solid #e2e8f0 !important;
 }
 .admin-panel table thead th {
-  color: #64748b !important;
-  font-weight: 600;
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  padding: 10px 12px !important;
+  color: #475569 !important;
 }
 .admin-panel table tbody tr {
   border-bottom: 1px solid #f1f5f9 !important;
-  transition: background 0.12s;
 }
 .admin-panel table tbody tr:hover {
-  background: #f8fafc !important;
+  background-color: #f8fafc !important;
 }
 .admin-panel table tbody td {
   color: #334155 !important;
-  font-size: 13px;
-  padding: 10px 12px;
-}
-/* Title cell đậm hơn */
-.admin-panel table tbody td:first-child {
-  color: #0f172a !important;
-  font-weight: 600;
 }
 
-/* Badge trạng thái */
-.badge-published,
-.admin-panel .bg-emerald-500\/10 {
-  background: #dcfce7 !important;
-  color: #16a34a !important;
-  border: 1px solid #bbf7d0 !important;
-  border-radius: 4px;
-  padding: 2px 8px;
-  font-size: 10px;
-  font-weight: 700;
-}
-.badge-draft,
-.admin-panel .bg-amber-500\/10 {
-  background: #fef9c3 !important;
-  color: #a16207 !important;
-  border: 1px solid #fde68a !important;
-  border-radius: 4px;
-  padding: 2px 8px;
-  font-size: 10px;
-  font-weight: 700;
-}
-
-/* Text màu cho light theme */
-.admin-panel .text-slate-400 { color: #64748b !important; }
-.admin-panel .text-slate-300 { color: #475569 !important; }
-.admin-panel .text-slate-200 { color: #334155 !important; }
-.admin-panel .text-slate-500 { color: #94a3b8 !important; }
-.admin-panel .text-white    { color: #0f172a !important; }
-
-/* Border xám nhạt */
-.admin-panel .border-slate-800 { border-color: #e2e8f0 !important; }
-.admin-panel .border-slate-800\/80 { border-color: #e2e8f0 !important; }
-.admin-panel .border-slate-800\/40 { border-color: #f1f5f9 !important; }
-
-/* Background các block */
-.admin-panel .bg-slate-950\/20 { background: transparent !important; }
-.admin-panel .bg-slate-950\/70 { background: #ffffff !important; }
-.admin-panel .bg-slate-900\/10 { background: #f8fafc !important; }
-.admin-panel .bg-slate-900\/30 { background: #f1f5f9 !important; }
-
-/* Action button icon (edit/delete) */
-.admin-panel .bg-slate-800 {
-  background: #f1f5f9 !important;
-  border: 1px solid #e2e8f0 !important;
-}
-.admin-panel .bg-slate-800:hover { background: #e2e8f0 !important; }
-.admin-panel .hover\:bg-sky-500\/10:hover { background: #eff6ff !important; }
-.admin-panel .hover\:text-sky-400:hover { color: #2563eb !important; }
-.admin-panel .hover\:bg-rose-500\/10:hover { background: #fff1f2 !important; }
-.admin-panel .hover\:text-rose-400:hover { color: #dc2626 !important; }
-
-/* Input fields */
-.admin-panel input,
-.admin-panel textarea,
-.admin-panel select {
-  background-color: #ffffff !important;
-  border-color: #cbd5e1 !important;
-  color: #0f172a !important;
-}
-.admin-panel input:focus,
-.admin-panel textarea:focus,
-.admin-panel select:focus {
-  border-color: #2563eb !important;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1) !important;
-}
-.admin-panel input::placeholder,
-.admin-panel textarea::placeholder {
-  color: #94a3b8 !important;
-}
-
-/* Primary button (Viết bài mới, Thêm...) */
+/* Buttons */
 .admin-panel .bg-sky-500 {
   background-color: #2563eb !important;
   color: #ffffff !important;
 }
-.admin-panel .hover\:bg-sky-400:hover {
+.admin-panel .bg-sky-500:hover {
   background-color: #1d4ed8 !important;
 }
-.admin-panel .text-slate-950 { color: #ffffff !important; }
-
-/* Đăng xuất button */
-.admin-panel .bg-rose-500\/10 {
-  background: #fff1f2 !important;
+.admin-panel .text-slate-950 {
+  color: #ffffff !important;
 }
-.admin-panel .text-rose-400 { color: #dc2626 !important; }
-.admin-panel .border-rose-500\/20 { border-color: #fecaca !important; }
-.admin-panel .hover\:bg-rose-500\/20:hover { background: #fee2e2 !important; }
 
-/* Scrollbar light theme */
-.admin-panel ::-webkit-scrollbar { width: 6px; height: 6px; }
-.admin-panel ::-webkit-scrollbar-track { background: transparent; }
-.admin-panel ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-.admin-panel ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-
-/* Toast notifications */
+/* Toast */
 .toast-success {
-  background: #f0fdf4 !important;
-  border-color: #86efac !important;
-  color: #16a34a !important;
+  background-color: #f0fdf4 !important;
+  border-color: #bbf7d0 !important;
+  color: #166534 !important;
 }
 .toast-error {
-  background: #fff1f2 !important;
-  border-color: #fca5a5 !important;
-  color: #dc2626 !important;
-}
-@keyframes slideIn {
-  from { opacity: 0; transform: translateX(20px); }
-  to { opacity: 1; transform: translateX(0); }
-}
-.animate-slideIn {
-  animation: slideIn 0.25s ease forwards;
+  background-color: #fff1f2 !important;
+  border-color: #fecaca !important;
+  color: #991b1b !important;
 }
 
 /* Divider / separator */
