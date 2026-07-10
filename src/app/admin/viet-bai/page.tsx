@@ -164,6 +164,7 @@ function VietBaiContent() {
   const [author, setAuthor] = useState('PrinK Tech');
   const [status, setStatus] = useState<'draft' | 'published'>('draft');
   const [content, setContent] = useState('');
+  const [createdAt, setCreatedAt] = useState('');
 
   // SEO
   const [keyword, setKeyword] = useState('');
@@ -176,6 +177,7 @@ function VietBaiContent() {
   const [error, setError] = useState('');
   const [showPreview, setShowPreview] = useState(false);
   const [activePanel, setActivePanel] = useState<'seo' | 'settings'>('seo');
+  const [showSidebar, setShowSidebar] = useState(false);
 
   // Auth check
   useEffect(() => {
@@ -183,6 +185,13 @@ function VietBaiContent() {
       if (d.user && d.user.role === 'admin') { setAuthorized(true); } else { router.push('/login'); }
     }).catch(() => router.push('/login')).finally(() => setAuthLoading(false));
   }, [router]);
+
+  const formatDateTimeLocal = (isoString?: string) => {
+    if (!isoString) return '';
+    const date = new Date(isoString);
+    const pad = (num: number) => String(num).padStart(2, '0');
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+  };
 
   // Load bài cũ khi edit
   useEffect(() => {
@@ -198,9 +207,29 @@ function VietBaiContent() {
       setAuthor(p.author || 'PrinK Tech');
       setStatus(p.status || 'draft');
       setContent(p.content || '');
+      setCreatedAt(formatDateTimeLocal(p.created_at));
       setMetaDesc(p.summary || '');
+      
+      // Tự động điền Focus Keyword dựa trên slug bài viết để tính điểm SEO chuẩn xác
+      const defaultKeywords: { [key: string]: string } = {
+        'tem-uv-dtf-sieu-ben-ngoai-troi-do-ben-thoi-tiet': 'tem uv dtf ngoài trời',
+        'meo-thiet-ke-file-in-uv-dtf-chuan-mau-sac-net': 'thiết kế file in uv dtf',
+        'in-uv-dtf-dan-binh-giu-nhiet-qua-tang-doanh-nghiep': 'in uv dtf bình giữ nhiệt',
+        'huong-dan-dan-tem-uv-dtf-dung-cach': 'hướng dẫn dán tem uv dtf',
+        'so-sanh-in-uv-dtf-noi-3d-va-in-uv-phang': 'in uv dtf nổi 3d',
+        'in-sticker-uv-dtf-theo-yeu-cau-lay-lien-gia-re': 'in uv dtf'
+      };
+      setKeyword(defaultKeywords[p.slug] || 'in uv dtf');
+      
       if (editorRef.current) editorRef.current.innerHTML = p.content || '';
     });
+  }, [editId, authorized]);
+
+  // Thiết lập ngày giờ mặc định cho bài viết mới tinh
+  useEffect(() => {
+    if (!editId && authorized) {
+      setCreatedAt(formatDateTimeLocal(new Date().toISOString()));
+    }
   }, [editId, authorized]);
 
   // Auto slug từ title
@@ -311,6 +340,7 @@ function VietBaiContent() {
       cover_image: coverImage,
       content: finalContent,
       author, status: publishNow ? 'published' : status,
+      created_at: createdAt ? new Date(createdAt).toISOString() : undefined,
     };
     try {
       const method = editId ? 'PUT' : 'POST';
@@ -358,13 +388,29 @@ function VietBaiContent() {
               <h1 className="text-sm font-black text-slate-950">
                 {editId ? '✏️ Chỉnh sửa bài viết' : '✍️ Viết bài mới'}
               </h1>
-              <p className="text-[10px] text-slate-400">
-                {status === 'published' ? '🟢 Đã đăng' : '🟡 Bản nháp'} · {countWords(stripHtml(content))} từ
+              <p className="text-[10px] text-slate-400 flex items-center gap-1">
+                {status === 'published' ? (
+                  createdAt && new Date(createdAt) > new Date() ? (
+                    <span className="text-amber-600 font-bold flex items-center gap-0.5">⏰ Hẹn giờ đăng</span>
+                  ) : (
+                    <span className="text-emerald-600 font-bold">🟢 Đã đăng</span>
+                  )
+                ) : (
+                  <span className="text-slate-400">🟡 Bản nháp</span>
+                )}
+                · {countWords(stripHtml(content))} từ
               </p>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
+            {/* Nút bật/tắt cấu hình trên mobile */}
+            <button onClick={() => setShowSidebar(prev => !prev)}
+              className="lg:hidden flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-slate-200 hover:border-slate-300 text-slate-700 bg-white text-xs font-bold transition">
+              <BarChart2 size={13} className={scoreColor} />
+              Cấu hình & SEO
+            </button>
+
             {/* SEO score badge */}
             <div className={`hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200`}>
               <BarChart2 size={13} className={scoreColor} />
@@ -385,7 +431,8 @@ function VietBaiContent() {
 
             <button onClick={() => handleSave(true)} disabled={saving}
               className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-sky-500 hover:bg-sky-400 text-white text-xs font-bold transition disabled:opacity-50 shadow-md">
-              <Globe size={14} /> Đăng bài
+              <Globe size={14} /> 
+              {createdAt && new Date(createdAt) > new Date() ? 'Lên lịch đăng' : 'Đăng bài'}
             </button>
           </div>
         </div>
@@ -495,7 +542,20 @@ function VietBaiContent() {
         </main>
 
         {/* === RIGHT: SEO Panel === */}
-        <aside className="admin-seo-panel hidden lg:flex flex-col w-80 xl:w-96 bg-white sticky top-[57px] h-[calc(100vh-57px)] overflow-y-auto">
+        <aside className={`admin-seo-panel flex flex-col w-80 xl:w-96 bg-white 
+          /* Desktop */ lg:sticky lg:top-[57px] lg:h-[calc(100vh-57px)] lg:flex lg:shadow-none lg:border-l lg:border-slate-200
+          /* Mobile/Tablet */ fixed lg:relative inset-y-0 right-0 z-50 shadow-2xl transition-transform duration-300
+          ${showSidebar ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'}
+          ${!showSidebar ? 'hidden lg:flex' : 'flex'}
+          overflow-y-auto`}
+        >
+          {/* Nút đóng Sidebar trên Mobile */}
+          <div className="lg:hidden p-3 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+            <span className="text-xs font-bold text-slate-700">Cài đặt & SEO bài viết</span>
+            <button onClick={() => setShowSidebar(false)} className="p-1 rounded hover:bg-slate-200 text-slate-500 transition">
+              <X size={15} />
+            </button>
+          </div>
 
           {/* Panel tabs */}
           <div className="flex border-b border-slate-200">
@@ -653,6 +713,25 @@ function VietBaiContent() {
                         </button>
                       ))}
                     </div>
+                  </div>
+
+                  {/* Ngày giờ đăng bài / Đặt lịch */}
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500 flex justify-between">
+                      <span>Lên lịch đăng bài (Thời gian tạo)</span>
+                      {createdAt && new Date(createdAt) > new Date() && (
+                        <span className="text-amber-600 font-bold">⏰ Đang đặt lịch</span>
+                      )}
+                    </label>
+                    <input
+                      type="datetime-local"
+                      value={createdAt}
+                      onChange={e => setCreatedAt(e.target.value)}
+                      className="w-full bg-white border border-slate-200 rounded-lg py-2 px-3 text-xs text-slate-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 transition"
+                    />
+                    <p className="text-[9px] text-slate-400 leading-normal">
+                      Nếu đặt thời gian ở tương lai, bài viết sẽ tự động ẩn và chỉ hiển thị trên website khi đến đúng ngày giờ đã chọn.
+                    </p>
                   </div>
 
                   {/* Xem trước trên web */}

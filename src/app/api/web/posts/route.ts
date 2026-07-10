@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { title, slug, summary, content, cover_image, status, author } = body;
+    const { title, slug, summary, content, cover_image, status, author, created_at } = body;
 
     if (!title || !slug) {
       return NextResponse.json({ error: 'Tiêu đề và đường dẫn (slug) là bắt buộc' }, { status: 400 });
@@ -59,6 +59,7 @@ export async function POST(request: NextRequest) {
         cover_image,
         status: status || 'draft',
         author: author || auth.user?.name || 'PrinK Tech',
+        created_at: created_at ? new Date(created_at).toISOString() : new Date().toISOString(),
         updated_at: new Date().toISOString()
       })
       .select()

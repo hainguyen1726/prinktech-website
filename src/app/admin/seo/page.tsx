@@ -103,6 +103,7 @@ export default function AdminSEOAuditPage() {
   const [loadingKeywords, setLoadingKeywords] = useState(false);
   const [showAddKeywordModal, setShowAddKeywordModal] = useState(false);
   const [showGscImportModal, setShowGscImportModal] = useState(false);
+  const [showHelpModal, setShowHelpModal] = useState(false);
   
   // Form add keyword
   const [newKeywordText, setNewKeywordText] = useState('');
@@ -177,6 +178,23 @@ export default function AdminSEOAuditPage() {
     } catch {
       return url;
     }
+  };
+
+  // Helper: thuật toán phân trang thu gọn thông minh tránh vỡ giao diện khi số trang lớn
+  const getPageNumbers = (currentPage: number, totalPages: number): (number | string)[] => {
+    const pages: (number | string)[] = [];
+    if (totalPages <= 7) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else {
+      if (currentPage <= 4) {
+        pages.push(1, 2, 3, 4, 5, '...', totalPages);
+      } else if (currentPage >= totalPages - 3) {
+        pages.push(1, '...', totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
+      } else {
+        pages.push(1, '...', currentPage - 1, currentPage, currentPage + 1, '...', totalPages);
+      }
+    }
+    return pages;
   };
 
   // 2. Fetch danh sách Audits từ API
@@ -1041,14 +1059,17 @@ export default function AdminSEOAuditPage() {
                           >
                             <ChevronLeft size={16} />
                           </button>
-                          {Array.from({ length: totalTechPages }, (_, i) => i + 1).map(page => (
+                          {getPageNumbers(techPage, totalTechPages).map((page, i) => (
                             <button
-                              key={page}
-                              onClick={() => setTechPage(page)}
-                              className={`w-8 h-8 rounded-lg text-xs font-medium transition cursor-pointer ${
+                              key={i}
+                              disabled={page === '...'}
+                              onClick={() => typeof page === 'number' && setTechPage(page)}
+                              className={`w-8 h-8 rounded-lg text-xs font-medium transition ${
+                                page === '...' ? 'cursor-default text-slate-400' : 'cursor-pointer'
+                              } ${
                                 techPage === page 
                                   ? 'bg-blue-600 text-white shadow-sm font-medium' 
-                                  : 'bg-white border border-slate-200 hover:bg-slate-100 text-slate-600'
+                                  : page === '...' ? 'bg-transparent' : 'bg-white border border-slate-200 hover:bg-slate-100 text-slate-600'
                               }`}
                             >
                               {page}
@@ -1233,14 +1254,17 @@ export default function AdminSEOAuditPage() {
                       >
                         <ChevronLeft size={16} />
                       </button>
-                      {Array.from({ length: totalContentPages }, (_, i) => i + 1).map(page => (
+                      {getPageNumbers(contentPage, totalContentPages).map((page, i) => (
                         <button
-                          key={page}
-                          onClick={() => setContentPage(page)}
-                          className={`w-8 h-8 rounded-lg text-xs font-medium transition cursor-pointer ${
+                          key={i}
+                          disabled={page === '...'}
+                          onClick={() => typeof page === 'number' && setContentPage(page)}
+                          className={`w-8 h-8 rounded-lg text-xs font-medium transition ${
+                            page === '...' ? 'cursor-default text-slate-400' : 'cursor-pointer'
+                          } ${
                             contentPage === page 
                               ? 'bg-blue-600 text-white shadow-sm font-medium' 
-                              : 'bg-white border border-slate-200 hover:bg-slate-100 text-slate-600'
+                              : page === '...' ? 'bg-transparent' : 'bg-white border border-slate-200 hover:bg-slate-100 text-slate-600'
                           }`}
                         >
                           {page}
@@ -1298,6 +1322,14 @@ export default function AdminSEOAuditPage() {
                 </button>
 
                 <button
+                  onClick={() => setShowHelpModal(true)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 font-medium text-xs transition cursor-pointer"
+                  title="Xem hướng dẫn đồng bộ Search Console"
+                >
+                  <HelpCircle size={14} /> Hướng dẫn
+                </button>
+
+                <button
                   onClick={() => setShowAddKeywordModal(true)}
                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium text-xs transition cursor-pointer"
                 >
@@ -1311,14 +1343,29 @@ export default function AdminSEOAuditPage() {
                 <Loader2 className="animate-spin" size={20} />
                 <span className="text-xs font-medium">Đang tải danh sách từ khóa...</span>
               </div>
-            ) : keywords.length === 0 ? (
-              <div className="p-12 text-center text-slate-400 italic border border-dashed border-slate-200 rounded-xl">
-                Chưa có từ khóa nào được thiết lập. Nhấp "Thêm từ khóa" để bắt đầu theo dõi.
-              </div>
             ) : (
-              <div className="border border-slate-100 rounded-xl overflow-hidden">
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left border-collapse text-base">
+              (() => {
+                const filteredKeywords = keywords.filter(kw =>
+                  kw.keyword.toLowerCase().includes(keywordSearch.toLowerCase())
+                );
+                const totalKeywordPages = Math.ceil(filteredKeywords.length / pageSize);
+                const paginatedKeywords = filteredKeywords.slice(
+                  (keywordPage - 1) * pageSize,
+                  keywordPage * pageSize
+                );
+
+                if (filteredKeywords.length === 0) {
+                  return (
+                    <div className="p-8 text-center text-slate-400 italic border border-dashed border-slate-200 rounded-xl">
+                      Không tìm thấy từ khóa nào phù hợp với tìm kiếm.
+                    </div>
+                  );
+                }
+
+                return (
+                  <div className="border border-slate-100 rounded-xl overflow-hidden">
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left border-collapse text-base">
                     <thead>
                       <tr className="border-b border-slate-200 bg-slate-50 text-slate-500 font-medium uppercase tracking-wider text-xs">
                         <th className="p-4 w-12 text-center font-medium">STT</th>
@@ -1335,19 +1382,18 @@ export default function AdminSEOAuditPage() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
-                      {keywords
-                        .filter(kw => kw.keyword.toLowerCase().includes(keywordSearch.toLowerCase()))
-                        .map((kw, idx) => {
+                      {paginatedKeywords.map((kw, idx) => {
                           const isEditing = editingKeywordId === kw.id;
                           const reached = kw.currentRank <= kw.targetRank;
                           const closeToGoal = !reached && (kw.currentRank - kw.targetRank <= 5);
                           
                           // Biến động hạng
                           const rankDiff = kw.prevRank - kw.currentRank;
+                          const globalIdx = (keywordPage - 1) * pageSize + idx + 1;
                           
                           return (
                             <tr key={kw.id} className="hover:bg-slate-50/50 transition text-slate-700 text-sm">
-                              <td className="p-4 text-center text-slate-400 font-mono text-xs">{idx + 1}</td>
+                              <td className="p-4 text-center text-slate-400 font-mono text-xs">{globalIdx}</td>
                               <td className="p-4 font-bold text-slate-900">{kw.keyword}</td>
                               <td className="p-4 text-center">
                                 <span className={`inline-block text-[9px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider ${
@@ -1493,56 +1539,53 @@ export default function AdminSEOAuditPage() {
                     </tbody>
                   </table>
                 </div>
+
+                {/* PAGINATION BAR FOR KEYWORDS */}
+                {totalKeywordPages > 1 && (
+                  <div className="flex items-center justify-between px-6 py-4 border-t border-slate-200 bg-slate-50">
+                    <span className="text-xs text-slate-500 font-medium">
+                      Hiển thị {(keywordPage - 1) * pageSize + 1} - {Math.min(keywordPage * pageSize, filteredKeywords.length)} trong tổng số {filteredKeywords.length} từ khóa
+                    </span>
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => setKeywordPage(p => Math.max(1, p - 1))}
+                        disabled={keywordPage === 1}
+                        className="p-1.5 rounded-lg bg-white border border-slate-200 hover:bg-slate-100 text-slate-600 disabled:opacity-50 transition cursor-pointer"
+                      >
+                        <ChevronLeft size={16} />
+                      </button>
+                      {getPageNumbers(keywordPage, totalKeywordPages).map((page, i) => (
+                        <button
+                          key={i}
+                          disabled={page === '...'}
+                          onClick={() => typeof page === 'number' && setKeywordPage(page)}
+                          className={`w-8 h-8 rounded-lg text-xs font-medium transition ${
+                            page === '...' ? 'cursor-default text-slate-400' : 'cursor-pointer'
+                          } ${
+                            keywordPage === page 
+                              ? 'bg-blue-600 text-white shadow-sm font-medium' 
+                              : page === '...' ? 'bg-transparent' : 'bg-white border border-slate-200 hover:bg-slate-100 text-slate-600'
+                          }`}
+                        >
+                          {page}
+                        </button>
+                      ))}
+                      <button
+                        onClick={() => setKeywordPage(p => Math.min(totalKeywordPages, p + 1))}
+                        disabled={keywordPage === totalKeywordPages}
+                        className="p-1.5 rounded-lg bg-white border border-slate-200 hover:bg-slate-100 text-slate-600 disabled:opacity-50 transition cursor-pointer"
+                      >
+                        <ChevronRight size={16} />
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
+                );
+              })()
             )}
 
-            {/* BLOCK HƯỚNG DẪN SETUP GOOGLE SEARCH CONSOLE */}
-            <div className="bg-slate-50 rounded-2xl border border-slate-200 p-6 space-y-6">
-              <h4 className="font-bold text-sm text-slate-800 flex items-center gap-1.5">
-                <HelpCircle size={18} className="text-blue-500" />
-                Hướng dẫn Đồng bộ Số liệu Thứ hạng và Clicks từ Google
-              </h4>
-
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 text-xs text-slate-600 leading-relaxed font-normal">
-                <div className="space-y-3">
-                  <h5 className="font-bold text-slate-850 flex items-center gap-1">
-                    Cách 1: Sử dụng File Export từ Google Search Console (Nhanh & Tiện)
-                  </h5>
-                  <ol className="list-decimal list-inside space-y-1.5">
-                    <li>Đăng nhập vào <a href="https://search.google.com/search-console" target="_blank" className="text-blue-600 hover:underline">Google Search Console</a>.</li>
-                    <li>Chọn trang web của bạn (ví dụ: `https://prinktech.vn`).</li>
-                    <li>Vào mục <strong>Hiệu suất (Performance)</strong> → tab <strong>Cụm từ tìm kiếm (Queries)</strong>.</li>
-                    <li>Chỉnh bộ lọc thời gian mong muốn (ví dụ: 28 ngày qua).</li>
-                    <li>Click nút <strong>Xuất (Export)</strong> ở góc trên bên phải → Chọn <strong>Tải xuống tệp CSV</strong>.</li>
-                    <li>Mở file CSV đã tải, copy toàn bộ nội dung dữ liệu (Cột: Từ khóa, Clicks, Impressions, CTR, Vị trí).</li>
-                    <li>Quay lại website, click nút <strong>Import GSC Data</strong> ở góc phải phía trên bảng này, dán nội dung đã copy vào và click <strong>Đồng bộ dữ liệu</strong>.</li>
-                  </ol>
-                </div>
-
-                <div className="space-y-3">
-                  <h5 className="font-bold text-slate-850 flex items-center gap-1">
-                    Cách 2: Tự động hóa qua Search Console API (Lập trình)
-                  </h5>
-                  <p>
-                    Để đồng bộ tự động 100% hàng ngày không cần copy-paste, bạn cần setup một Service Account Google Cloud và chạy một script backend để kéo dữ liệu từ Google Search Console API.
-                  </p>
-                  <p className="bg-slate-900 text-slate-350 p-3 rounded-lg font-mono text-[10px] overflow-x-auto whitespace-pre leading-normal">
-{`# 1. Tạo Google Cloud project, bật Search Console API
-# 2. Tạo Service Account, tải file JSON credentials về máy
-# 3. Phân quyền cho Email Service Account làm 'Viewer' trong GSC
-# 4. Chạy script NodeJS hàng ngày để đồng bộ:
-
-const { google } = require('googleapis');
-const searchconsole = google.searchconsole('v1');
-// Nạp Service Account credentials & gọi API
-const auth = new google.auth.GoogleAuth({
-  keyFile: 'credentials.json',
-  scopes: ['https://www.googleapis.com/auth/webmasters.readonly']
-});`}
-                  </p>
-                </div>
-              </div>
-            </div>
+            {/* Hướng dẫn tĩnh đã được di chuyển vào Modal để giao diện sạch sẽ */}
 
           </div>
         )}
@@ -1792,6 +1835,78 @@ in uv dtf bình giữ nhiệt&#9;95&#9;850&#9;11.18%&#9;1
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* HELP MODAL */}
+      {showHelpModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="bg-white border border-slate-200 w-full max-w-3xl rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
+            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+              <h3 className="text-sm font-medium text-slate-800 flex items-center gap-1.5">
+                <HelpCircle size={16} className="text-blue-500" />
+                Hướng dẫn Đồng bộ Số liệu Thứ hạng và Clicks từ Google
+              </h3>
+              <button 
+                onClick={() => setShowHelpModal(false)}
+                className="text-slate-400 hover:text-slate-600 hover:bg-slate-100 p-1.5 rounded-lg transition"
+              >
+                <X size={16} />
+              </button>
+            </div>
+            
+            <div className="p-6 space-y-6 max-h-[80vh] overflow-y-auto">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs text-slate-600 leading-relaxed font-normal">
+                <div className="space-y-3">
+                  <h5 className="font-bold text-slate-850 flex items-center gap-1">
+                    Cách 1: Sử dụng File Export từ Google Search Console (Nhanh & Tiện)
+                  </h5>
+                  <ol className="list-decimal list-inside space-y-1.5">
+                    <li>Đăng nhập vào <a href="https://search.google.com/search-console" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Google Search Console</a>.</li>
+                    <li>Chọn trang web của bạn (ví dụ: `https://prinktech.vn`).</li>
+                    <li>Vào mục <strong>Hiệu suất (Performance)</strong> → tab <strong>Cụm từ tìm kiếm (Queries)</strong>.</li>
+                    <li>Chỉnh bộ lọc thời gian mong muốn (ví dụ: 28 ngày qua).</li>
+                    <li>Click nút <strong>Xuất (Export)</strong> ở góc trên bên phải → Chọn <strong>Tải xuống tệp CSV</strong>.</li>
+                    <li>Mở file CSV đã tải, copy toàn bộ nội dung dữ liệu (Cột: Từ khóa, Clicks, Impressions, CTR, Vị trí).</li>
+                    <li>Quay lại website, click nút <strong>Import GSC Data</strong> ở góc phải phía trên bảng này, dán nội dung đã copy vào và click <strong>Đồng bộ dữ liệu</strong>.</li>
+                  </ol>
+                </div>
+
+                <div className="space-y-3">
+                  <h5 className="font-bold text-slate-850 flex items-center gap-1">
+                    Cách 2: Tự động hóa qua Search Console API (Lập trình)
+                  </h5>
+                  <p>
+                    Để đồng bộ tự động 100% hàng ngày không cần copy-paste, bạn cần setup một Service Account Google Cloud và chạy một script backend để kéo dữ liệu từ Google Search Console API.
+                  </p>
+                  <p className="bg-slate-900 text-slate-350 p-3 rounded-lg font-mono text-[10px] overflow-x-auto whitespace-pre leading-normal">
+{`# 1. Tạo Google Cloud project, bật Search Console API
+# 2. Tạo Service Account, tải file JSON credentials về máy
+# 3. Phân quyền cho Email Service Account làm 'Viewer' trong GSC
+# 4. Chạy script NodeJS hàng ngày để đồng bộ:
+
+const { google } = require('googleapis');
+const searchconsole = google.searchconsole('v1');
+// Nạp Service Account credentials & gọi API
+const auth = new google.auth.GoogleAuth({
+  keyFile: 'credentials.json',
+  scopes: ['https://www.googleapis.com/auth/webmasters.readonly']
+});`}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end border-t border-slate-100 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setShowHelpModal(false)}
+                  className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium text-xs transition"
+                >
+                  Đóng hướng dẫn
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
