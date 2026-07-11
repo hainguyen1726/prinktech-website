@@ -8,6 +8,8 @@ import { Home } from 'lucide-react';
 
 const BASE_URL = 'https://prinktech.netslive.com';
 
+export const revalidate = 1800; // Tự động revalidate trang chi tiết sản phẩm sau mỗi 30 phút (ISR)
+
 interface Product {
   id: string;
   name: string;
