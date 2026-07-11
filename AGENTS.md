@@ -32,6 +32,7 @@ Dự án này đã được Audit SEO hoàn chỉnh vào ngày 10/07/2026. Các 
 - **Quy tắc**: Mỗi bài viết mới được đăng lên phải tuân thủ đầy đủ checklist:
   - Độ dài nội dung đạt từ 800 - 1200 từ, headings phân cấp logic H1->H3.
   - Tối ưu hóa ảnh minh họa (nén định dạng `.webp` dưới 100KB, alt mô tả chứa từ khóa đích tự nhiên).
+  - **Định dạng ảnh bắt buộc `.webp`**: Mọi file ảnh tải lên thư mục `/public/images/` của dự án và mọi đường dẫn `image_url` lưu vào các bảng Supabase (`web_posts`, `web_products`, ...) **bắt buộc phải có đuôi `.webp`**. Tuyệt đối không đặt đuôi `.png` hay `.jpg` cho ảnh mới tạo hoặc upload, trừ khi file gốc từ nguồn bên ngoài không cho phép chuyển đổi.
   - Sử dụng kỹ năng **[antigravity-google-flow-imagegen](file:///C:/Users/Admin/.gemini/config/skills/antigravity-google-flow-imagegen/SKILL.md)** để sinh ảnh mockup/sản phẩm bằng AI khi thiếu ảnh thực tế.
   - Thiết lập ít nhất 1-2 liên kết nội bộ (Internal Links) từ bài viết blog trỏ về các trang Landing Page dịch vụ chính.
   - Gửi yêu cầu lập chỉ mục lên Google Search Console và chia sẻ bài viết lên các mạng xã hội để tăng tốc độ index và kéo traffic ban đầu.

@@ -25,6 +25,22 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   /* config options here */
+  async redirects() {
+    return [
+      // 301: Trang danh sách cẩm nang → trang bài viết mới
+      {
+        source: '/cam-nang',
+        destination: '/bai-viet',
+        permanent: true,
+      },
+      // 301: Bài viết cõ /cam-nang/:slug → /:slug (URL flat chuẩn SEO)
+      {
+        source: '/cam-nang/:slug',
+        destination: '/:slug',
+        permanent: true,
+      },
+    ];
+  },
   async headers() {
     return [
       {

@@ -10,6 +10,8 @@ const eslintConfig = [
     ignores: [
       "check-and-fix.js",
       "check-and-fix.sh",
+      "scratch/**",
+      "scripts/**",
       "node_modules/**",
       ".next/**",
     ],

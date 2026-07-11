@@ -71,7 +71,7 @@ export default function Header({ activeTheme: propTheme, setActiveTheme: propSet
     { name: 'Tính giá', href: '/bao-gia', isHash: false },
     { name: 'Tra cứu đơn', href: '/tra-cuu', isHash: false },
     { name: 'Đặt hàng', href: '/dat-hang', isHash: false },
-    { name: 'Cẩm nang', href: '/#blog', isHash: true },
+    { name: 'Bài viết', href: '/bai-viet', isHash: false },
     { name: 'Liên hệ', href: '/#contact', isHash: true },
   ];
 

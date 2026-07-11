@@ -50,6 +50,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: 'yearly',
       priority: 0.4,
     },
+    {
+      url: `${BASE_URL}/bai-viet`,
+      lastModified: today,
+      changeFrequency: 'daily',
+      priority: 0.85,
+    },
   ];
 
   // Fetch posts từ Supabase
@@ -65,7 +71,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
     if (posts) {
       postRoutes = posts.map((post) => ({
-        url: `${BASE_URL}/cam-nang/${post.slug}`,
+        url: `${BASE_URL}/${post.slug}`,
         lastModified: post.updated_at || post.created_at || today,
         changeFrequency: 'weekly' as const,
         priority: 0.8,
