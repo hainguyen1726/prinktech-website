@@ -121,6 +121,21 @@ export default function OrderList() {
   }, [showCreateForm]);
 
   const handleProductChange = (type: string) => {
+    if (type === 'other') {
+      setCreateFormData({
+        product_type: 'other' as any,
+        product_label: '',
+        size_label: 'cái',
+        quantity: 1,
+        meters: 0,
+        rate_excl_vat: 0,
+        shipping_fee: 30000,
+        design_link: '',
+        note: '',
+      });
+      return;
+    }
+
     const defaultQty = type.startsWith('tem-') ? 200 : (type === 'cuon' ? 200 : 5);
     const defaultMeters = type === 'cuon' ? 1.0 : 0;
     
@@ -151,6 +166,14 @@ export default function OrderList() {
 
   const handleQtyChange = (qty: number) => {
     const type = createFormData.product_type;
+    if (type === 'other') {
+      setCreateFormData(prev => ({
+        ...prev,
+        quantity: qty,
+      }));
+      return;
+    }
+
     const prod = PRODUCTS.find(p => p.type === type);
     if (!prod) return;
 
@@ -215,6 +238,11 @@ export default function OrderList() {
         alert('Vui lòng chọn khách hàng lẻ từ danh sách.');
         return;
       }
+    }
+
+    if (createFormData.product_type === 'other' && !createFormData.product_label.trim()) {
+      alert('Vui lòng nhập tên sản phẩm custom.');
+      return;
     }
 
     if (!createFormData.design_link?.trim()) {
@@ -475,9 +503,11 @@ export default function OrderList() {
           </div>
           <button
             onClick={() => setShowCreateForm(!showCreateForm)}
-            className="px-5 py-2.5 rounded-xl bg-purple-650 hover:bg-purple-550 text-white font-bold text-sm shadow-md transition-all flex items-center gap-2 cursor-pointer self-start sm:self-auto"
+            className={`px-5 py-2.5 rounded-xl font-bold text-sm shadow-md transition-all flex items-center gap-2 cursor-pointer self-start sm:self-auto text-white ${
+              showCreateForm ? 'bg-red-650 hover:bg-red-550' : 'bg-purple-650 hover:bg-purple-550'
+            }`}
           >
-            {showCreateForm ? '❌ Hủy tạo đơn' : '➕ Tạo đơn hàng lẻ mới'}
+            {showCreateForm ? '❌ Hủy tạo đơn' : '➕ Tạo đơn lẻ mới'}
           </button>
         </div>
 
@@ -613,8 +643,36 @@ export default function OrderList() {
                             {p.icon} {p.label}
                           </option>
                         ))}
+                        <option value="other">🎨 Khác (Tự nhập thông tin & đơn giá)</option>
                       </select>
                     </div>
+
+                    {/* Tên sản phẩm custom nếu chọn Khác */}
+                    {createFormData.product_type === 'other' && (
+                      <div className="space-y-1 col-span-1 sm:col-span-2">
+                        <label className="block text-xs font-bold text-slate-600">Tên sản phẩm custom *</label>
+                        <input
+                          type="text"
+                          placeholder="Ví dụ: In tem phản quang 5x5cm, In bạt quảng cáo..."
+                          value={createFormData.product_label}
+                          onChange={e => setCreateFormData(prev => ({ ...prev, product_label: e.target.value }))}
+                          className="w-full h-10 px-3 rounded-xl border border-card-border bg-background text-slate-900 text-sm font-bold focus:outline-none focus:border-purple-650"
+                        />
+                      </div>
+                    )}
+
+                    {createFormData.product_type === 'other' ? (
+                      <div className="space-y-1">
+                        <label className="block text-xs font-bold text-slate-600">Đơn vị tính (Quy cách)</label>
+                        <input
+                          type="text"
+                          placeholder="cái, mét, tờ, tấm..."
+                          value={createFormData.size_label}
+                          onChange={e => setCreateFormData(prev => ({ ...prev, size_label: e.target.value }))}
+                          className="w-full h-10 px-3 rounded-xl border border-card-border bg-background text-slate-900 text-sm font-bold focus:outline-none focus:border-purple-650"
+                        />
+                      </div>
+                    ) : null}
 
                     {createFormData.product_type === 'cuon' ? (
                       <div className="space-y-1">
@@ -633,7 +691,7 @@ export default function OrderList() {
                       </div>
                     ) : (
                       <div className="space-y-1">
-                        <label className="block text-xs font-bold text-slate-600">Số lượng (cái/tờ) *</label>
+                        <label className="block text-xs font-bold text-slate-600">Số lượng ({createFormData.product_type === 'other' ? createFormData.size_label || 'cái' : 'cái/tờ'}) *</label>
                         <input
                           type="number"
                           min="1"
@@ -645,12 +703,21 @@ export default function OrderList() {
                     )}
 
                     <div className="space-y-1">
-                      <label className="block text-xs font-bold text-slate-600">Đơn giá trước VAT (tính tự động)</label>
+                      <label className="block text-xs font-bold text-slate-600">
+                        {createFormData.product_type === 'other' ? 'Đơn giá trước VAT (VND) *' : 'Đơn giá trước VAT (tính tự động)'}
+                      </label>
                       <input
-                        type="text"
-                        disabled
-                        value={formatCurrency(createFormData.rate_excl_vat)}
-                        className="w-full h-10 px-3 rounded-xl border border-card-border bg-slate-100 text-slate-600 text-sm font-semibold focus:outline-none font-bold"
+                        type={createFormData.product_type === 'other' ? 'number' : 'text'}
+                        disabled={createFormData.product_type !== 'other'}
+                        value={createFormData.product_type === 'other' ? createFormData.rate_excl_vat : formatCurrency(createFormData.rate_excl_vat)}
+                        onChange={e => {
+                          if (createFormData.product_type === 'other') {
+                            setCreateFormData(prev => ({ ...prev, rate_excl_vat: parseInt(e.target.value) || 0 }));
+                          }
+                        }}
+                        className={`w-full h-10 px-3 rounded-xl border border-card-border text-sm font-bold focus:outline-none ${
+                          createFormData.product_type === 'other' ? 'bg-background text-slate-900 focus:border-purple-650' : 'bg-slate-100 text-slate-600'
+                        }`}
                       />
                     </div>
 
