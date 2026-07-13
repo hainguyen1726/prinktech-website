@@ -504,7 +504,7 @@ export default function OrderList() {
           <button
             onClick={() => setShowCreateForm(!showCreateForm)}
             className={`px-5 py-2.5 rounded-xl font-bold text-sm shadow-md transition-all flex items-center gap-2 cursor-pointer self-start sm:self-auto text-white ${
-              showCreateForm ? 'bg-red-650 hover:bg-red-550' : 'bg-purple-650 hover:bg-purple-550'
+              showCreateForm ? 'bg-[#dc2626] hover:bg-[#b91c1c]' : 'bg-[#7c3aed] hover:bg-[#6d28d9]'
             }`}
           >
             {showCreateForm ? '❌ Hủy tạo đơn' : '➕ Tạo đơn lẻ mới'}
