@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Script from 'next/script';
 import { Inter, Outfit, Playfair_Display } from 'next/font/google';
 import './globals.css';
 
@@ -120,6 +121,19 @@ export default function RootLayout({
         />
       </head>
       <body className={`${inter.variable} ${outfit.variable} ${playfair.variable} min-h-screen flex flex-col relative overflow-x-hidden antialiased pb-16 md:pb-0`}>
+        {/* Google Tag (gtag.js) */}
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-HKSYJR8T5S"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-HKSYJR8T5S');
+          `}
+        </Script>
         {children}
         <BackToTop />
         <BottomNav />

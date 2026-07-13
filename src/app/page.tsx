@@ -1,6 +1,5 @@
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import WebsiteContent from '@/components/WebsiteContent';
-import Script from 'next/script';
 
 const BASE_URL = 'https://prinktech.netslive.com';
 const SITE_NAME = 'PrinK Tech - Xưởng In UV DTF Nổi 3D';
@@ -34,6 +33,9 @@ const localBusinessSchema = {
   priceRange: '$$',
   sameAs: [
     'https://zalo.me/0822968412',
+    'https://www.facebook.com/prinktech',
+    'https://www.linkedin.com/company/prinktech',
+    'https://twitter.com/prinktech',
   ],
 };
 
@@ -103,12 +105,12 @@ export default async function Home() {
 
   return (
     <>
-      <Script
+      <script
         id="schema-local-business"
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessSchema) }}
       />
-      <Script
+      <script
         id="schema-website"
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}

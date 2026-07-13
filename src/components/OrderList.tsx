@@ -203,6 +203,12 @@ export default function OrderList() {
             </div>
 
             <Link
+              href="/admin/khach-hang"
+              className="px-3.5 py-1.5 rounded-xl text-xs font-bold border border-card-border text-foreground hover:bg-block-bg hover:text-[var(--accent)] transition-all cursor-pointer"
+            >
+              👥 Khách hàng & Đơn
+            </Link>
+            <Link
               href="/admin/website"
               className="px-3.5 py-1.5 rounded-xl text-xs font-bold border border-card-border text-foreground hover:bg-block-bg hover:text-[var(--accent)] transition-all cursor-pointer"
             >

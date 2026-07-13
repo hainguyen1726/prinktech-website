@@ -43,6 +43,13 @@ success "File nén hợp lệ."
 # ============================================
 step "2️⃣  DỌN CONTAINER CŨ"
 
+if [ -d "$APP_DIR" ]; then
+    info "Đang dừng các container cũ của dự án bằng docker compose..."
+    cd "$APP_DIR"
+    docker compose down || true
+    cd -
+fi
+
 if docker ps -a | grep -q "$CONTAINER_NAME"; then
     info "Đang xóa container Docker cũ: $CONTAINER_NAME..."
     docker rm -f "$CONTAINER_NAME" 2>/dev/null || true

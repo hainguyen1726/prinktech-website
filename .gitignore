@@ -52,3 +52,9 @@ check-posts.mjs
 *credential*.json
 *key*.json
 amazon-*.json
+
+# scratch scripts & generated files
+scratch/
+bao_gia/
+Bao_gia_in_tem_*.xlsx
+Bao_gia_in_tem_*.pdf

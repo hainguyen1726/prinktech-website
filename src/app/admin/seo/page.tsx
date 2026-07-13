@@ -120,6 +120,13 @@ export default function AdminSEOAuditPage() {
   // GSC Import
   const [gscImportText, setGscImportText] = useState('');
 
+  // GA4 Analytics States
+  const [realtimeUsers, setRealtimeUsers] = useState<number | null>(null);
+  const [realtimePages, setRealtimePages] = useState<any[]>([]);
+  const [analyticsReport, setAnalyticsReport] = useState<any>(null);
+  const [loadingAnalytics, setLoadingAnalytics] = useState(false);
+  const [syncingGsc, setSyncingGsc] = useState(false);
+
   // Toast Feedback State
   const [toast, setToast] = useState<{ text: string; type: 'success' | 'error' | '' }>({ text: '', type: '' });
 
@@ -262,11 +269,67 @@ export default function AdminSEOAuditPage() {
     }
   };
 
+  // Fetch Google Analytics Data
+  const fetchAnalyticsData = async () => {
+    setLoadingAnalytics(true);
+    try {
+      // Gọi Realtime
+      const realtimeRes = await fetch('/api/admin/analytics?type=realtime');
+      if (realtimeRes.ok) {
+        const realtimeData = await realtimeRes.json();
+        setRealtimeUsers(realtimeData.activeUsers || 0);
+        setRealtimePages(realtimeData.topPages || []);
+      }
+      
+      // Gọi Report
+      const reportRes = await fetch('/api/admin/analytics?type=report&days=7');
+      if (reportRes.ok) {
+        const reportData = await reportRes.json();
+        setAnalyticsReport(reportData);
+      }
+    } catch (err) {
+      console.error('Lỗi tải dữ liệu Analytics:', err);
+    } finally {
+      setLoadingAnalytics(false);
+    }
+  };
+
+  const handleAutoSyncGsc = async () => {
+    setSyncingGsc(true);
+    try {
+      const res = await fetch('/api/admin/seo-keywords', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'sync' }),
+      });
+      
+      const data = await res.json();
+      if (res.ok && data.success) {
+        showToast(`Đồng bộ thành công! Cập nhật ${data.count}/${data.total} từ khóa.`, 'success');
+        fetchKeywords();
+      } else {
+        showToast(data.error || 'Lỗi khi đồng bộ dữ liệu GSC', 'error');
+      }
+    } catch (err) {
+      console.error('Lỗi đồng bộ GSC:', err);
+      showToast('Lỗi kết nối khi đồng bộ GSC', 'error');
+    } finally {
+      setSyncingGsc(false);
+    }
+  };
+
   useEffect(() => {
     if (authorized) {
       fetchAudits();
       fetchPosts();
       fetchKeywords();
+      fetchAnalyticsData();
+      
+      // Tự động reload realtime mỗi 30 giây
+      const interval = setInterval(() => {
+        fetchAnalyticsData();
+      }, 30000);
+      return () => clearInterval(interval);
     }
   }, [authorized]);
 
@@ -756,6 +819,106 @@ export default function AdminSEOAuditPage() {
 
       {/* CONTENT BODY */}
       <main className="max-w-full px-6 mx-auto mt-6 z-10 relative">
+
+        {/* GOOGLE ANALYTICS REALTIME DASHBOARD */}
+        {realtimeUsers !== null && (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            {/* Card 1: Người dùng đang online */}
+            <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 text-white flex flex-col justify-between shadow-lg relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/10 rounded-full blur-2xl"></div>
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider">Lượng truy cập Realtime</span>
+                <span className="flex h-2.5 w-2.5 relative">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                </span>
+              </div>
+              <div className="flex items-baseline gap-2 mb-2">
+                <span className="text-4xl font-extrabold tracking-tight text-white">{realtimeUsers}</span>
+                <span className="text-emerald-400 text-xs font-medium">đang online</span>
+              </div>
+              <div className="border-t border-slate-800/80 pt-3 mt-3">
+                <span className="text-slate-400 text-[10px] uppercase font-semibold block mb-2">Thiết bị truy cập</span>
+                <div className="flex items-center gap-4 text-xs">
+                  {(() => {
+                    const devices = realtimePages.reduce((acc: any, curr: any) => {
+                      acc[curr.device] = (acc[curr.device] || 0) + curr.activeUsers;
+                      return acc;
+                    }, {});
+                    const total = Object.values(devices).reduce((a: any, b: any) => Number(a) + Number(b), 0) || 1;
+                    return ['DESKTOP', 'MOBILE', 'TABLET'].map(dev => {
+                      const count = devices[dev] || 0;
+                      const percent = Math.round((Number(count) / Number(total)) * 100);
+                      if (count === 0 && dev !== 'MOBILE' && dev !== 'DESKTOP') return null;
+                      return (
+                        <div key={dev} className="flex items-center gap-1.5">
+                          <span className={`w-1.5 h-1.5 rounded-full ${dev === 'DESKTOP' ? 'bg-blue-500' : dev === 'MOBILE' ? 'bg-purple-500' : 'bg-amber-500'}`}></span>
+                          <span className="text-slate-300 capitalize text-[11px]">{dev.toLowerCase()}: <strong className="text-white font-medium">{percent}%</strong></span>
+                        </div>
+                      );
+                    });
+                  })()}
+                </div>
+              </div>
+            </div>
+
+            {/* Card 2: Các trang được xem nhiều nhất */}
+            <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 text-white shadow-lg">
+              <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider block mb-3">Trang đang được xem nhiều nhất</span>
+              <div className="space-y-2.5">
+                {realtimePages.length === 0 ? (
+                  <span className="text-slate-500 text-xs">Chưa có dữ liệu trang hoạt động</span>
+                ) : (
+                  realtimePages.slice(0, 3).map((item, idx) => (
+                    <div key={idx} className="flex items-center justify-between text-xs border-b border-slate-800/60 pb-2 last:border-0 last:pb-0">
+                      <span className="text-slate-300 truncate max-w-[200px]" title={item.page}>
+                        {item.page.replace(' - PrinK Tech', '').replace(' | PrinK Tech', '')}
+                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className="px-1.5 py-0.5 rounded bg-slate-800 text-[10px] text-slate-400">{item.device.toLowerCase()}</span>
+                        <strong className="text-emerald-400 font-semibold">{item.activeUsers}</strong>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+
+            {/* Card 3: Biểu đồ Lượng truy cập 7 ngày qua (Vẽ bằng CSS) */}
+            <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 text-white shadow-lg flex flex-col justify-between">
+              <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider block mb-3">Lượt truy cập 7 ngày qua (Users)</span>
+              {analyticsReport && analyticsReport.chartData ? (
+                <div className="flex items-end justify-between h-20 px-2 pt-2 gap-2">
+                  {(() => {
+                    const maxVal = Math.max(...analyticsReport.chartData.map((d: any) => Number(d.users || 0)), 1);
+                    return analyticsReport.chartData.map((day: any, idx: number) => {
+                      const heightPercent = Math.max(5, Math.round((Number(day.users || 0) / maxVal) * 100));
+                      return (
+                        <div key={idx} className="flex flex-col items-center flex-1 group relative">
+                          {/* Tooltip */}
+                          <div className="absolute bottom-full mb-1 bg-slate-800 text-[10px] px-1.5 py-0.5 rounded shadow opacity-0 group-hover:opacity-100 transition whitespace-nowrap z-50">
+                            {day.users} users
+                          </div>
+                          {/* Cột biểu đồ */}
+                          <div 
+                            style={{ height: `${heightPercent}%` }} 
+                            className="w-full bg-blue-500/80 group-hover:bg-blue-400 rounded-t-sm transition-all duration-300 cursor-pointer"
+                          ></div>
+                          <span className="text-[9px] text-slate-500 mt-1.5">{day.date}</span>
+                        </div>
+                      );
+                    });
+                  })()}
+                </div>
+              ) : (
+                <div className="flex items-center justify-center h-20 text-slate-500 text-xs gap-1.5">
+                  <Loader2 className="animate-spin" size={14} />
+                  Đang tải báo cáo tuần...
+                </div>
+              )}
+            </div>
+          </div>
+        )}
         
         {/* 1. TAB: SEO TECHNICAL & CẤU TRÚC */}
         {activeTab === 'technical' && (
@@ -1313,6 +1476,25 @@ export default function AdminSEOAuditPage() {
                     className="w-full pl-9 pr-4 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-normal focus:outline-none focus:border-blue-500"
                   />
                 </div>
+
+                <button
+                  onClick={handleAutoSyncGsc}
+                  disabled={syncingGsc}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-50 text-blue-700 border border-blue-100 hover:bg-blue-100 font-medium text-xs transition cursor-pointer disabled:opacity-50"
+                  title="Tự động đồng bộ thứ hạng, clicks, impressions từ Google Search Console API"
+                >
+                  {syncingGsc ? (
+                    <>
+                      <Loader2 className="animate-spin" size={14} />
+                      Đang đồng bộ...
+                    </>
+                  ) : (
+                    <>
+                      <RefreshCw size={14} />
+                      Đồng bộ GSC
+                    </>
+                  )}
+                </button>
 
                 <button
                   onClick={() => setShowGscImportModal(true)}

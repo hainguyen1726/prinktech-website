@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyAdminOrStaff } from '@/lib/adminAuth';
+import { google } from 'googleapis';
 import fs from 'fs/promises';
 import path from 'path';
 
@@ -122,7 +123,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST /api/admin/seo-keywords - Thêm từ khóa mới
+// POST /api/admin/seo-keywords - Thêm từ khóa mới hoặc Đồng bộ dữ liệu từ Google Search Console
 export async function POST(request: NextRequest) {
   try {
     const auth = await verifyAdminOrStaff(request);
@@ -131,6 +132,107 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
+
+    // Trường hợp: Đồng bộ dữ liệu tự động từ Google Search Console
+    if (body.action === 'sync') {
+      const credsPath = process.env.GSC_CREDENTIALS_PATH;
+      if (!credsPath) {
+        return NextResponse.json({ error: 'GSC_CREDENTIALS_PATH chưa được cấu hình trong .env.local' }, { status: 500 });
+      }
+
+      // Hỗ trợ tự động định vị tương đối dựa trên thư mục chạy dự án (process.cwd())
+      const resolvedPath = path.isAbsolute(credsPath)
+        ? credsPath
+        : path.join(process.cwd(), credsPath);
+
+      try {
+        await fs.access(resolvedPath);
+      } catch {
+        return NextResponse.json({ error: `Không tìm thấy file credentials tại: ${resolvedPath}` }, { status: 500 });
+      }
+
+      // Khởi tạo GoogleAuth
+      const googleAuth = new google.auth.GoogleAuth({
+        keyFile: resolvedPath,
+        scopes: ['https://www.googleapis.com/auth/webmasters.readonly'],
+      });
+      const searchconsole = google.searchconsole({
+        version: 'v1',
+        auth: googleAuth,
+      });
+
+      // Lấy danh sách từ khóa hiện tại
+      const keywords = await readKeywords();
+      if (keywords.length === 0) {
+        return NextResponse.json({ success: true, count: 0, message: 'Không có từ khóa nào để đồng bộ' });
+      }
+
+      // Lấy dữ liệu Search Analytics trong 28 ngày qua
+      const siteUrl = 'https://prinktech.netslive.com/';
+      const endDate = new Date().toISOString().split('T')[0];
+      const startDate = new Date(Date.now() - 28 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+
+      const gscResponse = await searchconsole.searchanalytics.query({
+        siteUrl,
+        requestBody: {
+          startDate,
+          endDate,
+          dimensions: ['query'],
+          rowLimit: 5000,
+        },
+      });
+
+      const gscRows = gscResponse.data.rows || [];
+      
+      // Tạo map tra cứu nhanh từ GSC
+      const gscMap = new Map();
+      gscRows.forEach((row: any) => {
+        const queryKey = row.keys?.[0]?.toLowerCase().trim();
+        if (queryKey) {
+          gscMap.set(queryKey, {
+            clicks: row.clicks || 0,
+            impressions: row.impressions || 0,
+            ctr: (row.ctr || 0) * 100, // API trả về từ 0-1, quy đổi sang %
+            position: row.position || 100,
+          });
+        }
+      });
+
+      let updatedCount = 0;
+      const updatedKeywords = keywords.map((existing: any) => {
+        const queryKey = existing.keyword.toLowerCase().trim();
+        const gscData = gscMap.get(queryKey);
+        
+        if (gscData) {
+          updatedCount++;
+          return {
+            ...existing,
+            prevRank: existing.currentRank || 100,
+            currentRank: Math.round(gscData.position * 10) / 10,
+            clicks: gscData.clicks,
+            impressions: gscData.impressions,
+            ctr: Math.round(gscData.ctr * 100) / 100,
+            updatedAt: new Date().toISOString(),
+          };
+        }
+        
+        // Nếu không tìm thấy dữ liệu trong 28 ngày qua của GSC, reset số liệu
+        return {
+          ...existing,
+          prevRank: existing.currentRank || 100,
+          currentRank: 100,
+          clicks: 0,
+          impressions: 0,
+          ctr: 0,
+          updatedAt: new Date().toISOString(),
+        };
+      });
+
+      await writeKeywords(updatedKeywords);
+      return NextResponse.json({ success: true, count: updatedCount, total: keywords.length });
+    }
+
+    // Trường hợp: Thêm từ khóa đơn lẻ (mặc định cũ)
     const { keyword, targetUrl, targetRank, currentRank, searchVolume, intent } = body;
 
     if (!keyword) {

@@ -2,7 +2,6 @@ import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
-import Script from 'next/script';
 import Header from '@/components/Header';
 import { Home, FileText } from 'lucide-react';
 
@@ -184,12 +183,12 @@ export default async function PostDetailPage({
 
   return (
     <>
-      <Script
+      <script
         id="schema-article"
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }}
       />
-      <Script
+      <script
         id="schema-breadcrumb"
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
