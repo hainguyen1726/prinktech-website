@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 
-// GET /api/customers — danh sách khách hàng (từ printing.partners)
+// GET /api/customers — danh sách khách hàng riêng của Prink Tech Website (partner_type = 'standard')
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
@@ -10,9 +10,12 @@ export async function GET(req: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '20');
     const offset = (page - 1) * limit;
 
+    // Tách riêng khách Prink Tech Website: chỉ lấy partner_type = 'standard'
+    // (Bỏ qua các đại lý sỉ/xưởng agent_level_1, agent_level_2)
     let query = supabaseAdmin
       .from('partners')
       .select('*', { count: 'exact' })
+      .eq('partner_type', 'standard')
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1);
 
@@ -26,7 +29,6 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    // Get orders for each partner to compute summary totals
     const partnerIds = (partners || []).map((p: any) => p.id);
 
     const ordersByPartner: Record<string, any[]> = {};
@@ -60,11 +62,11 @@ export async function GET(req: NextRequest) {
   }
 }
 
-// POST /api/customers — tạo mới khách hàng trong printing.partners
+// POST /api/customers — tạo mới khách hàng lẻ cho Prink Tech Website
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { name, phone, email, address, partner_type } = body;
+    const { name, phone, email, address } = body;
 
     if (!name?.trim()) {
       return NextResponse.json({ error: 'Thiếu tên khách hàng' }, { status: 400 });
@@ -80,7 +82,7 @@ export async function POST(req: NextRequest) {
         phone: phone.trim(),
         email: email?.trim() || null,
         address: address?.trim() || null,
-        partner_type: partner_type || 'standard',
+        partner_type: 'standard', // Đặt cứng partner_type cho khách Prink Tech Website
       })
       .select()
       .single();
