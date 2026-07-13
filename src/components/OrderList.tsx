@@ -10,6 +10,46 @@ import {
 } from '@/lib/pricing';
 import AdminGuard from '@/components/AdminGuard';
 
+const renderFormattedNote = (note: string | null) => {
+  if (!note) return null;
+  const urlRegex = /(https?:\/\/[^\s]+)/g;
+  const parts = note.split(urlRegex);
+  return (
+    <div className="space-y-1 whitespace-pre-wrap break-words leading-relaxed text-xs">
+      {parts.map((part, i) => {
+        if (part.match(urlRegex)) {
+          let label = "🔗 Liên kết";
+          let colorClass = "text-blue-600 hover:text-blue-800 bg-blue-50 border-blue-200";
+          if (part.includes('docs.google.com/spreadsheets')) {
+            label = "📊 File Excel Báo giá (Google Sheet)";
+            colorClass = "text-emerald-700 hover:text-emerald-800 bg-emerald-50 border-emerald-250 font-bold";
+          } else if (part.includes('drive.google.com/file') || part.includes('drive.google.com/drive')) {
+            if (part.toLowerCase().includes('pdf') || part.toLowerCase().includes('.pdf')) {
+              label = "📄 File PDF Báo giá (Google Drive)";
+              colorClass = "text-rose-600 hover:text-rose-800 bg-rose-50 border-rose-250 font-bold";
+            } else {
+              label = "📁 Thư mục thiết kế (Google Drive)";
+              colorClass = "text-blue-600 hover:text-blue-800 bg-blue-50 border-blue-250 font-bold";
+            }
+          }
+          return (
+            <a
+              key={i}
+              href={part}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border shadow-sm transition-all my-1 break-all hover:scale-[1.02] cursor-pointer ${colorClass}`}
+            >
+              {label}
+            </a>
+          );
+        }
+        return <span key={i}>{part}</span>;
+      })}
+    </div>
+  );
+};
+
 export default function OrderList() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
@@ -387,18 +427,20 @@ export default function OrderList() {
                             <td className="py-3.5 pr-2 font-mono font-bold">
                               <span className="text-[var(--accent)]">{order.order_number}</span>
                               <div className="mt-1">
-                                <span className={`inline-block px-1.5 py-0.5 rounded text-[9px] font-bold border ${
+                                <span className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-extrabold border shadow-sm ${
                                   order.source === 'web' 
-                                    ? 'bg-blue-50 text-blue-600 border-blue-200' 
-                                    : 'bg-amber-55 text-amber-855 border-amber-200'
-                                }`}>
-                                  {order.source === 'web' ? '🌐 Web' : '👤 Admin'}
-                                </span>
+                                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200' 
+                                    : 'bg-purple-50 text-purple-700 border-purple-200'
+                                 }`}>
+                                   {order.source === 'web' ? '🌐 Khách đặt' : '👤 Admin tạo'}
+                                 </span>
                               </div>
                             </td>
                             <td className="py-3.5">
-                              <p className="font-semibold text-foreground">{order.customer_name}</p>
-                              <p className="text-xs text-text-muted font-medium">{order.customer_phone}</p>
+                              <div className="flex flex-col gap-1 min-w-[150px]">
+                                <span className="font-bold text-slate-800 text-sm leading-tight">{order.customer_name}</span>
+                                <span className="text-xs text-slate-500 font-semibold flex items-center gap-1">📱 {order.customer_phone}</span>
+                              </div>
                             </td>
                             <td className="py-3.5 text-right font-bold text-foreground tabular-nums">
                               {formatCurrency(order.total)}
@@ -411,9 +453,9 @@ export default function OrderList() {
                             <td className="py-3.5 text-right" onClick={e => e.stopPropagation()}>
                               <button
                                 onClick={() => handleDelete(order.id)}
-                                className="text-xs text-text-muted hover:text-red-400 transition-colors p-1 cursor-pointer font-semibold"
+                                className="px-2.5 py-1 rounded-lg border border-red-200 bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700 transition-all font-bold text-xs cursor-pointer inline-flex items-center gap-1 shadow-sm"
                               >
-                                Xóa
+                                🗑️ Xóa
                               </button>
                             </td>
                           </tr>
@@ -503,9 +545,10 @@ export default function OrderList() {
                     <p className="text-text-muted mt-1 font-medium">📍 {selectedOrder.customer_address}</p>
                     {selectedOrder.customer_email && <p className="text-text-muted mt-1 font-medium">✉ {selectedOrder.customer_email}</p>}
                     {selectedOrder.customer_note && (
-                      <p className="text-xs text-amber-600 bg-amber-500/10 rounded-lg p-2.5 border border-amber-500/25 mt-2 font-medium">
-                        💬 <strong>Ghi chú:</strong> {selectedOrder.customer_note}
-                      </p>
+                      <div className="text-xs text-amber-900 bg-amber-50 rounded-xl p-3 border border-amber-200/80 mt-3 shadow-sm">
+                        <div className="font-bold text-amber-800 mb-1 flex items-center gap-1">💬 Ghi chú của khách:</div>
+                        <div className="font-medium">{renderFormattedNote(selectedOrder.customer_note)}</div>
+                      </div>
                     )}
                   </div>
                 </div>

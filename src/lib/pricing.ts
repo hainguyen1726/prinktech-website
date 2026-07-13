@@ -167,12 +167,14 @@ export function formatCurrency(amount: number): string {
 }
 
 export const ORDER_STATUS_LABELS: Record<string, { label: string; color: string }> = {
-  pending:   { label: 'Chờ xác nhận', color: 'text-yellow-400 bg-yellow-400/10 border-yellow-400/30' },
-  confirmed: { label: 'Đã xác nhận',  color: 'text-blue-400 bg-blue-400/10 border-blue-400/30' },
-  printing:  { label: 'Đang in',      color: 'text-purple-400 bg-purple-400/10 border-purple-400/30' },
-  shipped:   { label: 'Đã giao ship', color: 'text-cyan-400 bg-cyan-400/10 border-cyan-400/30' },
-  delivered: { label: 'Hoàn thành',   color: 'text-green-400 bg-green-400/10 border-green-400/30' },
-  cancelled: { label: 'Đã huỷ',       color: 'text-red-400 bg-red-400/10 border-red-400/30' },
+  pending_file: { label: 'Chờ file thiết kế', color: 'text-amber-800 bg-amber-50 border-amber-200 font-extrabold' },
+  pending:      { label: 'Chờ xác nhận',     color: 'text-yellow-800 bg-yellow-50 border-yellow-200 font-extrabold' },
+  processing:   { label: 'Đang xử lý',       color: 'text-blue-800 bg-blue-50 border-blue-200 font-extrabold' },
+  confirmed:    { label: 'Đã xác nhận',      color: 'text-indigo-800 bg-indigo-50 border-indigo-200 font-extrabold' },
+  printing:     { label: 'Đang in',          color: 'text-purple-800 bg-purple-50 border-purple-200 font-extrabold' },
+  shipped:      { label: 'Đã giao ship',     color: 'text-cyan-800 bg-cyan-50 border-cyan-200 font-extrabold' },
+  delivered:    { label: 'Hoàn thành',       color: 'text-emerald-800 bg-emerald-50 border-emerald-250 font-extrabold' },
+  cancelled:    { label: 'Đã huỷ',           color: 'text-red-800 bg-red-50 border-red-200 font-extrabold' },
 };
 
 export type OrderItem = {
