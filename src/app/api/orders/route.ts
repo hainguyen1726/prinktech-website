@@ -40,7 +40,8 @@ export async function GET(req: NextRequest) {
     // 2. Tạo query cho orders (đơn admin)
     let ordersQuery = supabase
       .from('orders')
-      .select('*, partners(*)');
+      .select('*, partners(*)')
+      .contains('tags', ['prinktech']);
 
     if (status && status !== 'all') {
       ordersQuery = ordersQuery.eq('status', status);

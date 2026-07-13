@@ -213,7 +213,7 @@ export async function POST(req: NextRequest) {
       note: orderNote,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
-      tags: ['Tem UV DTF', 'Báo giá tự động', 'VAT 8%'],
+      tags: ['Tem UV DTF', 'Báo giá tự động', 'VAT 8%', 'prinktech'],
     };
 
     const { data: orderData, error: oErr } = await supabaseAdmin

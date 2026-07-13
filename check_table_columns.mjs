@@ -23,16 +23,15 @@ const supabase = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_SERVICE
 async function main() {
   const { data, error } = await supabase
     .from('orders')
-    .select('*')
-    .limit(1);
+    .select('order_code, tags')
+    .order('created_at', { ascending: false })
+    .limit(10);
 
   if (error) {
-    console.error('Error fetching table structure:', error);
-  } else if (data && data.length > 0) {
-    console.log('Columns in web_posts table:');
-    console.log(Object.keys(data[0]));
+    console.error('Error fetching tags:', error);
   } else {
-    console.log('No data found in web_posts to inspect columns.');
+    console.log('Tags in recent orders:');
+    console.log(data);
   }
 }
 
