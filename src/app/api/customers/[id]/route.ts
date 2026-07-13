@@ -54,30 +54,40 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       });
     }
 
-    const formattedOrders = (orders || []).map((o: any) => ({
-      id: o.id,
-      order_number: o.order_code,
-      customer_id: o.partner_id,
-      sticker_type: o.sticker_type || 'uv_dtf_noi',
-      quantity_items: o.quantity_expected,
-      quantity_meters: o.quantity_actual,
-      design_link: o.design_link,
-      preview_image_url: o.preview_image,
-      nesting_image_url: o.layout_image || o.preview_image,
-      label_link: o.label_link,
-      subtotal: (o.unit_price || 0) * (o.quantity_actual || 1),
-      shipping_fee: o.shipping_cost || 0,
-      discount: o.discount_amount || 0,
-      total: o.total_amount || 0,
-      unit_price_per_meter: o.unit_price,
-      shipping_method: 'cod',
-      status: o.status || 'processing',
-      payment_status: o.payment_status || 'unpaid',
-      notes: o.note,
-      created_at: o.created_at,
-      updated_at: o.updated_at,
-      history: logsByOrder[o.id] || [],
-    }));
+    const formattedOrders = (orders || []).map((o: any) => {
+      // Parse file Excel & PDF báo giá từ note
+      const excelMatch = o.note?.match(/- Excel Báo giá:\s*(https?:\/\/[^\s\n]+)/);
+      const pdfMatch = o.note?.match(/- PDF Báo giá:\s*(https?:\/\/[^\s\n]+)/);
+      const excelUrl = excelMatch ? excelMatch[1] : null;
+      const pdfUrl = pdfMatch ? pdfMatch[1] : null;
+
+      return {
+        id: o.id,
+        order_number: o.order_code,
+        customer_id: o.partner_id,
+        sticker_type: o.sticker_type || 'uv_dtf_noi',
+        quantity_items: o.quantity_expected,
+        quantity_meters: o.quantity_actual,
+        design_link: o.design_link,
+        preview_image_url: o.preview_image,
+        nesting_image_url: o.layout_image || o.preview_image,
+        label_link: o.label_link,
+        subtotal: (o.unit_price || 0) * (o.quantity_actual || 1),
+        shipping_fee: o.shipping_cost || 0,
+        discount: o.discount_amount || 0,
+        total: o.total_amount || 0,
+        unit_price_per_meter: o.unit_price,
+        shipping_method: 'cod',
+        status: o.status || 'processing',
+        payment_status: o.payment_status || 'unpaid',
+        notes: o.note,
+        quote_excel_url: excelUrl,
+        quote_pdf_url: pdfUrl,
+        created_at: o.created_at,
+        updated_at: o.updated_at,
+        history: logsByOrder[o.id] || [],
+      };
+    });
 
     const formattedCustomer = {
       ...customer,

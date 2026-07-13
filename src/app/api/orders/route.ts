@@ -17,38 +17,153 @@ function generateOrderNumber(): string {
   return `PK-${date}-${rand}`;
 }
 
-// GET /api/orders — lấy danh sách đơn hàng (admin)
+// GET /api/orders — lấy danh sách đơn hàng gộp (admin)
 export async function GET(req: NextRequest) {
-  const { searchParams } = new URL(req.url);
-  const status = searchParams.get('status');
-  const search = searchParams.get('search');
-  const page = parseInt(searchParams.get('page') || '1');
-  const limit = parseInt(searchParams.get('limit') || '20');
-  const offset = (page - 1) * limit;
+  try {
+    const { searchParams } = new URL(req.url);
+    const status = searchParams.get('status');
+    const search = searchParams.get('search');
+    const source = searchParams.get('source') || 'all';
+    const page = parseInt(searchParams.get('page') || '1');
+    const limit = parseInt(searchParams.get('limit') || '20');
+    const offset = (page - 1) * limit;
 
-  let query = supabase
-    .from('retail_orders')
-    .select('*', { count: 'exact' })
-    .order('created_at', { ascending: false })
-    .range(offset, offset + limit - 1);
+    // 1. Tạo query cho retail_orders
+    let retailQuery = supabase
+      .from('retail_orders')
+      .select('*');
 
-  if (status && status !== 'all') {
-    query = query.eq('status', status);
+    if (status && status !== 'all') {
+      retailQuery = retailQuery.eq('status', status);
+    }
+
+    // 2. Tạo query cho orders (đơn admin)
+    let ordersQuery = supabase
+      .from('orders')
+      .select('*, partners(*)');
+
+    if (status && status !== 'all') {
+      ordersQuery = ordersQuery.eq('status', status);
+    }
+
+    // Thực hiện query song song
+    const [retailRes, ordersRes] = await Promise.all([retailQuery, ordersQuery]);
+
+    if (retailRes.error) throw retailRes.error;
+    if (ordersRes.error) throw ordersRes.error;
+
+    const retailData = retailRes.data || [];
+    const ordersData = ordersRes.data || [];
+
+    // 3. Chuẩn hóa dữ liệu retail_orders
+    const formattedRetail = retailData.map((o: any) => ({
+      id: o.id,
+      order_number: o.order_number,
+      customer_name: o.customer_name,
+      customer_phone: o.customer_phone,
+      customer_address: o.customer_address,
+      customer_email: o.customer_email,
+      customer_note: o.customer_note,
+      items: Array.isArray(o.items) ? o.items.map((item: any) => ({
+        product_label: item.product_label || item.product_type || 'In tem',
+        quantity: item.quantity || 0,
+        unit: item.unit || 'cái',
+        unit_price: item.unit_price || 0,
+        subtotal: item.subtotal || 0,
+        image_url: item.image_url,
+        design_url: item.design_url,
+        note: item.note
+      })) : [],
+      subtotal: Number(o.subtotal) || 0,
+      shipping_fee: Number(o.shipping_fee) || 0,
+      discount: Number(o.discount) || 0,
+      total: Number(o.total) || 0,
+      free_shipping: o.free_shipping || false,
+      status: o.status,
+      payment_method: o.payment_method || 'cod',
+      payment_status: o.payment_status || 'unpaid',
+      design_url: o.design_url,
+      source: 'web',
+      created_at: o.created_at
+    }));
+
+    // 4. Chuẩn hóa dữ liệu orders
+    const formattedOrders = ordersData.map((o: any) => {
+      const partner = o.partners || {};
+      
+      // Parse file Excel & PDF báo giá từ note
+      const excelMatch = o.note?.match(/- Excel Báo giá:\s*(https?:\/\/[^\s\n]+)/);
+      const pdfMatch = o.note?.match(/- PDF Báo giá:\s*(https?:\/\/[^\s\n]+)/);
+      const excelUrl = excelMatch ? excelMatch[1] : null;
+      const pdfUrl = pdfMatch ? pdfMatch[1] : null;
+
+      const items = [
+        {
+          product_label: o.sticker_type === 'dtf_roll' ? 'In tem UV DTF cuộn' : 'In tem UV DTF cái/tờ',
+          quantity: o.quantity_expected || 0,
+          unit: o.sticker_type === 'dtf_roll' ? 'mét' : 'cái/tờ',
+          unit_price: o.unit_price || 0,
+          subtotal: o.total_amount || 0,
+          image_url: o.preview_image,
+          design_url: o.design_link,
+          note: null
+        }
+      ];
+
+      return {
+        id: o.id,
+        order_number: o.order_code,
+        customer_name: partner.name || 'Khách lẻ',
+        customer_phone: partner.phone || '',
+        customer_address: partner.address || '',
+        customer_email: partner.email || '',
+        customer_note: o.note || '',
+        items: items,
+        subtotal: (o.unit_price || 0) * (o.quantity_actual || 1),
+        shipping_fee: o.shipping_cost || 0,
+        discount: o.discount_amount || 0,
+        total: o.total_amount || 0,
+        free_shipping: o.shipping_cost === 0,
+        status: o.status || 'processing',
+        payment_method: 'cod',
+        payment_status: o.payment_status || 'unpaid',
+        design_url: o.design_link,
+        quote_excel_url: excelUrl,
+        quote_pdf_url: pdfUrl,
+        source: 'admin',
+        created_at: o.created_at
+      };
+    });
+
+    // 5. Gộp và lọc tìm kiếm
+    let allOrders = [...formattedRetail, ...formattedOrders];
+
+    if (search) {
+      const s = search.toLowerCase().trim();
+      allOrders = allOrders.filter((o: any) => 
+        (o.order_number && o.order_number.toLowerCase().includes(s)) ||
+        (o.customer_name && o.customer_name.toLowerCase().includes(s)) ||
+        (o.customer_phone && o.customer_phone.includes(s))
+      );
+    }
+
+    // Lọc theo nguồn đơn (source)
+    if (source && source !== 'all') {
+      allOrders = allOrders.filter((o: any) => o.source === source);
+    }
+
+    // 6. Sắp xếp theo ngày tạo giảm dần
+    allOrders.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+    // 7. Phân trang
+    const total = allOrders.length;
+    const paginated = allOrders.slice(offset, offset + limit);
+
+    return NextResponse.json({ data: paginated, total, page, limit });
+  } catch (err: any) {
+    console.error('Error fetching combined orders:', err);
+    return NextResponse.json({ error: err.message || 'Lỗi server' }, { status: 500 });
   }
-
-  if (search) {
-    query = query.or(
-      `customer_name.ilike.%${search}%,customer_phone.ilike.%${search}%,order_number.ilike.%${search}%`
-    );
-  }
-
-  const { data, error, count } = await query;
-
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
-
-  return NextResponse.json({ data, total: count, page, limit });
 }
 
 // POST /api/orders — tạo đơn hàng mới

@@ -206,6 +206,7 @@ export type Order = {
   payment_method: string;
   payment_status: string;
   design_url: string | null;
+  source?: string;
   created_at: string;
   updated_at: string;
   confirmed_at: string | null;

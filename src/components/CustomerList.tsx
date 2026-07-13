@@ -24,6 +24,7 @@ import {
   X,
 } from 'lucide-react';
 import AdminGuard from '@/components/AdminGuard';
+import { PRODUCTS, getUnitPrice } from '@/lib/pricing';
 
 interface OrderHistoryItem {
   id: string;
@@ -131,6 +132,20 @@ export default function CustomerList() {
   const [page, setPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
   const [activeTheme, setActiveTheme] = useState<'tech' | 'elegant'>('elegant');
+  
+  const [activeCreateForm, setActiveCreateForm] = useState<string | null>(null);
+  const [createFormData, setCreateFormData] = useState({
+    product_type: 'cuon',
+    product_label: 'In cuộn khổ 60cm',
+    size_label: 'Khổ 60cm',
+    quantity: 200,
+    meters: 1.0,
+    rate_excl_vat: 134259,
+    shipping_fee: 30000,
+    design_link: '',
+    note: '',
+  });
+  const [submittingOrder, setSubmittingOrder] = useState<string | null>(null);
 
   const [expandedCustomers, setExpandedCustomers] = useState<Set<string>>(new Set());
   const [expandedOrders, setExpandedOrders] = useState<Set<string>>(new Set());
@@ -157,6 +172,104 @@ export default function CustomerList() {
     if (theme === 'tech') {
       document.documentElement.classList.add('theme-tech');
       document.body.classList.add('theme-tech');
+    }
+  };
+
+  const handleProductChange = (type: string) => {
+    const defaultQty = type.startsWith('tem-') ? 200 : (type === 'cuon' ? 200 : 5);
+    const defaultMeters = type === 'cuon' ? 1.0 : 0;
+    
+    const prod = PRODUCTS.find(p => p.type === type);
+    const label = prod?.label || 'In tem';
+    const size = type === 'cuon' ? 'Khổ 60cm' : (type === 'a4' ? 'Tờ A4' : (type === 'a3' ? 'Tờ A3' : 'Cỡ ~5cm'));
+    
+    let priceInclVat = 0;
+    if (type === 'cuon') {
+      priceInclVat = 145000;
+    } else {
+      priceInclVat = getUnitPrice(prod!, defaultQty);
+    }
+    const priceExclVat = Math.round(priceInclVat / 1.08);
+
+    setCreateFormData({
+      product_type: type,
+      product_label: label,
+      size_label: size,
+      quantity: defaultQty,
+      meters: defaultMeters,
+      rate_excl_vat: priceExclVat,
+      shipping_fee: 30000,
+      design_link: '',
+      note: '',
+    });
+  };
+
+  const handleQtyChange = (qty: number) => {
+    const type = createFormData.product_type;
+    const prod = PRODUCTS.find(p => p.type === type);
+    if (!prod) return;
+
+    let priceInclVat = 0;
+    if (type === 'cuon') {
+      priceInclVat = 145000;
+    } else {
+      priceInclVat = getUnitPrice(prod, qty);
+    }
+    const priceExclVat = Math.round(priceInclVat / 1.08);
+
+    setCreateFormData(prev => ({
+      ...prev,
+      quantity: qty,
+      rate_excl_vat: priceExclVat,
+    }));
+  };
+
+  const handleCreateOrderSubmit = async (customerId: string) => {
+    if (!createFormData.design_link?.trim()) {
+      if (!confirm('Bạn chưa nhập link thiết kế chung (Google Drive). Vẫn muốn tiếp tục tạo đơn?')) {
+        return;
+      }
+    }
+
+    setSubmittingOrder(customerId);
+    try {
+      const res = await fetch('/api/customer-orders/create-flow', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          customer_id: customerId,
+          product_type: createFormData.product_type,
+          product_label: createFormData.product_label,
+          size_label: createFormData.size_label,
+          quantity: createFormData.quantity,
+          meters: createFormData.product_type === 'cuon' ? createFormData.meters : undefined,
+          rate_excl_vat: createFormData.rate_excl_vat,
+          shipping_fee: createFormData.shipping_fee,
+          note: createFormData.note,
+          design_link: createFormData.design_link,
+        }),
+      });
+
+      const result = await res.json();
+      if (!res.ok) {
+        throw new Error(result.error || 'Tạo đơn hàng thất bại');
+      }
+
+      alert(`Tạo đơn hàng thành công!\nMã đơn: ${result.order_code}\nĐã upload báo giá và chia sẻ Drive.`);
+      
+      setActiveCreateForm(null);
+      
+      const custRes = await fetch(`/api/customers/${customerId}`);
+      if (custRes.ok) {
+        const custData = await custRes.json();
+        setCustomers(prev =>
+          prev.map(c => (c.id === customerId ? { ...c, orders: custData.orders || [] } : c))
+        );
+      }
+    } catch (err: any) {
+      alert(err.message || 'Lỗi hệ thống');
+    } finally {
+      setSubmittingOrder(null);
     }
   };
 
@@ -488,6 +601,150 @@ export default function CustomerList() {
     );
   };
 
+  const renderCreateOrderForm = (customer: Customer) => {
+    if (activeCreateForm !== customer.id) return null;
+
+    return (
+      <div className="p-4 rounded-xl border border-amber-200 bg-amber-500/5 space-y-4 mb-4 text-slate-800">
+        <div className="flex justify-between items-center border-b border-amber-200 pb-2">
+          <h5 className="font-black text-amber-900 text-xs uppercase tracking-wide">
+            Tạo đơn hàng & Tự động tạo Báo giá mới
+          </h5>
+          <button
+            onClick={() => setActiveCreateForm(null)}
+            className="text-slate-400 hover:text-slate-700 font-bold cursor-pointer"
+          >
+            Đóng [x]
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3.5 text-xs">
+          {/* Loại sản phẩm */}
+          <div>
+            <label className="block font-bold text-slate-700 mb-1">Loại sản phẩm</label>
+            <select
+              value={createFormData.product_type}
+              onChange={e => handleProductChange(e.target.value)}
+              className="w-full h-9 px-2 rounded-lg border border-slate-300 bg-white font-semibold"
+            >
+              {PRODUCTS.map(p => (
+                <option key={p.type} value={p.type}>{p.shortLabel}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Cỡ tem / Quy cách */}
+          <div>
+            <label className="block font-bold text-slate-700 mb-1">Cỡ tem / Quy cách</label>
+            <input
+              type="text"
+              value={createFormData.size_label}
+              onChange={e => setCreateFormData(prev => ({ ...prev, size_label: e.target.value }))}
+              className="w-full h-9 px-2 rounded-lg border border-slate-300 bg-white font-semibold"
+              placeholder="Ví dụ: 5x5cm, Khổ 60cm"
+            />
+          </div>
+
+          {/* Số lượng */}
+          <div>
+            <label className="block font-bold text-slate-700 mb-1">Số lượng (Cái/Tờ)</label>
+            <input
+              type="number"
+              value={createFormData.quantity}
+              onChange={e => handleQtyChange(Number(e.target.value))}
+              className="w-full h-9 px-2 rounded-lg border border-slate-300 bg-white font-semibold"
+            />
+          </div>
+
+          {/* Mét dài (chỉ hiển thị nếu type = cuon) */}
+          {createFormData.product_type === 'cuon' && (
+            <div>
+              <label className="block font-bold text-slate-700 mb-1">Độ dài (mét dài)</label>
+              <input
+                type="number"
+                step="0.01"
+                value={createFormData.meters}
+                onChange={e => setCreateFormData(prev => ({ ...prev, meters: Number(e.target.value) }))}
+                className="w-full h-9 px-2 rounded-lg border border-slate-300 bg-white font-semibold"
+              />
+            </div>
+          )}
+
+          {/* Đơn giá chưa VAT */}
+          <div>
+            <label className="block font-bold text-slate-700 mb-1">Đơn giá trước VAT (VND)</label>
+            <input
+              type="number"
+              value={createFormData.rate_excl_vat}
+              onChange={e => setCreateFormData(prev => ({ ...prev, rate_excl_vat: Number(e.target.value) }))}
+              className="w-full h-9 px-2 rounded-lg border border-slate-300 bg-white font-mono font-bold"
+            />
+          </div>
+
+          {/* Phí ship */}
+          <div>
+            <label className="block font-bold text-slate-700 mb-1">Phí vận chuyển (Ship)</label>
+            <input
+              type="number"
+              value={createFormData.shipping_fee}
+              onChange={e => setCreateFormData(prev => ({ ...prev, shipping_fee: Number(e.target.value) }))}
+              className="w-full h-9 px-2 rounded-lg border border-slate-300 bg-white font-mono font-semibold"
+            />
+          </div>
+
+          {/* Link thiết kế Google Drive */}
+          <div className="sm:col-span-2 md:col-span-3">
+            <label className="block font-bold text-slate-700 mb-1">Link file thiết kế khách gửi (nếu có)</label>
+            <input
+              type="url"
+              value={createFormData.design_link}
+              onChange={e => setCreateFormData(prev => ({ ...prev, design_link: e.target.value }))}
+              className="w-full h-9 px-2 rounded-lg border border-slate-300 bg-white font-mono"
+              placeholder="https://drive.google.com/..."
+            />
+          </div>
+
+          {/* Ghi chú */}
+          <div className="sm:col-span-2 md:col-span-3">
+            <label className="block font-bold text-slate-700 mb-1">Ghi chú đơn hàng</label>
+            <textarea
+              value={createFormData.note}
+              onChange={e => setCreateFormData(prev => ({ ...prev, note: e.target.value }))}
+              className="w-full p-2 rounded-lg border border-slate-300 bg-white font-medium"
+              rows={2}
+              placeholder="Ví dụ: Giao hàng COD về địa chỉ Anh Đặng Khoa Sinh. Điện thoại: 0768 598 540. Phí ship 30k."
+            />
+          </div>
+        </div>
+
+        <div className="flex justify-end gap-2.5 pt-2 border-t border-amber-200">
+          <button
+            type="button"
+            onClick={() => setActiveCreateForm(null)}
+            className="px-4 py-2 rounded-lg border border-slate-300 bg-white hover:bg-slate-100 font-bold text-slate-650 cursor-pointer"
+          >
+            Hủy bỏ
+          </button>
+          <button
+            type="button"
+            disabled={submittingOrder === customer.id}
+            onClick={() => handleCreateOrderSubmit(customer.id)}
+            className="px-5 py-2 rounded-lg bg-amber-700 hover:bg-amber-800 text-white font-bold cursor-pointer disabled:opacity-50 flex items-center gap-1.5"
+          >
+            {submittingOrder === customer.id ? (
+              <>
+                <RefreshCw className="animate-spin" size={14} />
+                Đang tạo đơn & sync Drive...
+              </>
+            ) : (
+              "Tạo đơn & Sinh file báo giá 🚀"
+            )}
+          </button>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <AdminGuard>
       <div className="admin-panel min-h-screen bg-[#f8fafc] text-slate-900 transition-colors duration-300">
@@ -682,6 +939,25 @@ export default function CustomerList() {
                   {/* Customer Expanded Area */}
                   {isExpanded && (
                     <div className="bg-slate-50 border-t border-slate-200 p-3 space-y-3">
+                      <div className="flex justify-between items-center bg-white p-3 rounded-xl border border-slate-200 shadow-2xs">
+                        <span className="font-bold text-xs text-slate-750">Đơn hàng của khách</span>
+                        <button
+                          onClick={() => {
+                            if (activeCreateForm === customer.id) {
+                              setActiveCreateForm(null);
+                            } else {
+                              setActiveCreateForm(customer.id);
+                              handleProductChange('cuon');
+                            }
+                          }}
+                          className="px-2.5 py-1 rounded-lg bg-amber-700 hover:bg-amber-800 text-white font-bold text-[10px] transition-all cursor-pointer"
+                        >
+                          {activeCreateForm === customer.id ? 'Đóng Form [-]' : '➕ Tạo đơn & Báo giá'}
+                        </button>
+                      </div>
+
+                      {renderCreateOrderForm(customer)}
+
                       {!customer.orders && (
                         <div className="py-4 text-center text-xs text-slate-400 flex items-center justify-center gap-2">
                           <RefreshCw className="animate-spin text-amber-700" size={14} /> Đang nạp đơn hàng...
@@ -866,7 +1142,22 @@ export default function CustomerList() {
                                   <Package size={14} className="text-amber-700" /> Danh Sách Đơn Hàng Đã Đặt (
                                   {customer.orders ? customer.orders.length : 0})
                                 </h4>
+                                <button
+                                  onClick={() => {
+                                    if (activeCreateForm === customer.id) {
+                                      setActiveCreateForm(null);
+                                    } else {
+                                      setActiveCreateForm(customer.id);
+                                      handleProductChange('cuon');
+                                    }
+                                  }}
+                                  className="px-2.5 py-1 rounded-lg bg-amber-700 hover:bg-amber-800 text-white font-bold text-[10px] sm:text-[11px] transition-all cursor-pointer"
+                                >
+                                  {activeCreateForm === customer.id ? 'Đóng Form [-]' : '➕ Tạo đơn & Báo giá mới'}
+                                </button>
                               </div>
+
+                              {renderCreateOrderForm(customer)}
 
                               {!customer.orders && (
                                 <div className="py-4 text-center text-xs text-slate-400 flex items-center justify-center gap-2">

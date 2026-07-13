@@ -15,6 +15,7 @@ export default function OrderList() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState('all');
+  const [sourceFilter, setSourceFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [localSearchTerm, setLocalSearchTerm] = useState('');
   const [page, setPage] = useState(1);
@@ -73,6 +74,7 @@ export default function OrderList() {
     try {
       const params = new URLSearchParams({
         status: statusFilter,
+        source: sourceFilter,
         search: searchTerm,
         page: String(page),
         limit: '20',
@@ -89,7 +91,7 @@ export default function OrderList() {
     } finally {
       setLoading(false);
     }
-  }, [statusFilter, searchTerm, page]);
+  }, [statusFilter, sourceFilter, searchTerm, page]);
 
   useEffect(() => {
     fetchOrders();
@@ -267,6 +269,15 @@ export default function OrderList() {
               <option key={k} value={k} className="bg-card-bg text-slate-900">{v.label}</option>
             ))}
           </select>
+          <select
+            value={sourceFilter}
+            onChange={e => { setSourceFilter(e.target.value); setPage(1); }}
+            className="h-10 px-3 rounded-xl border border-card-border bg-background text-slate-900 text-sm font-semibold focus:outline-none focus:border-[var(--accent)]"
+          >
+            <option value="all" className="bg-card-bg text-slate-900">Tất cả nguồn đơn</option>
+            <option value="web" className="bg-card-bg text-slate-900">🌐 Đơn từ Website</option>
+            <option value="admin" className="bg-card-bg text-slate-900">👤 Đơn do Admin tạo</option>
+          </select>
           <button
             onClick={handleSearchSubmit}
             className="h-10 px-5 rounded-xl bg-purple-650 hover:bg-purple-550 text-white text-sm font-bold transition-all shrink-0 cursor-pointer"
@@ -315,6 +326,15 @@ export default function OrderList() {
                         <div className="flex justify-between items-start">
                           <div>
                             <span className="font-mono font-bold text-xs text-[var(--accent)]">{order.order_number}</span>
+                            <div className="mt-1">
+                              <span className={`inline-block px-1.5 py-0.5 rounded text-[9px] font-bold border ${
+                                order.source === 'web' 
+                                  ? 'bg-blue-50 text-blue-600 border-blue-200' 
+                                  : 'bg-amber-55 text-amber-800 border-amber-200'
+                              }`}>
+                                {order.source === 'web' ? '🌐 Web' : '👤 Admin'}
+                              </span>
+                            </div>
                             <h4 className="font-bold text-sm text-foreground mt-1">{order.customer_name}</h4>
                             <p className="text-xs text-text-muted mt-0.5">{order.customer_phone}</p>
                           </div>
@@ -364,8 +384,17 @@ export default function OrderList() {
                             className={`border-b border-card-border/40 last:border-0 hover:bg-block-bg transition-colors cursor-pointer
                               ${selectedOrder?.id === order.id ? 'bg-[var(--accent-glow)] font-semibold' : i % 2 === 1 ? 'bg-block-bg/20' : ''}`}
                           >
-                            <td className="py-3.5 pr-2 font-mono font-bold text-[var(--accent)]">
-                              {order.order_number}
+                            <td className="py-3.5 pr-2 font-mono font-bold">
+                              <span className="text-[var(--accent)]">{order.order_number}</span>
+                              <div className="mt-1">
+                                <span className={`inline-block px-1.5 py-0.5 rounded text-[9px] font-bold border ${
+                                  order.source === 'web' 
+                                    ? 'bg-blue-50 text-blue-600 border-blue-200' 
+                                    : 'bg-amber-55 text-amber-855 border-amber-200'
+                                }`}>
+                                  {order.source === 'web' ? '🌐 Web' : '👤 Admin'}
+                                </span>
+                              </div>
                             </td>
                             <td className="py-3.5">
                               <p className="font-semibold text-foreground">{order.customer_name}</p>
@@ -536,6 +565,35 @@ export default function OrderList() {
                     >
                       📁 Mở link file thiết kế
                     </a>
+                  </div>
+                )}
+
+                {/* Báo giá Excel / PDF (chỉ hiển thị nếu có) */}
+                {((selectedOrder as any).quote_excel_url || (selectedOrder as any).quote_pdf_url) && (
+                  <div className="border-b border-card-border pb-4 space-y-2">
+                    <h3 className="text-xs font-bold text-text-muted uppercase tracking-wider mb-2">File Báo giá</h3>
+                    <div className="flex gap-2">
+                      {(selectedOrder as any).quote_excel_url && (
+                        <a
+                          href={(selectedOrder as any).quote_excel_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex-1 h-9 rounded-xl border border-card-border bg-block-bg hover:bg-block-bg/80 transition flex items-center justify-center text-xs text-emerald-655 font-bold"
+                        >
+                          📊 File Excel
+                        </a>
+                      )}
+                      {(selectedOrder as any).quote_pdf_url && (
+                        <a
+                          href={(selectedOrder as any).quote_pdf_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex-1 h-9 rounded-xl border border-card-border bg-block-bg hover:bg-block-bg/80 transition flex items-center justify-center text-xs text-rose-555 font-bold"
+                        >
+                          📄 File PDF
+                        </a>
+                      )}
+                    </div>
                   </div>
                 )}
 

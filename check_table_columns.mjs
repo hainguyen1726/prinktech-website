@@ -22,7 +22,7 @@ const supabase = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_SERVICE
 
 async function main() {
   const { data, error } = await supabase
-    .from('web_posts')
+    .from('orders')
     .select('*')
     .limit(1);
 
