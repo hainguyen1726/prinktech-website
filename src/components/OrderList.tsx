@@ -294,56 +294,104 @@ export default function OrderList() {
                 Không tìm thấy đơn hàng nào khớp với bộ lọc.
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm text-left">
-                  <thead>
-                    <tr className="border-b border-card-border text-xs uppercase tracking-wider text-text-muted">
-                      <th className="pb-3 pr-2 font-bold">Mã đơn</th>
-                      <th className="pb-3 font-bold">Khách hàng</th>
-                      <th className="pb-3 text-right font-bold">Tổng tiền</th>
-                      <th className="pb-3 text-center font-bold">Trạng thái</th>
-                      <th className="pb-3 text-right font-bold">Thao tác</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {orders.map((order, i) => {
-                      const status = ORDER_STATUS_LABELS[order.status] || { label: order.status, color: '' };
-                      return (
-                        <tr
-                          key={order.id}
-                          onClick={() => setSelectedOrder(order)}
-                          className={`border-b border-card-border/40 last:border-0 hover:bg-block-bg transition-colors cursor-pointer
-                            ${selectedOrder?.id === order.id ? 'bg-[var(--accent-glow)] font-semibold' : i % 2 === 1 ? 'bg-block-bg/20' : ''}`}
-                        >
-                          <td className="py-3.5 pr-2 font-mono font-bold text-[var(--accent)]">
-                            {order.order_number}
-                          </td>
-                          <td className="py-3.5">
-                            <p className="font-semibold text-foreground">{order.customer_name}</p>
-                            <p className="text-xs text-text-muted font-medium">{order.customer_phone}</p>
-                          </td>
-                          <td className="py-3.5 text-right font-bold text-foreground tabular-nums">
-                            {formatCurrency(order.total)}
-                          </td>
-                          <td className="py-3.5 text-center">
-                            <span className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-bold border ${status.color}`}>
+              <>
+                {/* Mobile list view */}
+                <div className="block md:hidden space-y-3">
+                  {orders.map((order) => {
+                    const status = ORDER_STATUS_LABELS[order.status] || { label: order.status, color: '' };
+                    const isSelected = selectedOrder?.id === order.id;
+                    return (
+                      <div
+                        key={order.id}
+                        onClick={() => setSelectedOrder(order)}
+                        className={`p-4 rounded-xl border transition-all cursor-pointer ${
+                          isSelected
+                            ? 'bg-[var(--accent-glow)] border-[var(--accent)] font-semibold'
+                            : 'bg-white border-card-border hover:bg-slate-50'
+                        }`}
+                      >
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <span className="font-mono font-bold text-xs text-[var(--accent)]">{order.order_number}</span>
+                            <h4 className="font-bold text-sm text-foreground mt-1">{order.customer_name}</h4>
+                            <p className="text-xs text-text-muted mt-0.5">{order.customer_phone}</p>
+                          </div>
+                          <div className="text-right">
+                            <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold border ${status.color}`}>
                               {status.label}
                             </span>
-                          </td>
-                          <td className="py-3.5 text-right" onClick={e => e.stopPropagation()}>
-                            <button
-                              onClick={() => handleDelete(order.id)}
-                              className="text-xs text-text-muted hover:text-red-400 transition-colors p-1 cursor-pointer font-semibold"
-                            >
-                              Xóa
-                            </button>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
+                            <div className="font-extrabold text-slate-900 text-sm mt-2">{formatCurrency(order.total)}</div>
+                          </div>
+                        </div>
+                        <div className="flex justify-between items-center mt-3 pt-2 border-t border-card-border/50 text-[10px] text-text-muted">
+                          <span>{new Date(order.created_at).toLocaleDateString('vi-VN')}</span>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDelete(order.id);
+                            }}
+                            className="text-red-500 font-bold hover:underline"
+                          >
+                            Xóa đơn
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Desktop table view */}
+                <div className="hidden md:block overflow-x-auto">
+                  <table className="w-full text-sm text-left">
+                    <thead>
+                      <tr className="border-b border-card-border text-xs uppercase tracking-wider text-text-muted">
+                        <th className="pb-3 pr-2 font-bold">Mã đơn</th>
+                        <th className="pb-3 font-bold">Khách hàng</th>
+                        <th className="pb-3 text-right font-bold">Tổng tiền</th>
+                        <th className="pb-3 text-center font-bold">Trạng thái</th>
+                        <th className="pb-3 text-right font-bold">Thao tác</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {orders.map((order, i) => {
+                        const status = ORDER_STATUS_LABELS[order.status] || { label: order.status, color: '' };
+                        return (
+                          <tr
+                            key={order.id}
+                            onClick={() => setSelectedOrder(order)}
+                            className={`border-b border-card-border/40 last:border-0 hover:bg-block-bg transition-colors cursor-pointer
+                              ${selectedOrder?.id === order.id ? 'bg-[var(--accent-glow)] font-semibold' : i % 2 === 1 ? 'bg-block-bg/20' : ''}`}
+                          >
+                            <td className="py-3.5 pr-2 font-mono font-bold text-[var(--accent)]">
+                              {order.order_number}
+                            </td>
+                            <td className="py-3.5">
+                              <p className="font-semibold text-foreground">{order.customer_name}</p>
+                              <p className="text-xs text-text-muted font-medium">{order.customer_phone}</p>
+                            </td>
+                            <td className="py-3.5 text-right font-bold text-foreground tabular-nums">
+                              {formatCurrency(order.total)}
+                            </td>
+                            <td className="py-3.5 text-center">
+                              <span className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-bold border ${status.color}`}>
+                                {status.label}
+                              </span>
+                            </td>
+                            <td className="py-3.5 text-right" onClick={e => e.stopPropagation()}>
+                              <button
+                                onClick={() => handleDelete(order.id)}
+                                className="text-xs text-text-muted hover:text-red-400 transition-colors p-1 cursor-pointer font-semibold"
+                              >
+                                Xóa
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </>
             )}
 
             {/* Pagination */}

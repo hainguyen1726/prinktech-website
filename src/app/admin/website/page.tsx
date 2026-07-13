@@ -682,26 +682,26 @@ export default function AdminWebsitePage() {
         
         {/* Sidebar Nav */}
         <aside className="w-full lg:w-60 shrink-0">
-          <div className="glass-card p-4 space-y-1 bg-slate-950/20">
+          <div className="glass-card p-3 lg:p-4 flex flex-row lg:flex-col overflow-x-auto lg:overflow-x-visible gap-2 lg:gap-1.5 bg-slate-950/20 scrollbar-none whitespace-nowrap">
             <Link
               href="/admin/don-hang"
-              className="w-full flex items-center gap-2.5 px-4 py-3 rounded-lg text-xs font-bold text-left text-slate-400 hover:text-slate-200 hover:bg-slate-900/30 border border-transparent transition cursor-pointer"
+              className="w-auto lg:w-full shrink-0 flex items-center gap-2 lg:gap-2.5 px-3 lg:px-4 py-2 lg:py-3 rounded-lg text-xs font-bold text-left text-slate-400 hover:text-slate-200 hover:bg-slate-900/30 border border-transparent transition cursor-pointer"
             >
               <ShoppingBag size={16} className="text-emerald-400" /> Quản lý Đơn hàng
             </Link>
 
             <Link
               href="/admin/khach-hang"
-              className="w-full flex items-center gap-2.5 px-4 py-3 rounded-lg text-xs font-bold text-left text-slate-400 hover:text-slate-200 hover:bg-slate-900/30 border border-transparent transition cursor-pointer"
+              className="w-auto lg:w-full shrink-0 flex items-center gap-2 lg:gap-2.5 px-3 lg:px-4 py-2 lg:py-3 rounded-lg text-xs font-bold text-left text-slate-400 hover:text-slate-200 hover:bg-slate-900/30 border border-transparent transition cursor-pointer"
             >
               <Users size={16} className="text-purple-400" /> Quản lý Khách hàng
             </Link>
 
-            <span className="block h-px bg-slate-800/80 my-2"></span>
+            <span className="hidden lg:block h-px bg-slate-800/80 my-2"></span>
 
             <button
               onClick={() => setActiveTab('posts')}
-              className={`w-full flex items-center gap-2.5 px-4 py-3 rounded-lg text-xs font-bold text-left transition cursor-pointer ${
+              className={`w-auto lg:w-full shrink-0 flex items-center gap-2 lg:gap-2.5 px-3 lg:px-4 py-2 lg:py-3 rounded-lg text-xs font-bold text-left transition cursor-pointer ${
                 activeTab === 'posts'
                   ? 'bg-sky-500/10 text-sky-400 border border-sky-500/20'
                   : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/30 border border-transparent'
@@ -712,14 +712,14 @@ export default function AdminWebsitePage() {
 
             <Link
               href="/admin/viet-bai"
-              className="w-full flex items-center gap-2.5 px-4 py-3 rounded-lg text-xs font-bold text-left text-slate-400 hover:text-slate-200 hover:bg-slate-900/30 border border-transparent transition cursor-pointer"
+              className="w-auto lg:w-full shrink-0 flex items-center gap-2 lg:gap-2.5 px-3 lg:px-4 py-2 lg:py-3 rounded-lg text-xs font-bold text-left text-slate-400 hover:text-slate-200 hover:bg-slate-900/30 border border-transparent transition cursor-pointer"
             >
               <PenTool size={16} className="text-amber-400" /> Viết bài (Công cụ SEO)
             </Link>
 
             <Link
               href="/admin/seo"
-              className="w-full flex items-center gap-2.5 px-4 py-3 rounded-lg text-xs font-bold text-left text-slate-400 hover:text-slate-200 hover:bg-slate-900/30 border border-transparent transition cursor-pointer"
+              className="w-auto lg:w-full shrink-0 flex items-center gap-2 lg:gap-2.5 px-3 lg:px-4 py-2 lg:py-3 rounded-lg text-xs font-bold text-left text-slate-400 hover:text-slate-200 hover:bg-slate-900/30 border border-transparent transition cursor-pointer"
             >
               <BarChart size={16} className="text-teal-400" /> SEO Audit Center
             </Link>
@@ -727,7 +727,7 @@ export default function AdminWebsitePage() {
 
             <button
               onClick={() => setActiveTab('products')}
-              className={`w-full flex items-center gap-2.5 px-4 py-3 rounded-lg text-xs font-bold text-left transition cursor-pointer ${
+              className={`w-auto lg:w-full shrink-0 flex items-center gap-2 lg:gap-2.5 px-3 lg:px-4 py-2 lg:py-3 rounded-lg text-xs font-bold text-left transition cursor-pointer ${
                 activeTab === 'products'
                   ? 'bg-sky-500/10 text-sky-400 border border-sky-500/20'
                   : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/30 border border-transparent'
@@ -737,7 +737,7 @@ export default function AdminWebsitePage() {
             </button>
             <button
               onClick={() => setActiveTab('pricing')}
-              className={`w-full flex items-center gap-2.5 px-4 py-3 rounded-lg text-xs font-bold text-left transition cursor-pointer ${
+              className={`w-auto lg:w-full shrink-0 flex items-center gap-2 lg:gap-2.5 px-3 lg:px-4 py-2 lg:py-3 rounded-lg text-xs font-bold text-left transition cursor-pointer ${
                 activeTab === 'pricing'
                   ? 'bg-sky-500/10 text-sky-400 border border-sky-500/20'
                   : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/30 border border-transparent'
@@ -747,7 +747,7 @@ export default function AdminWebsitePage() {
             </button>
             <button
               onClick={() => setActiveTab('quotes')}
-              className={`w-full flex items-center gap-2.5 px-4 py-3 rounded-lg text-xs font-bold text-left transition cursor-pointer ${
+              className={`w-auto lg:w-full shrink-0 flex items-center gap-2 lg:gap-2.5 px-3 lg:px-4 py-2 lg:py-3 rounded-lg text-xs font-bold text-left transition cursor-pointer ${
                 activeTab === 'quotes'
                   ? 'bg-sky-500/10 text-sky-400 border border-sky-500/20'
                   : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/30 border border-transparent'
@@ -757,7 +757,7 @@ export default function AdminWebsitePage() {
             </button>
             <button
               onClick={() => setActiveTab('videos')}
-              className={`w-full flex items-center gap-2.5 px-4 py-3 rounded-lg text-xs font-bold text-left transition cursor-pointer ${
+              className={`w-auto lg:w-full shrink-0 flex items-center gap-2 lg:gap-2.5 px-3 lg:px-4 py-2 lg:py-3 rounded-lg text-xs font-bold text-left transition cursor-pointer ${
                 activeTab === 'videos'
                   ? 'bg-sky-500/10 text-sky-400 border border-sky-500/20'
                   : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/30 border border-transparent'
@@ -766,11 +766,11 @@ export default function AdminWebsitePage() {
               <Video size={16} /> Quản lý Video
             </button>
 
-            <span className="block h-px bg-slate-800/80 my-2"></span>
+            <span className="hidden lg:block h-px bg-slate-800/80 my-2"></span>
             
             <Link
               href="/marketing"
-              className="w-full flex items-center gap-2.5 px-4 py-3 rounded-lg text-xs font-bold text-left text-slate-400 hover:text-slate-250 hover:bg-slate-900/30 border border-transparent transition cursor-pointer"
+              className="w-auto lg:w-full shrink-0 flex items-center gap-2 lg:gap-2.5 px-3 lg:px-4 py-2 lg:py-3 rounded-lg text-xs font-bold text-left text-slate-400 hover:text-slate-250 hover:bg-slate-900/30 border border-transparent transition cursor-pointer"
             >
               <BarChart size={16} className="text-sky-400" /> Kênh Marketing Ads
             </Link>
