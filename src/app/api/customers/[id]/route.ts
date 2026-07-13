@@ -1,9 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
+import { verifyAdminOrStaff } from '@/lib/adminAuth';
 
 // GET /api/customers/[id] — thông tin KH + danh sách đơn + history
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const auth = await verifyAdminOrStaff(req);
+    if (auth.error) {
+      return NextResponse.json({ error: auth.error }, { status: auth.status || 401 });
+    }
+
     const { id } = await params;
 
     const { data: customer, error: cErr } = await supabaseAdmin
@@ -89,6 +95,11 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 // PATCH /api/customers/[id] — cập nhật KH
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const auth = await verifyAdminOrStaff(req);
+    if (auth.error) {
+      return NextResponse.json({ error: auth.error }, { status: auth.status || 401 });
+    }
+
     const { id } = await params;
     const body = await req.json();
 

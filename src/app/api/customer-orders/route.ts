@@ -1,9 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
+import { verifyAdminOrStaff } from '@/lib/adminAuth';
 
 // GET /api/customer-orders
 export async function GET(req: NextRequest) {
   try {
+    const auth = await verifyAdminOrStaff(req);
+    if (auth.error) {
+      return NextResponse.json({ error: auth.error }, { status: auth.status || 401 });
+    }
+
     const { searchParams } = new URL(req.url);
     const partnerId = searchParams.get('customer_id');
     const status = searchParams.get('status');
@@ -37,6 +43,11 @@ export async function GET(req: NextRequest) {
 // POST /api/customer-orders
 export async function POST(req: NextRequest) {
   try {
+    const auth = await verifyAdminOrStaff(req);
+    if (auth.error) {
+      return NextResponse.json({ error: auth.error }, { status: auth.status || 401 });
+    }
+
     const body = await req.json();
     const {
       partner_id,

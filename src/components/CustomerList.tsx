@@ -23,6 +23,7 @@ import {
   Check,
   X,
 } from 'lucide-react';
+import AdminGuard from '@/components/AdminGuard';
 
 interface OrderHistoryItem {
   id: string;
@@ -488,7 +489,8 @@ export default function CustomerList() {
   };
 
   return (
-    <div className="admin-panel min-h-screen bg-[#f8fafc] text-slate-900 transition-colors duration-300">
+    <AdminGuard>
+      <div className="admin-panel min-h-screen bg-[#f8fafc] text-slate-900 transition-colors duration-300">
       {/* Header Admin Nav */}
       <nav className="sticky top-0 z-40 border-b border-slate-200 bg-white/90 backdrop-blur-xl shadow-xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
@@ -955,5 +957,6 @@ export default function CustomerList() {
         )}
       </div>
     </div>
+    </AdminGuard>
   );
 }

@@ -1,9 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
+import { verifyAdminOrStaff } from '@/lib/adminAuth';
 
 // GET /api/customers — danh sách khách hàng riêng của Prink Tech Website (partner_type = 'standard')
 export async function GET(req: NextRequest) {
   try {
+    const auth = await verifyAdminOrStaff(req);
+    if (auth.error) {
+      return NextResponse.json({ error: auth.error }, { status: auth.status || 401 });
+    }
+
     const { searchParams } = new URL(req.url);
     const search = searchParams.get('search');
     const page = parseInt(searchParams.get('page') || '1');
@@ -65,6 +71,11 @@ export async function GET(req: NextRequest) {
 // POST /api/customers — tạo mới khách hàng lẻ cho Prink Tech Website
 export async function POST(req: NextRequest) {
   try {
+    const auth = await verifyAdminOrStaff(req);
+    if (auth.error) {
+      return NextResponse.json({ error: auth.error }, { status: auth.status || 401 });
+    }
+
     const body = await req.json();
     const { name, phone, email, address } = body;
 
