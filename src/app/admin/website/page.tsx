@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { 
   FileText, Layers, Calculator, PhoneCall, Plus, Edit2, Trash2, Save, LogOut, Globe,
   CheckCircle, Loader2, X, PlusCircle, ArrowUpRight, Check, RefreshCw, AlertCircle, Video,
-  BarChart, ShoppingBag, PenTool, Search, ChevronLeft, ChevronRight
+  BarChart, ShoppingBag, PenTool, Search, ChevronLeft, ChevronRight, Users
 } from 'lucide-react';
 
 interface Product {
@@ -688,6 +688,13 @@ export default function AdminWebsitePage() {
               className="w-full flex items-center gap-2.5 px-4 py-3 rounded-lg text-xs font-bold text-left text-slate-400 hover:text-slate-200 hover:bg-slate-900/30 border border-transparent transition cursor-pointer"
             >
               <ShoppingBag size={16} className="text-emerald-400" /> Quản lý Đơn hàng
+            </Link>
+
+            <Link
+              href="/admin/khach-hang"
+              className="w-full flex items-center gap-2.5 px-4 py-3 rounded-lg text-xs font-bold text-left text-slate-400 hover:text-slate-200 hover:bg-slate-900/30 border border-transparent transition cursor-pointer"
+            >
+              <Users size={16} className="text-purple-400" /> Quản lý Khách hàng
             </Link>
 
             <span className="block h-px bg-slate-800/80 my-2"></span>
