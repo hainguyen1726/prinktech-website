@@ -40,8 +40,7 @@ export async function GET(req: NextRequest) {
     // 2. Tạo query cho orders (đơn admin)
     let ordersQuery = supabase
       .from('orders')
-      .select('*, partners(*)')
-      .contains('tags', ['prinktech']);
+      .select('*, partners(*)');
 
     if (status && status !== 'all') {
       ordersQuery = ordersQuery.eq('status', status);
@@ -88,8 +87,15 @@ export async function GET(req: NextRequest) {
       created_at: o.created_at
     }));
 
+    // Lọc đơn hàng của Prink Tech: chỉ lấy đơn hàng của khách lẻ (partner_type = 'standard') hoặc đơn hàng có tag 'prinktech'
+    const prinktechOrdersData = ordersData.filter((o: any) => {
+      const isStandard = o.partners?.partner_type === 'standard';
+      const hasTag = Array.isArray(o.tags) && o.tags.includes('prinktech');
+      return isStandard || hasTag;
+    });
+
     // 4. Chuẩn hóa dữ liệu orders
-    const formattedOrders = ordersData.map((o: any) => {
+    const formattedOrders = prinktechOrdersData.map((o: any) => {
       const partner = o.partners || {};
       
       // Parse file Excel & PDF báo giá từ note

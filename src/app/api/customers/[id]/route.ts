@@ -27,7 +27,6 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       .from('orders')
       .select('*')
       .eq('partner_id', id)
-      .contains('tags', ['prinktech'])
       .order('created_at', { ascending: false });
 
     const orderIds = (orders || []).map((o: any) => o.id);

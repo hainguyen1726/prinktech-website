@@ -21,18 +21,22 @@ const supabase = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_SERVICE
 });
 
 async function main() {
-  const { data, error } = await supabase
-    .from('orders')
-    .select('order_code, tags')
-    .order('created_at', { ascending: false })
-    .limit(10);
+  const { data: p1 } = await supabase
+    .from('partners')
+    .select('*')
+    .eq('id', 'cf133c4d-f5a4-46ca-ac10-ba26d923d71c')
+    .single();
 
-  if (error) {
-    console.error('Error fetching tags:', error);
-  } else {
-    console.log('Tags in recent orders:');
-    console.log(data);
-  }
+  const { data: p2 } = await supabase
+    .from('partners')
+    .select('*')
+    .eq('id', 'c0bfb508-441a-4f3b-a3bc-63e02a18fc35')
+    .single();
+
+  console.log('Partner 1 (cf133c4d-f5a4-46ca-ac10-ba26d923d71c):');
+  console.log(p1);
+  console.log('Partner 2 (c0bfb508-441a-4f3b-a3bc-63e02a18fc35):');
+  console.log(p2);
 }
 
 main().catch(console.error);
