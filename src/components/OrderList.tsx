@@ -170,8 +170,8 @@ export default function OrderList() {
       <nav className="sticky top-0 z-40 border-b border-card-border bg-background/85 backdrop-blur-xl">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Link href="/" className="text-text-muted hover:text-foreground transition-colors text-sm">
-              ← Trang chủ
+            <Link href="/admin/website" className="text-text-muted hover:text-foreground transition-colors text-sm font-semibold">
+              ← Trang Admin
             </Link>
             <span className="text-slate-700">/</span>
             <span className="text-foreground font-semibold text-sm">Admin Quản lý đơn hàng</span>
