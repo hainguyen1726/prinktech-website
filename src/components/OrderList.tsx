@@ -1268,6 +1268,7 @@ export default function OrderList() {
                         <option value="">⚡ Chưa chọn đơn vị vận chuyển</option>
                         <option value="ghtk">Giao Hàng Tiết Kiệm (GHTK)</option>
                         <option value="viettelpost">Viettel Post</option>
+                        <option value="spx">SPX Express (Shopee Express)</option>
                         <option value="ahamove">Ahamove</option>
                         <option value="grab">Grab Express</option>
                         <option value="self_pickup">Khách tự lấy tại xưởng</option>
@@ -1307,7 +1308,17 @@ export default function OrderList() {
                               🔗 Viettel Post ({selectedOrder.tracking_number})
                             </a>
                           )}
-                          {['ghtk', 'viettelpost'].indexOf(selectedOrder.shipping_carrier || '') === -1 && (
+                          {selectedOrder.shipping_carrier === 'spx' && (
+                            <a
+                              href="https://spx.vn/vi"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-blue-500 hover:underline font-bold"
+                            >
+                              🔗 SPX Express ({selectedOrder.tracking_number})
+                            </a>
+                          )}
+                          {['ghtk', 'viettelpost', 'spx'].indexOf(selectedOrder.shipping_carrier || '') === -1 && (
                             <span className="font-bold text-foreground">{selectedOrder.tracking_number}</span>
                           )}
                         </div>

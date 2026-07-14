@@ -53,6 +53,7 @@ interface Order {
 const CARRIER_LABELS: Record<string, { label: string; link: (num: string) => string }> = {
   ghtk: { label: 'Giao Hàng Tiết Kiệm (GHTK)', link: (num) => `https://i.ghtk.vn/${num}` },
   viettelpost: { label: 'Viettel Post', link: (num) => `https://viettelpost.com.vn/tra-cuu-hanh-trinh-don-hang?billCode=${num}` },
+  spx: { label: 'SPX Express (Shopee Express)', link: () => `https://spx.vn/vi` },
   ahamove: { label: 'Ahamove', link: () => '#' },
   grab: { label: 'Grab Express', link: () => '#' },
   self_pickup: { label: 'Khách tự lấy tại xưởng', link: () => '#' },
