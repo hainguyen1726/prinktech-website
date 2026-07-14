@@ -1570,7 +1570,7 @@ export default function AdminSEOAuditPage() {
                           return (
                             <tr key={kw.id} className="hover:bg-slate-50/50 transition text-slate-700 text-sm">
                               <td className="p-4 text-center text-slate-400 font-mono text-xs">{globalIdx}</td>
-                              <td className="p-4 font-bold text-slate-900">{kw.keyword}</td>
+                              <td className="p-4 font-bold text-slate-900 whitespace-nowrap">{kw.keyword}</td>
                               <td className="p-4 text-center">
                                 <span className={`inline-block text-[9px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider ${
                                   kw.intent === 'Transactional' ? 'bg-green-50 text-green-700 border border-green-200'
@@ -1580,16 +1580,16 @@ export default function AdminSEOAuditPage() {
                                   {kw.intent === 'Transactional' ? 'Trans' : kw.intent === 'Informational' ? 'Info' : 'Com'}
                                 </span>
                               </td>
-                              <td className="p-4">
+                              <td className="p-4 max-w-[200px]">
                                 <a 
                                   href={getRelativeUrl(kw.targetUrl)} 
                                   target="_blank" 
                                   rel="noopener noreferrer" 
-                                  className="text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-0.5 truncate max-w-xs text-xs font-normal"
+                                  className="text-blue-600 hover:text-blue-800 hover:underline inline-flex items-center gap-0.5 w-full text-xs font-normal"
                                   title={getRelativeUrl(kw.targetUrl)}
                                 >
-                                  {getRelativeUrl(kw.targetUrl)}
-                                  <ArrowUpRight size={10} className="shrink-0" />
+                                  <span className="truncate flex-1">{getRelativeUrl(kw.targetUrl)}</span>
+                                  <ArrowUpRight size={10} className="shrink-0 text-blue-400" />
                                 </a>
                               </td>
                               <td className="p-4 text-center font-mono tabular-nums text-xs text-slate-600">
