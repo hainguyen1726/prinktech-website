@@ -61,9 +61,6 @@ interface SEOKeyword {
 
 export default function AdminSEOAuditPage() {
   const router = useRouter();
-  const [loading, setLoading] = useState(true);
-  const [authorized, setAuthorized] = useState(false);
-  const [adminUser, setAdminUser] = useState<any>(null);
 
   // Active Tab: 'technical' | 'content' | 'keywords'
   const [activeTab, setActiveTab] = useState<'technical' | 'content' | 'keywords'>('technical');
@@ -148,32 +145,6 @@ export default function AdminSEOAuditPage() {
   useEffect(() => {
     setKeywordPage(1);
   }, [keywordSearch]);
-
-  // 1. Xác thực Admin Auth
-  useEffect(() => {
-    async function checkAuth() {
-      try {
-        const res = await fetch('/api/auth/me');
-        if (res.ok) {
-          const data = await res.json();
-          if (data.user?.role !== 'admin') {
-            router.push('/login');
-          } else {
-            setAdminUser(data.user);
-            setAuthorized(true);
-          }
-        } else {
-          router.push('/login');
-        }
-      } catch (err) {
-        console.error('Lỗi xác thực:', err);
-        router.push('/login');
-      } finally {
-        setLoading(false);
-      }
-    }
-    checkAuth();
-  }, [router]);
 
   // Helper: chuẩn hóa URL trang đích thành đường dẫn tương đối
   const getRelativeUrl = (url: string): string => {
@@ -391,19 +362,17 @@ export default function AdminSEOAuditPage() {
   };
 
   useEffect(() => {
-    if (authorized) {
-      fetchAudits();
-      fetchPosts();
-      fetchKeywords();
+    fetchAudits();
+    fetchPosts();
+    fetchKeywords();
+    fetchAnalyticsData();
+    
+    // Tự động reload realtime mỗi 30 giây
+    const interval = setInterval(() => {
       fetchAnalyticsData();
-      
-      // Tự động reload realtime mỗi 30 giây
-      const interval = setInterval(() => {
-        fetchAnalyticsData();
-      }, 30000);
-      return () => clearInterval(interval);
-    }
-  }, [authorized]);
+    }, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Các hàm tương tác từ khóa SEO
   const handleAddKeyword = async (e: React.FormEvent) => {
@@ -754,19 +723,6 @@ export default function AdminSEOAuditPage() {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-[#f1f5f9] text-slate-500">
-        <div className="flex flex-col items-center gap-3">
-          <Loader2 className="animate-spin text-blue-600" size={32} />
-          <p className="text-xs font-bold uppercase tracking-wider text-slate-400">Đang xác thực thông tin admin...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!authorized) return null;
-
   // LỌC DỮ LIỆU TECHNICAL ISSUES & TÌM KIẾM
   const filteredIssues = selectedAudit 
     ? selectedAudit.issues.filter(issue => {
@@ -803,8 +759,7 @@ export default function AdminSEOAuditPage() {
   const unresolvedIssues = totalIssues - resolvedIssues;
 
   return (
-    <AdminLayout>
-      <div className="relative w-full pb-12">
+    <div className="relative w-full pb-12">
         {/* Background Glow Decorations */}
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl pointer-events-none"></div>
         <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none"></div>
@@ -2132,6 +2087,5 @@ const auth = new google.auth.GoogleAuth({
         </div>
       )}
       </div>
-    </AdminLayout>
   );
 }

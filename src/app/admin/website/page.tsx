@@ -76,10 +76,6 @@ interface Video {
 
 function AdminWebsiteContent() {
   const router = useRouter();
-  const [loading, setLoading] = useState(true);
-  const [authorized, setAuthorized] = useState(false);
-  const [adminUser, setAdminUser] = useState<any>(null);
-
   const [activeTab, setActiveTab] = useState<'posts' | 'products' | 'pricing' | 'quotes' | 'videos'>('posts');
 
   const searchParams = useSearchParams();
@@ -169,36 +165,8 @@ function AdminWebsiteContent() {
   const [actionLoading, setActionLoading] = useState(false);
   const [toastMsg, setToastMsg] = useState({ text: '', type: '' });
 
-  // Verification/Auth Check
-  useEffect(() => {
-    async function checkAuth() {
-      try {
-        const res = await fetch('/api/auth/me');
-        if (res.ok) {
-          const data = await res.json();
-          if (data.user?.role !== 'admin') {
-            router.push('/login');
-          } else {
-            setAdminUser(data.user);
-            setAuthorized(true);
-          }
-        } else {
-          router.push('/login');
-        }
-      } catch (err) {
-        console.error('Lỗi xác thực:', err);
-        router.push('/login');
-      } finally {
-        setLoading(false);
-      }
-    }
-    checkAuth();
-  }, [router]);
-
   // Load Tab Content Data
   useEffect(() => {
-    if (!authorized) return;
-
     async function loadData() {
       try {
         if (activeTab === 'posts') {
@@ -227,7 +195,7 @@ function AdminWebsiteContent() {
       }
     }
     loadData();
-  }, [activeTab, authorized, refreshKey]);
+  }, [activeTab, refreshKey]);
 
   const showToast = (text: string, type: 'success' | 'error') => {
     setToastMsg({ text, type });
@@ -644,20 +612,8 @@ function AdminWebsiteContent() {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-[#070b13] flex flex-col items-center justify-center text-slate-200">
-        <Loader2 className="animate-spin text-sky-500" size={36} />
-        <p className="mt-4 text-[10px] uppercase font-bold tracking-wider text-slate-500">Đang xác thực thông tin admin...</p>
-      </div>
-    );
-  }
-
-  if (!authorized) return null;
-
   return (
-    <AdminLayout activeTab={activeTab} setActiveTab={setActiveTab}>
-      <div className="relative w-full">
+    <div className="relative w-full">
         {/* Glow decorations */}
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl pointer-events-none"></div>
         <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none"></div>
@@ -1664,16 +1620,15 @@ function AdminWebsiteContent() {
       </div>
       </div>
       </div>
-    </AdminLayout>
   );
 }
 
 export default function AdminWebsitePage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-[#f8fafc] dark:bg-[#070b13] flex flex-col items-center justify-center text-slate-500 dark:text-slate-400">
-        <Loader2 className="animate-spin text-sky-500" size={36} />
-        <p className="mt-4 text-[10px] uppercase font-bold tracking-wider text-slate-400 dark:text-slate-500">Đang tải trang quản trị...</p>
+      <div className="flex flex-col items-center justify-center p-12 text-slate-400">
+        <Loader2 className="animate-spin text-sky-500" size={32} />
+        <p className="mt-2 text-xs font-semibold">Đang tải cấu hình...</p>
       </div>
     }>
       <AdminWebsiteContent />

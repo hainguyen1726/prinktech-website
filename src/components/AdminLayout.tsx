@@ -1,22 +1,20 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { 
   ShoppingBag, Users, FileText, PenTool, BarChart, 
   Layers, Calculator, PhoneCall, Video, Globe, LogOut, Sun, Moon
 } from 'lucide-react';
 
-interface AdminLayoutProps {
-  children: React.ReactNode;
-  activeTab?: 'posts' | 'products' | 'pricing' | 'quotes' | 'videos';
-  setActiveTab?: (tab: 'posts' | 'products' | 'pricing' | 'quotes' | 'videos') => void;
-}
-
-export default function AdminLayout({ children, activeTab, setActiveTab }: AdminLayoutProps) {
+function AdminLayoutContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Active tab state dynamically parsed from URL query (?tab=)
+  const activeTab = searchParams.get('tab') || 'posts';
 
   // Authentication state
   const [adminUser, setAdminUser] = useState<{ name: string } | null>(null);
@@ -97,18 +95,6 @@ export default function AdminLayout({ children, activeTab, setActiveTab }: Admin
     const baseClass = "w-auto lg:w-full shrink-0 flex items-center gap-2 lg:gap-2.5 px-3 lg:px-4 py-2 lg:py-3 rounded-lg text-xs font-bold text-left transition cursor-pointer border";
     const activeClass = "bg-sky-500/10 text-sky-400 border-sky-500/20";
     const inactiveClass = "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-900/30 border-transparent";
-
-    if (tab && isWebsitePage && setActiveTab) {
-      return (
-        <button
-          key={label}
-          onClick={() => setActiveTab(tab)}
-          className={`${baseClass} ${isActive ? activeClass : inactiveClass}`}
-        >
-          {icon} {label}
-        </button>
-      );
-    }
 
     return (
       <Link
@@ -252,3 +238,13 @@ export default function AdminLayout({ children, activeTab, setActiveTab }: Admin
     </div>
   );
 }
+
+export default function AdminLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <Suspense fallback={null}>
+      <AdminLayoutContent>{children}</AdminLayoutContent>
+    </Suspense>
+  );
+}
+
+

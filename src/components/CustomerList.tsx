@@ -747,9 +747,7 @@ export default function CustomerList() {
   };
 
   return (
-    <AdminGuard>
-      <AdminLayout>
-        <div className="w-full">
+    <div className="w-full">
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -1190,7 +1188,5 @@ export default function CustomerList() {
         )}
         </div>
         </div>
-      </AdminLayout>
-    </AdminGuard>
   );
 }

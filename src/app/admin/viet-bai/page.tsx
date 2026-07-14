@@ -151,9 +151,6 @@ function VietBaiContent() {
   const editorRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Auth
-  const [authorized, setAuthorized] = useState(false);
-  const [authLoading, setAuthLoading] = useState(true);
   const [uploadingImage, setUploadingImage] = useState(false);
 
   // Bài viết
@@ -180,12 +177,7 @@ function VietBaiContent() {
   const [activePanel, setActivePanel] = useState<'seo' | 'settings'>('seo');
   const [showSidebar, setShowSidebar] = useState(false);
 
-  // Auth check
-  useEffect(() => {
-    fetch('/api/auth/me').then(r => r.json()).then(d => {
-      if (d.user && d.user.role === 'admin') { setAuthorized(true); } else { router.push('/login'); }
-    }).catch(() => router.push('/login')).finally(() => setAuthLoading(false));
-  }, [router]);
+
 
   const formatDateTimeLocal = (isoString?: string) => {
     if (!isoString) return '';
@@ -196,7 +188,7 @@ function VietBaiContent() {
 
   // Load bài cũ khi edit
   useEffect(() => {
-    if (!editId || !authorized) return;
+    if (!editId) return;
     fetch(`/api/web/posts/${editId}`).then(r => r.json()).then(d => {
       const p = d.post;
       if (!p) return;
@@ -224,14 +216,14 @@ function VietBaiContent() {
       
       if (editorRef.current) editorRef.current.innerHTML = p.content || '';
     });
-  }, [editId, authorized]);
+  }, [editId]);
 
   // Thiết lập ngày giờ mặc định cho bài viết mới tinh
   useEffect(() => {
-    if (!editId && authorized) {
+    if (!editId) {
       setCreatedAt(formatDateTimeLocal(new Date().toISOString()));
     }
-  }, [editId, authorized]);
+  }, [editId]);
 
   // Auto slug từ title
   useEffect(() => {
@@ -368,16 +360,8 @@ function VietBaiContent() {
   const scoreColor = seo.score >= 75 ? 'text-emerald-400' : seo.score >= 50 ? 'text-amber-400' : 'text-red-400';
   const scoreBg = seo.score >= 75 ? 'bg-emerald-500' : seo.score >= 50 ? 'bg-amber-500' : 'bg-red-500';
 
-  if (authLoading) return (
-    <div className="min-h-screen bg-[#f8fafc] flex items-center justify-center">
-      <Loader2 className="animate-spin text-sky-400" size={32} />
-    </div>
-  );
-  if (!authorized) return null;
-
   return (
-    <AdminLayout>
-      <div className="relative w-full pb-10">
+    <div className="relative w-full pb-10">
 
         {/* Top Bar (Sticky tool bar below main header) */}
         <div className="sticky top-[53px] lg:top-[64px] z-20 border border-slate-200 bg-white/95 backdrop-blur-md rounded-xl p-3 mb-6 shadow-xs">
@@ -771,7 +755,6 @@ function VietBaiContent() {
         </div>
       )}
       </div>
-    </AdminLayout>
   );
 }
 
@@ -779,8 +762,9 @@ function VietBaiContent() {
 export default function VietBaiPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-[#f8fafc] flex items-center justify-center">
-        <Loader2 className="animate-spin text-sky-400" size={32} />
+      <div className="flex flex-col items-center justify-center p-12 text-slate-400">
+        <Loader2 className="animate-spin text-sky-500" size={32} />
+        <p className="mt-2 text-xs font-semibold">Đang tải trình viết bài...</p>
       </div>
     }>
       <VietBaiContent />

@@ -475,9 +475,7 @@ export default function OrderList() {
   };
 
   return (
-    <AdminGuard>
-      <AdminLayout>
-        <div className="w-full">
+    <div className="w-full">
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
         <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -1313,7 +1311,5 @@ export default function OrderList() {
         </div>
       </div>
       </div>
-    </AdminLayout>
-  </AdminGuard>
   );
 }
