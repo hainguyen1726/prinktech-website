@@ -903,9 +903,9 @@ export default function WebsiteContent({
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {posts.map(post => (
+            {posts.slice(0, 6).map(post => (
               <div key={post.id} className="glass-card overflow-hidden flex flex-col md:flex-row h-full">
-                <Link href={`/cam-nang/${post.slug}`} className="md:w-2/5 aspect-video md:aspect-auto min-h-[160px] bg-black/10 relative block overflow-hidden group">
+                <Link href={`/${post.slug}`} className="md:w-2/5 aspect-video md:aspect-auto min-h-[160px] bg-black/10 relative block overflow-hidden group">
                   <img
                     src={post.cover_image || 'https://images.unsplash.com/photo-1513151233558-d860c5398176?w=400&auto=format&fit=crop&q=80'}
                     alt={post.title}
@@ -916,14 +916,14 @@ export default function WebsiteContent({
                   <div className="space-y-2">
                     <span className="text-[9px] font-mono text-[var(--text-muted)]/85 font-bold uppercase block">{new Date(post.created_at).toLocaleDateString('vi-VN')} | {post.author}</span>
                     <h3 className="font-bold text-md text-[var(--foreground)] leading-snug hover:text-[var(--accent)] transition-colors">
-                      <Link href={`/cam-nang/${post.slug}`} className="hover:underline">
+                      <Link href={`/${post.slug}`} className="hover:underline">
                         {post.title}
                       </Link>
                     </h3>
                     <p className="text-xs text-[var(--text-muted)] line-clamp-3 leading-relaxed">{post.summary}</p>
                   </div>
                   <Link
-                    href={`/cam-nang/${post.slug}`}
+                    href={`/${post.slug}`}
                     className="flex items-center gap-1.5 text-xs font-bold text-[var(--accent)] hover:underline inline-flex"
                     aria-label={`Đọc tiếp bài viết: ${post.title}`}
                   >
@@ -933,6 +933,18 @@ export default function WebsiteContent({
               </div>
             ))}
           </div>
+
+          {posts.length > 6 && (
+            <div className="text-center pt-6">
+              <Link
+                href="/bai-viet"
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[var(--accent)] hover:opacity-90 text-white font-extrabold text-sm shadow-md transition-all group cursor-pointer"
+              >
+                Xem tất cả bài viết
+                <ChevronRight size={16} className="group-hover:translate-x-1 transition-transform" />
+              </Link>
+            </div>
+          )}
         </div>
       </section>
 
