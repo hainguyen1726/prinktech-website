@@ -767,10 +767,8 @@ export default function CustomerList() {
   };
 
   return (
-    <div className="w-full">
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
-        <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="w-full px-2 sm:px-4 py-6 sm:py-8">
+      <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <h1 className="text-xl sm:text-3xl font-black text-slate-900 tracking-tight">Quản Lý Khách Hàng</h1>
             <p className="text-slate-500 text-xs sm:text-sm mt-1 font-medium">
@@ -1245,7 +1243,6 @@ export default function CustomerList() {
             </div>
           </div>
         )}
-        </div>
-        </div>
+      </div>
   );
 }

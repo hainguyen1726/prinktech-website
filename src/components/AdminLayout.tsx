@@ -160,7 +160,7 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
       </header>
 
       {/* Main Body Grid */}
-      <div className="flex-1 flex flex-col lg:flex-row w-full max-w-7xl mx-auto p-4 lg:p-6 gap-6 z-10 pb-20 lg:pb-6">
+      <div className="flex-1 flex flex-col lg:flex-row w-full max-w-full p-4 lg:p-6 gap-6 z-10 pb-20 lg:pb-6">
         
         {/* Sidebar Nav */}
         <aside className="w-full lg:w-60 shrink-0">
