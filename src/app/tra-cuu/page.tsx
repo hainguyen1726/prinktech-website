@@ -501,7 +501,7 @@ function TraCuuContent() {
                             href={CARRIER_LABELS[order.shipping_carrier || '']?.link(order.tracking_number)}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="px-4 py-2 rounded-lg bg-purple-650 hover:bg-purple-550 text-white text-xs font-bold shadow transition-all duration-150 inline-block text-center cursor-pointer"
+                            className="px-4 py-2 rounded-lg bg-[var(--accent)] hover:opacity-90 text-white text-xs font-bold shadow transition-all duration-150 inline-block text-center cursor-pointer"
                           >
                             Theo dõi hành trình 🌐
                           </a>
