@@ -6,6 +6,7 @@ import AdminLayout from '@/components/AdminLayout';
 import {
   ChevronDown,
   ChevronRight,
+  ChevronLeft,
   Search,
   Phone,
   MapPin,
@@ -132,6 +133,25 @@ export default function CustomerList() {
   const [localSearchTerm, setLocalSearchTerm] = useState('');
   const [page, setPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
+  const totalPages = Math.ceil(totalCount / 20);
+
+  // Helper cho phân trang thu gọn thông minh
+  const getPageNumbers = (currentPage: number, totalPages: number): (number | string)[] => {
+    const pages: (number | string)[] = [];
+    if (totalPages <= 7) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else {
+      if (currentPage <= 4) {
+        pages.push(1, 2, 3, 4, 5, '...', totalPages);
+      } else if (currentPage >= totalPages - 3) {
+        pages.push(1, '...', totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
+      } else {
+        pages.push(1, '...', currentPage - 1, currentPage, currentPage + 1, '...', totalPages);
+      }
+    }
+    return pages;
+  };
+
   const [activeTheme, setActiveTheme] = useState<'tech' | 'elegant'>('elegant');
   
   const [activeCreateForm, setActiveCreateForm] = useState<string | null>(null);
@@ -1183,6 +1203,45 @@ export default function CustomerList() {
                   })}
                 </tbody>
               </table>
+            </div>
+          </div>
+        )}
+
+        {/* Phân trang */}
+        {!loading && totalCount > 20 && (
+          <div className="flex flex-col sm:flex-row justify-between items-center mt-6 pt-4 border-t border-slate-200 text-xs text-slate-500 font-medium gap-3">
+            <span>Hiển thị {(page - 1) * 20 + 1} - {Math.min(page * 20, totalCount)} trong tổng số {totalCount} khách hàng</span>
+            <div className="flex items-center gap-1">
+              <button
+                disabled={page === 1}
+                onClick={() => setPage(p => Math.max(1, p - 1))}
+                className="p-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 disabled:opacity-40 disabled:hover:bg-transparent transition cursor-pointer flex items-center justify-center dark:border-slate-800"
+              >
+                <ChevronLeft size={16} />
+              </button>
+              {getPageNumbers(page, totalPages).map((pNo, i) => (
+                <button
+                  key={i}
+                  disabled={pNo === '...'}
+                  onClick={() => typeof pNo === 'number' && setPage(pNo)}
+                  className={`w-8 h-8 rounded-lg text-xs font-semibold transition ${
+                    pNo === '...' ? 'cursor-default text-slate-400 bg-transparent' : 'cursor-pointer'
+                  } ${
+                    page === pNo 
+                      ? 'bg-amber-750 text-white shadow-sm font-bold border-transparent' 
+                      : pNo === '...' ? 'border-transparent' : 'border border-slate-200 hover:bg-slate-50 dark:border-slate-800'
+                  }`}
+                >
+                  {pNo}
+                </button>
+              ))}
+              <button
+                disabled={page === totalPages}
+                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                className="p-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 disabled:opacity-40 disabled:hover:bg-transparent transition cursor-pointer flex items-center justify-center dark:border-slate-800"
+              >
+                <ChevronRight size={16} />
+              </button>
             </div>
           </div>
         )}
