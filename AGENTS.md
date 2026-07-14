@@ -29,6 +29,10 @@ Dự án này đã được Audit SEO hoàn chỉnh vào ngày 10/07/2026. Các 
 
 ## 6. Tuân thủ Kế hoạch SEO hàng ngày (Daily SEO Execution Plan)
 - **Bắt buộc**: Khi thực hiện viết nội dung mới, tối ưu hóa on-page, hoặc đi link cho website Prink Tech, AI Agent bắt buộc phải đối chiếu và thực thi theo đúng lộ trình công việc hàng ngày trong [daily_seo_execution_plan.md](file:///d:/16.%20Code/32-website-prinktech/daily_seo_execution_plan.md).
+- **Tần suất & Khung giờ**: Đăng **3 bài viết chuẩn SEO/ngày** vào các thời điểm:
+  - **Sáng (8h00)**: Bài viết tập trung từ khóa hạt giống/giao dịch.
+  - **Trưa (12h00)**: Bài viết tập trung từ khóa thông tin/so sánh/tư vấn (bài viết mới bổ sung).
+  - **Chiều/Tối (18h00)**: Bài viết chia sẻ ý tưởng/thương hiệu.
 - **Quy tắc**: Mỗi bài viết mới được đăng lên phải tuân thủ đầy đủ checklist:
   - Độ dài nội dung đạt từ 800 - 1200 từ, headings phân cấp logic H1->H3.
   - Tối ưu hóa ảnh minh họa (nén định dạng `.webp` dưới 100KB, alt mô tả chứa từ khóa đích tự nhiên).

@@ -6,6 +6,10 @@ Kế hoạch này phân bổ chi tiết công việc hàng ngày trong 4 tuần 
 
 ## 📌 Nguyên Tắc Triển Khai Nội Dung & Kỹ Thuật (Chuẩn SEO)
 
+- **Tần suất đăng bài:** Đăng **3 bài viết chuẩn SEO/ngày** vào các khung giờ vàng:
+  - **Sáng (8h00)**: 1 bài viết phủ sóng từ khóa hạt giống/giao dịch.
+  - **Trưa (12h00)**: 1 bài viết tối ưu từ khóa thông tin/so sánh/tư vấn tiêu dùng.
+  - **Chiều/Tối (18h00)**: 1 bài viết chia sẻ ý tưởng/định vị thương hiệu.
 - **Mỗi bài viết:** Độ dài từ **800 - 1200 từ**. Cấu trúc rõ ràng H1 $\rightarrow$ H2 $\rightarrow$ H3.
 - **Hình ảnh:** Tối thiểu **3 - 5 hình ảnh thực tế** (kích thước chuẩn 800x600px hoặc 1200x900px, dung lượng dưới 100KB, định dạng `.webp`). Tất cả hình ảnh phải có thẻ `alt` chứa từ khóa đích một cách tự nhiên.
 - **Liên kết nội bộ (Internal Link):** Luôn chèn **1 - 2 liên kết** từ các bài blog thông tin trỏ về Landing Page dịch vụ tương ứng với anchor text chính xác.
