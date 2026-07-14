@@ -10,6 +10,28 @@ const supabase = createClient(
   { db: { schema: 'printing' } }
 );
 
+function mapLegacyToRetailStatus(legacyStatus: string): string {
+  switch (legacyStatus) {
+    case 'pending_file':
+    case 'rejected_file':
+      return 'pending';
+    case 'pending_print':
+      return 'confirmed';
+    case 'printing':
+    case 'processing':
+      return 'printing';
+    case 'pending_delivery':
+    case 'delivering':
+      return 'shipped';
+    case 'completed':
+      return 'delivered';
+    case 'cancelled':
+      return 'cancelled';
+    default:
+      return 'pending';
+  }
+}
+
 function generateOrderNumber(): string {
   const now = new Date();
   const date = now.toISOString().slice(0, 10).replace(/-/g, '');
@@ -124,6 +146,11 @@ export async function GET(req: NextRequest) {
         }
       ];
 
+      const itemSubtotal = Number(o.total_amount) || 0;
+      const shippingFee = Number(o.shipping_cost) || 0;
+      const discount = Number(o.discount_amount) || 0;
+      const total = itemSubtotal + shippingFee - discount;
+
       return {
         id: o.id,
         order_number: o.order_code,
@@ -133,12 +160,12 @@ export async function GET(req: NextRequest) {
         customer_email: partner.email || '',
         customer_note: o.note || '',
         items: items,
-        subtotal: (o.unit_price || 0) * (o.quantity_actual || 1),
-        shipping_fee: o.shipping_cost || 0,
-        discount: o.discount_amount || 0,
-        total: o.total_amount || 0,
-        free_shipping: o.shipping_cost === 0,
-        status: o.status || 'processing',
+        subtotal: itemSubtotal,
+        shipping_fee: shippingFee,
+        discount: discount,
+        total: total,
+        free_shipping: shippingFee === 0,
+        status: mapLegacyToRetailStatus(o.status || 'processing'),
         payment_method: 'cod',
         payment_status: o.payment_status || 'unpaid',
         design_url: o.design_link,

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
+import AdminLayout from '@/components/AdminLayout';
 import {
   ChevronDown,
   ChevronRight,
@@ -747,67 +748,8 @@ export default function CustomerList() {
 
   return (
     <AdminGuard>
-      <div className="admin-panel min-h-screen bg-[#f8fafc] text-slate-900 transition-colors duration-300">
-      {/* Header Admin Nav */}
-      <nav className="admin-header sticky top-0 z-40 border-b border-slate-200 bg-white/90 backdrop-blur-xl shadow-xs">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Link
-              href="/admin/website"
-              className="flex items-center gap-1.5 text-slate-600 hover:text-amber-700 transition-colors text-sm font-semibold"
-            >
-              ← <span className="hidden sm:inline">Trang Admin</span><span className="inline sm:hidden">Admin</span>
-            </Link>
-            <span className="hidden sm:inline text-slate-300">/</span>
-            <span className="hidden sm:inline text-slate-950 font-black text-sm">Khách hàng</span>
-          </div>
-
-          {/* Top Admin Quick Navigation Menu */}
-          <div className="flex items-center gap-1 sm:gap-2">
-            <div className="hidden md:flex items-center gap-1 bg-slate-100 border border-slate-200 rounded-lg p-1 mr-1">
-              <button
-                onClick={() => changeTheme('tech')}
-                className={`px-2.5 py-1 rounded text-[11px] font-bold transition-all cursor-pointer ${
-                  activeTheme === 'tech'
-                    ? 'bg-purple-650 text-white shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
-              >
-                Tối
-              </button>
-              <button
-                onClick={() => changeTheme('elegant')}
-                className={`px-2.5 py-1 rounded text-[11px] font-bold transition-all cursor-pointer ${
-                  activeTheme === 'elegant'
-                    ? 'bg-amber-700 text-white shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
-              >
-                Sáng
-              </button>
-            </div>
-
-            <Link
-              href="/admin/website"
-              className="hidden md:inline-flex px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold text-slate-700 hover:bg-slate-100 transition-all"
-            >
-              🖥️ <span className="hidden sm:inline">Website</span>
-            </Link>
-            <Link
-              href="/admin/khach-hang"
-              className="hidden md:inline-flex px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-700 text-white shadow-xs transition-all"
-            >
-              👥 <span className="hidden sm:inline">Khách</span>
-            </Link>
-            <Link
-              href="/admin/don-hang"
-              className="hidden md:inline-flex px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold text-slate-700 hover:bg-slate-100 transition-all"
-            >
-              📦 <span className="hidden sm:inline">Đơn Web</span>
-            </Link>
-          </div>
-        </div>
-      </nav>
+      <AdminLayout>
+        <div className="w-full">
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -1246,8 +1188,9 @@ export default function CustomerList() {
             </div>
           </div>
         )}
-      </div>
-    </div>
+        </div>
+        </div>
+      </AdminLayout>
     </AdminGuard>
   );
 }

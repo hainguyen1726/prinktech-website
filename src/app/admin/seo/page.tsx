@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import AdminLayout from '@/components/AdminLayout';
 import { 
   BarChart, ArrowLeft, CheckCircle2, AlertTriangle, Info, Loader2, RefreshCw, 
   Globe, PlusCircle, Check, X, ShieldAlert, ChevronDown, ChevronUp, LogOut,
@@ -802,56 +803,23 @@ export default function AdminSEOAuditPage() {
   const unresolvedIssues = totalIssues - resolvedIssues;
 
   return (
-    <div className="admin-panel min-h-screen bg-[#f1f5f9] text-slate-800 font-sans antialiased pb-24 relative">
-      {/* Background Glow Decorations */}
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl pointer-events-none"></div>
-      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none"></div>
+    <AdminLayout>
+      <div className="relative w-full pb-12">
+        {/* Background Glow Decorations */}
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl pointer-events-none"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none"></div>
 
-      {/* Toast Alert */}
-      {toast.text && (
-        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2.5 px-5 py-3 rounded-xl border shadow-xl bg-white border-slate-200 text-slate-800">
-          {toast.type === 'success' ? <CheckCircle2 size={16} className="text-emerald-600" /> : <AlertTriangle size={16} className="text-rose-600" />}
-          <span className="text-xs font-bold">{toast.text}</span>
-        </div>
-      )}
+        {/* Toast Alert */}
+        {toast.text && (
+          <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2.5 px-5 py-3 rounded-xl border shadow-xl bg-white border-slate-200 text-slate-800">
+            {toast.type === 'success' ? <CheckCircle2 size={16} className="text-emerald-600" /> : <AlertTriangle size={16} className="text-rose-600" />}
+            <span className="text-xs font-bold">{toast.text}</span>
+          </div>
+        )}
 
-      {/* TOP HEADER */}
-      <header className="admin-header rounded-none border-0 border-b border-slate-800 py-3 px-4 sm:py-4 sm:px-6 sticky top-0 z-30 bg-[#0d1117] flex justify-between items-center w-full shadow-md text-slate-200">
-        <div className="flex items-center gap-2 sm:gap-3">
-          <Link 
-            href="/admin/website" 
-            className="flex items-center justify-center w-8 h-8 rounded-lg bg-slate-800 border border-slate-700 text-slate-400 hover:text-slate-100 hover:bg-slate-700 transition"
-            title="Quay lại trang quản trị chính"
-          >
-            <ArrowLeft size={16} />
-          </Link>
-          <img src="/logo-horizontal.png" alt="PrinK Tech" className="h-7 sm:h-10 object-contain" />
-          <span className="hidden md:block h-4 w-px bg-slate-700"></span>
-          <h2 className="hidden md:flex font-medium text-sm tracking-wider text-white uppercase items-center gap-1.5">
-            <BarChart size={18} className="text-teal-400" />
-            SEO Audit Center
-          </h2>
-        </div>
-        <div className="flex items-center gap-2 sm:gap-4">
-          <span className="hidden sm:inline text-xs font-medium text-slate-300">
-            Chào, <strong className="text-white font-medium">{adminUser?.name || 'Admin'}</strong>
-          </span>
-          <Link href="/" target="_blank" className="text-xs font-medium text-teal-400 hover:text-teal-300 transition flex items-center gap-1">
-            <Globe size={14} /> <span className="hidden sm:inline">Xem Website</span>
-          </Link>
-          <button 
-            onClick={handleLogout} 
-            className="p-1.5 sm:p-2 bg-slate-850 hover:bg-slate-800 text-rose-400 border border-slate-700 rounded-lg transition cursor-pointer" 
-            title="Đăng xuất"
-          >
-            <LogOut size={14} />
-          </button>
-        </div>
-      </header>
-
-      {/* TABS NAVIGATION BAR */}
-      <div className="bg-white border-b border-slate-200 shadow-sm sticky top-[73px] z-20">
-        <div className="max-w-full px-6 mx-auto flex items-center gap-4">
+        {/* TABS NAVIGATION BAR */}
+        <div className="bg-white border border-slate-200 rounded-xl shadow-xs sticky top-[53px] lg:top-[64px] z-20 mb-6">
+          <div className="max-w-full px-6 mx-auto flex items-center gap-4">
           <button
             onClick={() => setActiveTab('technical')}
             className={`py-4 px-4 text-xs font-medium uppercase tracking-wider border-b-2 transition flex items-center gap-2 ${
@@ -1239,7 +1207,7 @@ export default function AdminSEOAuditPage() {
                                     <td className="p-4">
                                       {/* Cỡ chữ to text-base và bỏ font-bold đi */}
                                       <span className={`text-base leading-normal font-normal ${
-                                        issue.resolved ? 'text-slate-400 line-through' : 'text-slate-900'
+                                        issue.resolved ? 'text-slate-500 line-through' : 'text-slate-900'
                                       }`}>
                                         {issue.title}
                                       </span>
@@ -2163,6 +2131,7 @@ const auth = new google.auth.GoogleAuth({
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </AdminLayout>
   );
 }

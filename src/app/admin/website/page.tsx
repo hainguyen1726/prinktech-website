@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useEffect, useState, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import AdminLayout from '@/components/AdminLayout';
 import { 
   FileText, Layers, Calculator, PhoneCall, Plus, Edit2, Trash2, Save, LogOut, Globe,
   CheckCircle, Loader2, X, PlusCircle, ArrowUpRight, Check, RefreshCw, AlertCircle, Video,
@@ -71,14 +72,25 @@ interface Video {
   created_at: string;
 }
 
-export default function AdminWebsitePage() {
+
+
+function AdminWebsiteContent() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [authorized, setAuthorized] = useState(false);
   const [adminUser, setAdminUser] = useState<any>(null);
 
-  // Tabs: 'posts' | 'products' | 'pricing' | 'quotes' | 'videos'
   const [activeTab, setActiveTab] = useState<'posts' | 'products' | 'pricing' | 'quotes' | 'videos'>('posts');
+
+  const searchParams = useSearchParams();
+
+  // Sync activeTab with URL search parameters (?tab=)
+  useEffect(() => {
+    const tabParam = searchParams.get('tab');
+    if (tabParam === 'posts' || tabParam === 'products' || tabParam === 'pricing' || tabParam === 'quotes' || tabParam === 'videos') {
+      setActiveTab(tabParam);
+    }
+  }, [searchParams]);
 
   // Content States
   const [posts, setPosts] = useState<Post[]>([]);
@@ -644,141 +656,24 @@ export default function AdminWebsitePage() {
   if (!authorized) return null;
 
   return (
-    <div className="admin-panel flex-1 flex flex-col min-h-screen bg-[#f1f5f9] text-slate-900 relative">
-      {/* Glow decorations */}
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl pointer-events-none"></div>
-      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none"></div>
+    <AdminLayout activeTab={activeTab} setActiveTab={setActiveTab}>
+      <div className="relative w-full">
+        {/* Glow decorations */}
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl pointer-events-none"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none"></div>
 
-      {/* Toast Notification */}
-      {toastMsg.text && (
-        <div className={`fixed top-6 right-6 z-50 border p-4 rounded-xl shadow-2xl flex items-center gap-2.5 animate-slideIn ${
-          toastMsg.type === 'success' ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-rose-50 border-rose-200 text-rose-800'
-        }`}>
-          <AlertCircle size={16} />
-          <span className="text-xs font-bold">{toastMsg.text}</span>
-        </div>
-      )}
-
-      {/* Top Header */}
-      <header className="admin-header glass-card rounded-none border-0 border-b border-slate-200 py-3 px-4 sm:py-4 sm:px-6 sticky top-0 z-30 bg-white/90 backdrop-blur-md flex justify-between items-center w-full">
-        <div className="flex items-center gap-2 sm:gap-3">
-          <img src="/logo-horizontal-dark-text.png" alt="PrinK Tech" className="h-7 sm:h-10 object-contain" />
-          <span className="hidden md:block h-4 w-px bg-slate-200"></span>
-          <h2 className="hidden md:block font-bold text-sm tracking-wider text-slate-800 uppercase">Quản trị Website PrinK Tech</h2>
-        </div>
-        <div className="flex items-center gap-2 sm:gap-4">
-          <span className="hidden sm:inline text-xs font-semibold text-slate-600">Chào, <strong className="text-slate-900">{adminUser?.name || 'Admin'}</strong></span>
-          <Link href="/" target="_blank" className="text-xs font-bold text-blue-600 hover:text-blue-700 transition flex items-center gap-1">
-            <Globe size={14} /> <span className="hidden sm:inline">Xem Website</span>
-          </Link>
-          <button onClick={handleLogout} className="p-1.5 sm:p-2 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 rounded-lg transition cursor-pointer" title="Đăng xuất">
-            <LogOut size={14} />
-          </button>
-        </div>
-      </header>
-
-      {/* Content wrapper */}
-      <div className="flex-1 flex flex-col lg:flex-row w-full max-w-7xl mx-auto p-4 lg:p-6 gap-6 z-10">
-        
-        {/* Sidebar Nav */}
-        <aside className="w-full lg:w-60 shrink-0">
-          <div className="glass-card p-3 lg:p-4 flex flex-row lg:flex-col overflow-x-auto lg:overflow-x-visible gap-2 lg:gap-1.5 bg-slate-950/20 scrollbar-none whitespace-nowrap">
-            <Link
-              href="/admin/don-hang"
-              className="w-auto lg:w-full shrink-0 flex items-center gap-2 lg:gap-2.5 px-3 lg:px-4 py-2 lg:py-3 rounded-lg text-xs font-bold text-left text-slate-400 hover:text-slate-200 hover:bg-slate-900/30 border border-transparent transition cursor-pointer"
-            >
-              <ShoppingBag size={16} className="text-emerald-400" /> Quản lý Đơn hàng
-            </Link>
-
-            <Link
-              href="/admin/khach-hang"
-              className="w-auto lg:w-full shrink-0 flex items-center gap-2 lg:gap-2.5 px-3 lg:px-4 py-2 lg:py-3 rounded-lg text-xs font-bold text-left text-slate-400 hover:text-slate-200 hover:bg-slate-900/30 border border-transparent transition cursor-pointer"
-            >
-              <Users size={16} className="text-purple-400" /> Quản lý Khách hàng
-            </Link>
-
-            <span className="hidden lg:block h-px bg-slate-800/80 my-2"></span>
-
-            <button
-              onClick={() => setActiveTab('posts')}
-              className={`w-auto lg:w-full shrink-0 flex items-center gap-2 lg:gap-2.5 px-3 lg:px-4 py-2 lg:py-3 rounded-lg text-xs font-bold text-left transition cursor-pointer ${
-                activeTab === 'posts'
-                  ? 'bg-sky-500/10 text-sky-400 border border-sky-500/20'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/30 border border-transparent'
-              }`}
-            >
-              <FileText size={16} /> Quản lý Bài viết
-            </button>
-
-            <Link
-              href="/admin/viet-bai"
-              className="w-auto lg:w-full shrink-0 flex items-center gap-2 lg:gap-2.5 px-3 lg:px-4 py-2 lg:py-3 rounded-lg text-xs font-bold text-left text-slate-400 hover:text-slate-200 hover:bg-slate-900/30 border border-transparent transition cursor-pointer"
-            >
-              <PenTool size={16} className="text-amber-400" /> Viết bài (Công cụ SEO)
-            </Link>
-
-            <Link
-              href="/admin/seo"
-              className="w-auto lg:w-full shrink-0 flex items-center gap-2 lg:gap-2.5 px-3 lg:px-4 py-2 lg:py-3 rounded-lg text-xs font-bold text-left text-slate-400 hover:text-slate-200 hover:bg-slate-900/30 border border-transparent transition cursor-pointer"
-            >
-              <BarChart size={16} className="text-teal-400" /> SEO Audit Center
-            </Link>
-
-
-            <button
-              onClick={() => setActiveTab('products')}
-              className={`w-auto lg:w-full shrink-0 flex items-center gap-2 lg:gap-2.5 px-3 lg:px-4 py-2 lg:py-3 rounded-lg text-xs font-bold text-left transition cursor-pointer ${
-                activeTab === 'products'
-                  ? 'bg-sky-500/10 text-sky-400 border border-sky-500/20'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/30 border border-transparent'
-              }`}
-            >
-              <Layers size={16} /> Quản lý Sản phẩm
-            </button>
-            <button
-              onClick={() => setActiveTab('pricing')}
-              className={`w-auto lg:w-full shrink-0 flex items-center gap-2 lg:gap-2.5 px-3 lg:px-4 py-2 lg:py-3 rounded-lg text-xs font-bold text-left transition cursor-pointer ${
-                activeTab === 'pricing'
-                  ? 'bg-sky-500/10 text-sky-400 border border-sky-500/20'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/30 border border-transparent'
-              }`}
-            >
-              <Calculator size={16} /> Cấu hình Bảng giá
-            </button>
-            <button
-              onClick={() => setActiveTab('quotes')}
-              className={`w-auto lg:w-full shrink-0 flex items-center gap-2 lg:gap-2.5 px-3 lg:px-4 py-2 lg:py-3 rounded-lg text-xs font-bold text-left transition cursor-pointer ${
-                activeTab === 'quotes'
-                  ? 'bg-sky-500/10 text-sky-400 border border-sky-500/20'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/30 border border-transparent'
-              }`}
-            >
-              <PhoneCall size={16} /> Yêu cầu Báo giá
-            </button>
-            <button
-              onClick={() => setActiveTab('videos')}
-              className={`w-auto lg:w-full shrink-0 flex items-center gap-2 lg:gap-2.5 px-3 lg:px-4 py-2 lg:py-3 rounded-lg text-xs font-bold text-left transition cursor-pointer ${
-                activeTab === 'videos'
-                  ? 'bg-sky-500/10 text-sky-400 border border-sky-500/20'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/30 border border-transparent'
-              }`}
-            >
-              <Video size={16} /> Quản lý Video
-            </button>
-
-            <span className="hidden lg:block h-px bg-slate-800/80 my-2"></span>
-            
-            <Link
-              href="/marketing"
-              className="w-auto lg:w-full shrink-0 flex items-center gap-2 lg:gap-2.5 px-3 lg:px-4 py-2 lg:py-3 rounded-lg text-xs font-bold text-left text-slate-400 hover:text-slate-250 hover:bg-slate-900/30 border border-transparent transition cursor-pointer"
-            >
-              <BarChart size={16} className="text-sky-400" /> Kênh Marketing Ads
-            </Link>
+        {/* Toast Notification */}
+        {toastMsg.text && (
+          <div className={`fixed top-6 right-6 z-50 border p-4 rounded-xl shadow-2xl flex items-center gap-2.5 animate-slideIn ${
+            toastMsg.type === 'success' ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-rose-50 border-rose-200 text-rose-800'
+          }`}>
+            <AlertCircle size={16} />
+            <span className="text-xs font-bold">{toastMsg.text}</span>
           </div>
-        </aside>
+        )}
 
         {/* Main Section */}
-        <main className="flex-1 min-w-0">
+        <div className="space-y-6">
           
           {/* TAB 1: POSTS */}
           {activeTab === 'posts' && (
@@ -1458,7 +1353,6 @@ export default function AdminWebsitePage() {
             </div>
           )}
 
-        </main>
       </div>
 
       {/* DYNAMIC SIDE DRAWER PANEL (Tạo/Sửa Bài viết & Sản phẩm) */}
@@ -1767,10 +1661,22 @@ export default function AdminWebsitePage() {
             </form>
           )}
 
-        </div>
-
       </div>
+      </div>
+      </div>
+    </AdminLayout>
+  );
+}
 
-    </div>
+export default function AdminWebsitePage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-[#f8fafc] dark:bg-[#070b13] flex flex-col items-center justify-center text-slate-500 dark:text-slate-400">
+        <Loader2 className="animate-spin text-sky-500" size={36} />
+        <p className="mt-4 text-[10px] uppercase font-bold tracking-wider text-slate-400 dark:text-slate-500">Đang tải trang quản trị...</p>
+      </div>
+    }>
+      <AdminWebsiteContent />
+    </Suspense>
   );
 }

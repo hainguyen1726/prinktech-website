@@ -3,6 +3,7 @@
 import React, { Suspense, useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import AdminLayout from '@/components/AdminLayout';
 import {
   ArrowLeft, Save, Eye, Globe, X, CheckCircle, AlertCircle,
   Bold, Italic, Underline, List, ListOrdered, Heading1, Heading2,
@@ -375,11 +376,12 @@ function VietBaiContent() {
   if (!authorized) return null;
 
   return (
-    <div className="admin-panel min-h-screen bg-[#f8fafc] text-slate-900 flex flex-col">
+    <AdminLayout>
+      <div className="relative w-full pb-10">
 
-      {/* Top Bar */}
-      <header className="admin-header sticky top-0 z-50 border-b border-slate-200 bg-white/95 backdrop-blur-md">
-        <div className="max-w-[1600px] mx-auto px-4 py-3 flex items-center justify-between gap-4">
+        {/* Top Bar (Sticky tool bar below main header) */}
+        <div className="sticky top-[53px] lg:top-[64px] z-20 border border-slate-200 bg-white/95 backdrop-blur-md rounded-xl p-3 mb-6 shadow-xs">
+          <div className="max-w-[1600px] mx-auto flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <Link href="/admin/website" className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-500 hover:text-slate-900 transition">
               <ArrowLeft size={18} />
@@ -436,7 +438,7 @@ function VietBaiContent() {
             </button>
           </div>
         </div>
-      </header>
+      </div>
 
       {error && (
         <div className="bg-red-50 border-b border-red-200 px-6 py-2 text-xs text-red-600 flex items-center gap-2">
@@ -768,7 +770,8 @@ function VietBaiContent() {
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </AdminLayout>
   );
 }
 
