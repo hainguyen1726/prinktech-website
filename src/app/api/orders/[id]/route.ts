@@ -23,30 +23,102 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
   return NextResponse.json({ data });
 }
 
-// PATCH /api/orders/[id] — cập nhật trạng thái
+// PATCH /api/orders/[id] — cập nhật trạng thái & thông tin vận chuyển
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const body = await req.json();
-  const { status, payment_status } = body;
+  const { status, payment_status, shipping_carrier, tracking_number } = body;
 
-  const updates: Record<string, unknown> = {};
-  if (status) updates.status = status;
-  if (payment_status) updates.payment_status = payment_status;
-
-  // Tự động set timestamp khi thay đổi trạng thái
-  if (status === 'confirmed') updates.confirmed_at = new Date().toISOString();
-  if (status === 'shipped')   updates.shipped_at = new Date().toISOString();
-  if (status === 'delivered') updates.delivered_at = new Date().toISOString();
-
-  const { data, error } = await supabase
+  // Kiểm tra đơn hàng thuộc bảng nào (retail_orders hay orders)
+  const { data: isRetail } = await supabase
     .from('retail_orders')
-    .update(updates)
+    .select('id')
     .eq('id', id)
-    .select()
-    .single();
+    .maybeSingle();
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json({ data });
+  let res;
+
+  if (isRetail) {
+    const updates: Record<string, unknown> = {};
+    if (status) updates.status = status;
+    if (payment_status) updates.payment_status = payment_status;
+    if (shipping_carrier !== undefined) updates.shipping_carrier = shipping_carrier;
+    if (tracking_number !== undefined) updates.tracking_number = tracking_number;
+
+    // Tự động set timestamp khi thay đổi trạng thái
+    if (status === 'confirmed') updates.confirmed_at = new Date().toISOString();
+    if (status === 'shipped')   updates.shipped_at = new Date().toISOString();
+    if (status === 'delivered') updates.delivered_at = new Date().toISOString();
+
+    res = await supabase
+      .from('retail_orders')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single();
+  } else {
+    const updates: Record<string, unknown> = {};
+    if (status) updates.status = status;
+    if (payment_status) updates.payment_status = payment_status;
+
+    // Tự động set timestamp khi thay đổi trạng thái
+    if (status === 'confirmed') updates.confirmed_at = new Date().toISOString();
+    if (status === 'shipped')   updates.shipped_at = new Date().toISOString();
+    if (status === 'delivered') updates.delivered_at = new Date().toISOString();
+
+    // Xử lý cập nhật note cho shipping_carrier & tracking_number
+    if (shipping_carrier !== undefined || tracking_number !== undefined) {
+      const { data: oldOrder } = await supabase
+        .from('orders')
+        .select('note')
+        .eq('id', id)
+        .maybeSingle();
+      
+      let note = oldOrder?.note || '';
+      
+      if (shipping_carrier !== undefined) {
+        const carrierStr = shipping_carrier ? String(shipping_carrier).trim() : '';
+        const carrierRegex = /- Đơn vị vận chuyển:\s*[^\n\r]*/g;
+        if (carrierStr) {
+          const newLine = `- Đơn vị vận chuyển: ${carrierStr}`;
+          if (carrierRegex.test(note)) {
+            note = note.replace(carrierRegex, newLine);
+          } else {
+            note = note + (note ? '\n' : '') + newLine;
+          }
+        } else {
+          note = note.replace(carrierRegex, '').trim();
+        }
+      }
+      
+      if (tracking_number !== undefined) {
+        const trackingStr = tracking_number ? String(tracking_number).trim() : '';
+        const trackingRegex = /- Mã vận đơn:\s*[^\n\r]*/g;
+        if (trackingStr) {
+          const newLine = `- Mã vận đơn: ${trackingStr}`;
+          if (trackingRegex.test(note)) {
+            note = note.replace(trackingRegex, newLine);
+          } else {
+            note = note + (note ? '\n' : '') + newLine;
+          }
+        } else {
+          note = note.replace(trackingRegex, '').trim();
+        }
+      }
+      
+      updates.note = note.trim();
+    }
+
+    res = await supabase
+      .from('orders')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single();
+  }
+
+  if (res.error) return NextResponse.json({ error: res.error.message }, { status: 500 });
+  return NextResponse.json({ data: res.data });
 }
 
 // DELETE /api/orders/[id]

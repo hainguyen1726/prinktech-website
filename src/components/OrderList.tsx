@@ -67,6 +67,20 @@ export default function OrderList() {
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [activeTheme, setActiveTheme] = useState<'tech' | 'elegant'>('elegant');
 
+  // States cho cập nhật vận chuyển
+  const [shippingCarrierInput, setShippingCarrierInput] = useState('');
+  const [trackingNumberInput, setTrackingNumberInput] = useState('');
+
+  useEffect(() => {
+    if (selectedOrder) {
+      setShippingCarrierInput(selectedOrder.shipping_carrier || '');
+      setTrackingNumberInput(selectedOrder.tracking_number || '');
+    } else {
+      setShippingCarrierInput('');
+      setTrackingNumberInput('');
+    }
+  }, [selectedOrder]);
+
   // States cho Form tạo đơn hàng mới
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [customerTab, setCustomerTab] = useState<'existing' | 'new'>('existing');
@@ -377,12 +391,11 @@ export default function OrderList() {
         body: JSON.stringify({ status: newStatus }),
       });
       if (!res.ok) throw new Error('Cập nhật thất bại');
-      const updated = await res.json();
       
       // Update state
-      setOrders(prev => prev.map(o => o.id === orderId ? updated.data : o));
+      setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: newStatus } : o));
       if (selectedOrder?.id === orderId) {
-        setSelectedOrder(updated.data);
+        setSelectedOrder(prev => prev ? { ...prev, status: newStatus } : null);
       }
     } catch (err) {
       alert((err as Error).message);
@@ -400,13 +413,47 @@ export default function OrderList() {
         body: JSON.stringify({ payment_status: newPayStatus }),
       });
       if (!res.ok) throw new Error('Cập nhật thất bại');
-      const updated = await res.json();
       
       // Update state
-      setOrders(prev => prev.map(o => o.id === orderId ? updated.data : o));
+      setOrders(prev => prev.map(o => o.id === orderId ? { ...o, payment_status: newPayStatus } : o));
       if (selectedOrder?.id === orderId) {
-        setSelectedOrder(updated.data);
+        setSelectedOrder(prev => prev ? { ...prev, payment_status: newPayStatus } : null);
       }
+    } catch (err) {
+      alert((err as Error).message);
+    } finally {
+      setUpdatingId(null);
+    }
+  };
+
+  const handleShippingUpdate = async (orderId: string) => {
+    setUpdatingId(orderId);
+    try {
+      const res = await fetch(`/api/orders/${orderId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          shipping_carrier: shippingCarrierInput || null,
+          tracking_number: trackingNumberInput || null
+        }),
+      });
+      if (!res.ok) throw new Error('Cập nhật vận chuyển thất bại');
+      
+      // Update state
+      setOrders(prev => prev.map(o => o.id === orderId ? { 
+        ...o, 
+        shipping_carrier: shippingCarrierInput || null, 
+        tracking_number: trackingNumberInput || null 
+      } : o));
+      
+      if (selectedOrder?.id === orderId) {
+        setSelectedOrder(prev => prev ? { 
+          ...prev, 
+          shipping_carrier: shippingCarrierInput || null, 
+          tracking_number: trackingNumberInput || null 
+        } : null);
+      }
+      alert('Cập nhật thông tin vận chuyển thành công!');
     } catch (err) {
       alert((err as Error).message);
     } finally {
@@ -1203,6 +1250,77 @@ export default function OrderList() {
                   <div className="flex justify-between text-sm font-bold pt-1">
                     <span className="text-foreground">Tổng cộng</span>
                     <span className="text-[var(--accent)] tabular-nums">{formatCurrency(selectedOrder.total)}</span>
+                  </div>
+                </div>
+
+                {/* Shipping Details Update (Admin controls) */}
+                <div className="border-b border-card-border pb-4 space-y-3">
+                  <h3 className="text-xs font-bold text-text-muted uppercase tracking-wider">Vận chuyển & Giao nhận</h3>
+                  
+                  <div className="space-y-2.5">
+                    <div>
+                      <label className="block text-[10px] font-bold text-text-muted uppercase mb-1">Đơn vị vận chuyển</label>
+                      <select
+                        value={shippingCarrierInput}
+                        onChange={e => setShippingCarrierInput(e.target.value)}
+                        className="w-full h-9 px-3 rounded-lg border border-card-border bg-background text-foreground text-xs font-semibold focus:outline-none focus:border-[var(--accent)]"
+                      >
+                        <option value="">⚡ Chưa chọn đơn vị vận chuyển</option>
+                        <option value="ghtk">Giao Hàng Tiết Kiệm (GHTK)</option>
+                        <option value="viettelpost">Viettel Post</option>
+                        <option value="ahamove">Ahamove</option>
+                        <option value="grab">Grab Express</option>
+                        <option value="self_pickup">Khách tự lấy tại xưởng</option>
+                        <option value="other">Vận chuyển khác</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] font-bold text-text-muted uppercase mb-1">Mã vận đơn</label>
+                      <input
+                        type="text"
+                        value={trackingNumberInput}
+                        onChange={e => setTrackingNumberInput(e.target.value)}
+                        placeholder="Nhập mã vận đơn (VD: GHTK...)"
+                        className="w-full h-9 px-3 rounded-lg border border-card-border bg-background text-foreground text-xs font-semibold focus:outline-none focus:border-[var(--accent)]"
+                      />
+                      {selectedOrder.tracking_number && (
+                        <div className="text-[11px] font-medium text-text-muted mt-1.5 flex items-center gap-1">
+                          <span>Tra cứu: </span>
+                          {selectedOrder.shipping_carrier === 'ghtk' && (
+                            <a
+                              href={`https://i.ghtk.vn/${selectedOrder.tracking_number}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-blue-500 hover:underline font-bold"
+                            >
+                              🔗 GHTK ({selectedOrder.tracking_number})
+                            </a>
+                          )}
+                          {selectedOrder.shipping_carrier === 'viettelpost' && (
+                            <a
+                              href={`https://viettelpost.com.vn/tra-cuu-hanh-trinh-don-hang?billCode=${selectedOrder.tracking_number}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-blue-500 hover:underline font-bold"
+                            >
+                              🔗 Viettel Post ({selectedOrder.tracking_number})
+                            </a>
+                          )}
+                          {['ghtk', 'viettelpost'].indexOf(selectedOrder.shipping_carrier || '') === -1 && (
+                            <span className="font-bold text-foreground">{selectedOrder.tracking_number}</span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+
+                    <button
+                      onClick={() => handleShippingUpdate(selectedOrder.id)}
+                      disabled={updatingId === selectedOrder.id}
+                      className="w-full h-9 rounded-lg bg-[var(--accent)] hover:bg-[var(--accent)]/90 text-white text-xs font-bold transition flex items-center justify-center gap-1 cursor-pointer disabled:opacity-50"
+                    >
+                      📦 Cập nhật vận chuyển
+                    </button>
                   </div>
                 </div>
 

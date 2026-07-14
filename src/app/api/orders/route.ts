@@ -83,6 +83,8 @@ export async function GET(req: NextRequest) {
       payment_method: o.payment_method || 'cod',
       payment_status: o.payment_status || 'unpaid',
       design_url: o.design_url,
+      shipping_carrier: o.shipping_carrier || null,
+      tracking_number: o.tracking_number || null,
       source: 'web',
       created_at: o.created_at
     }));
@@ -98,11 +100,16 @@ export async function GET(req: NextRequest) {
     const formattedOrders = prinktechOrdersData.map((o: any) => {
       const partner = o.partners || {};
       
-      // Parse file Excel & PDF báo giá từ note
+      // Parse file Excel & PDF báo giá, thông tin vận chuyển từ note
       const excelMatch = o.note?.match(/- Excel Báo giá:\s*(https?:\/\/[^\s\n]+)/);
       const pdfMatch = o.note?.match(/- PDF Báo giá:\s*(https?:\/\/[^\s\n]+)/);
+      const carrierMatch = o.note?.match(/- Đơn vị vận chuyển:\s*([^\n\r]+)/);
+      const trackingMatch = o.note?.match(/- Mã vận đơn:\s*([^\n\r]+)/);
+      
       const excelUrl = excelMatch ? excelMatch[1] : null;
       const pdfUrl = pdfMatch ? pdfMatch[1] : null;
+      const shippingCarrier = carrierMatch ? carrierMatch[1].trim() : null;
+      const trackingNumber = trackingMatch ? trackingMatch[1].trim() : null;
 
       const items = [
         {
@@ -137,6 +144,8 @@ export async function GET(req: NextRequest) {
         design_url: o.design_link,
         quote_excel_url: excelUrl,
         quote_pdf_url: pdfUrl,
+        shipping_carrier: shippingCarrier,
+        tracking_number: trackingNumber,
         source: 'admin',
         created_at: o.created_at
       };
