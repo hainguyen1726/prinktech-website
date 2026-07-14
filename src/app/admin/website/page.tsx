@@ -660,18 +660,18 @@ export default function AdminWebsitePage() {
       )}
 
       {/* Top Header */}
-      <header className="glass-card rounded-none border-0 border-b border-slate-200 py-4 px-6 sticky top-0 z-30 bg-white/90 backdrop-blur-md flex justify-between items-center w-full">
-        <div className="flex items-center gap-3">
-          <img src="/logo-horizontal-dark-text.png" alt="PrinK Tech" className="h-10 object-contain" />
-          <span className="h-4 w-px bg-slate-200"></span>
-          <h2 className="font-bold text-sm tracking-wider text-slate-800 uppercase">Quản trị Website PrinK Tech</h2>
+      <header className="admin-header glass-card rounded-none border-0 border-b border-slate-200 py-3 px-4 sm:py-4 sm:px-6 sticky top-0 z-30 bg-white/90 backdrop-blur-md flex justify-between items-center w-full">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <img src="/logo-horizontal-dark-text.png" alt="PrinK Tech" className="h-7 sm:h-10 object-contain" />
+          <span className="hidden md:block h-4 w-px bg-slate-200"></span>
+          <h2 className="hidden md:block font-bold text-sm tracking-wider text-slate-800 uppercase">Quản trị Website PrinK Tech</h2>
         </div>
-        <div className="flex items-center gap-4">
-          <span className="text-xs font-semibold text-slate-600">Chào, <strong className="text-slate-900">{adminUser?.name || 'Admin'}</strong></span>
+        <div className="flex items-center gap-2 sm:gap-4">
+          <span className="hidden sm:inline text-xs font-semibold text-slate-600">Chào, <strong className="text-slate-900">{adminUser?.name || 'Admin'}</strong></span>
           <Link href="/" target="_blank" className="text-xs font-bold text-blue-600 hover:text-blue-700 transition flex items-center gap-1">
-            <Globe size={14} /> Xem Website
+            <Globe size={14} /> <span className="hidden sm:inline">Xem Website</span>
           </Link>
-          <button onClick={handleLogout} className="p-2 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 rounded-lg transition cursor-pointer" title="Đăng xuất">
+          <button onClick={handleLogout} className="p-1.5 sm:p-2 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 rounded-lg transition cursor-pointer" title="Đăng xuất">
             <LogOut size={14} />
           </button>
         </div>

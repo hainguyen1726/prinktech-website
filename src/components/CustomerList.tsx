@@ -749,7 +749,7 @@ export default function CustomerList() {
     <AdminGuard>
       <div className="admin-panel min-h-screen bg-[#f8fafc] text-slate-900 transition-colors duration-300">
       {/* Header Admin Nav */}
-      <nav className="sticky top-0 z-40 border-b border-slate-200 bg-white/90 backdrop-blur-xl shadow-xs">
+      <nav className="admin-header sticky top-0 z-40 border-b border-slate-200 bg-white/90 backdrop-blur-xl shadow-xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Link
@@ -758,8 +758,8 @@ export default function CustomerList() {
             >
               ← <span className="hidden sm:inline">Trang Admin</span><span className="inline sm:hidden">Admin</span>
             </Link>
-            <span className="text-slate-300">/</span>
-            <span className="text-slate-950 font-black text-sm">Khách hàng</span>
+            <span className="hidden sm:inline text-slate-300">/</span>
+            <span className="hidden sm:inline text-slate-950 font-black text-sm">Khách hàng</span>
           </div>
 
           {/* Top Admin Quick Navigation Menu */}
@@ -789,19 +789,19 @@ export default function CustomerList() {
 
             <Link
               href="/admin/website"
-              className="px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold text-slate-700 hover:bg-slate-100 transition-all"
+              className="hidden md:inline-flex px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold text-slate-700 hover:bg-slate-100 transition-all"
             >
               🖥️ <span className="hidden sm:inline">Website</span>
             </Link>
             <Link
               href="/admin/khach-hang"
-              className="px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-700 text-white shadow-xs transition-all"
+              className="hidden md:inline-flex px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-700 text-white shadow-xs transition-all"
             >
               👥 <span className="hidden sm:inline">Khách</span>
             </Link>
             <Link
               href="/admin/don-hang"
-              className="px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold text-slate-700 hover:bg-slate-100 transition-all"
+              className="hidden md:inline-flex px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold text-slate-700 hover:bg-slate-100 transition-all"
             >
               📦 <span className="hidden sm:inline">Đơn Web</span>
             </Link>

@@ -7,6 +7,10 @@ import { Home, Image, Calculator, Search, ShoppingBag } from 'lucide-react';
 export default function BottomNav() {
   const pathname = usePathname();
 
+  if (pathname?.startsWith('/admin') || pathname === '/login') {
+    return null;
+  }
+
   const navItems = [
     {
       label: 'Trang chủ',

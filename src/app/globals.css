@@ -172,24 +172,24 @@ body:not(.theme-tech):not(.theme-creative) .side-drawer {
 }
 
 /* ── Elegant Dark Header & Nav (Mặc định khi ở theme Elegant sáng) ── */
-header,
-header nav {
+header:not(.admin-header),
+header:not(.admin-header) nav {
   background-color: #1c1917 !important; /* Stone 900 */
   color: #e7e5e4 !important; /* Stone 200 */
   border-color: #2c2520 !important; /* Stone 800 */
 }
-header a,
-header nav a,
-header span,
-header nav span,
-header div.text-foreground,
-header nav div.text-foreground,
-header span.text-foreground,
-header nav span.text-foreground {
+header:not(.admin-header) a,
+header:not(.admin-header) nav a,
+header:not(.admin-header) span,
+header:not(.admin-header) nav span,
+header:not(.admin-header) div.text-foreground,
+header:not(.admin-header) nav div.text-foreground,
+header:not(.admin-header) span.text-foreground,
+header:not(.admin-header) nav span.text-foreground {
   color: #e7e5e4 !important; /* Stone 200 */
 }
-header a:hover,
-header nav a:hover {
+header:not(.admin-header) a:hover,
+header:not(.admin-header) nav a:hover {
   color: #ffffff !important;
 }
 
@@ -219,24 +219,24 @@ header nav a:hover {
 }
 
 /* ── Override for Theme Tech (Tối) ── */
-.theme-tech header,
-.theme-tech header nav {
+.theme-tech header:not(.admin-header),
+.theme-tech header:not(.admin-header) nav {
   background-color: rgba(3, 7, 18, 0.85) !important;
   color: #f8fafc !important;
   border-color: rgba(255, 255, 255, 0.06) !important;
 }
-.theme-tech header a,
-.theme-tech header nav a,
-.theme-tech header span,
-.theme-tech header nav span,
-.theme-tech header div.text-foreground,
-.theme-tech header nav div.text-foreground,
-.theme-tech header span.text-foreground,
-.theme-tech header nav span.text-foreground {
+.theme-tech header:not(.admin-header) a,
+.theme-tech header:not(.admin-header) nav a,
+.theme-tech header:not(.admin-header) span,
+.theme-tech header:not(.admin-header) nav span,
+.theme-tech header:not(.admin-header) div.text-foreground,
+.theme-tech header:not(.admin-header) nav div.text-foreground,
+.theme-tech header:not(.admin-header) span.text-foreground,
+.theme-tech header:not(.admin-header) nav span.text-foreground {
   color: #94a3b8 !important;
 }
-.theme-tech header a:hover,
-.theme-tech header nav a:hover {
+.theme-tech header:not(.admin-header) a:hover,
+.theme-tech header:not(.admin-header) nav a:hover {
   color: #f8fafc !important;
 }
 .theme-tech .btn-primary {
@@ -259,24 +259,24 @@ header nav a:hover {
 }
 
 /* ── Override for Theme Creative (Tối) ── */
-.theme-creative header,
-.theme-creative header nav {
+.theme-creative header:not(.admin-header),
+.theme-creative header:not(.admin-header) nav {
   background-color: rgba(8, 3, 21, 0.85) !important;
   color: #fdfaff !important;
   border-color: rgba(255, 255, 255, 0.07) !important;
 }
-.theme-creative header a,
-.theme-creative header nav a,
-.theme-creative header span,
-.theme-creative header nav span,
-.theme-creative header div.text-foreground,
-.theme-creative header nav div.text-foreground,
-.theme-creative header span.text-foreground,
-.theme-creative header nav span.text-foreground {
+.theme-creative header:not(.admin-header) a,
+.theme-creative header:not(.admin-header) nav a,
+.theme-creative header:not(.admin-header) span,
+.theme-creative header:not(.admin-header) nav span,
+.theme-creative header:not(.admin-header) div.text-foreground,
+.theme-creative header:not(.admin-header) nav div.text-foreground,
+.theme-creative header:not(.admin-header) span.text-foreground,
+.theme-creative header:not(.admin-header) nav span.text-foreground {
   color: #c084fc !important;
 }
-.theme-creative header a:hover,
-.theme-creative header nav a:hover {
+.theme-creative header:not(.admin-header) a:hover,
+.theme-creative header:not(.admin-header) nav a:hover {
   color: #fdfaff !important;
 }
 .theme-creative .btn-primary {
@@ -939,6 +939,116 @@ body.admin-panel {
 .theme-creative .prose th,
 .theme-creative .prose td {
   border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+/* ── Override cho trang Admin khi ở Theme Tech (Tối) hoặc Creative (Tối) ── */
+.theme-tech .admin-panel,
+.theme-creative .admin-panel {
+  background-color: #030712 !important; /* Nền tối */
+  color: #f8fafc !important; /* Chữ sáng */
+}
+.theme-tech .admin-panel body,
+.theme-tech body.admin-panel,
+.theme-creative .admin-panel body,
+.theme-creative body.admin-panel {
+  background-color: #030712 !important;
+  color: #f8fafc !important;
+}
+.theme-tech .admin-panel header,
+.theme-creative .admin-panel header {
+  background-color: #0b0f19 !important; /* Header tối */
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+  color: #f8fafc !important;
+}
+.theme-tech .admin-panel header h1,
+.theme-tech .admin-panel header h2,
+.theme-tech .admin-panel header span,
+.theme-tech .admin-panel header p,
+.theme-creative .admin-panel header h1,
+.theme-creative .admin-panel header h2,
+.theme-creative .admin-panel header span,
+.theme-creative .admin-panel header p {
+  color: #f8fafc !important;
+}
+.theme-tech .admin-panel header .text-slate-400,
+.theme-tech .admin-panel header .text-slate-500,
+.theme-creative .admin-panel header .text-slate-400,
+.theme-creative .admin-panel header .text-slate-500 {
+  color: #94a3b8 !important;
+}
+.theme-tech .admin-panel aside,
+.theme-creative .admin-panel aside {
+  background-color: #0b0f19 !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+.theme-tech .admin-panel aside .glass-card,
+.theme-creative .admin-panel aside .glass-card {
+  background: rgba(17, 24, 39, 0.45) !important;
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+}
+.theme-tech .admin-panel aside button,
+.theme-tech .admin-panel aside a,
+.theme-creative .admin-panel aside button,
+.theme-creative .admin-panel aside a {
+  color: #94a3b8 !important;
+}
+.theme-tech .admin-panel aside a:hover,
+.theme-creative .admin-panel aside a:hover {
+  color: #ffffff !important;
+  background-color: rgba(255, 255, 255, 0.08) !important;
+}
+.theme-tech .admin-paper-card,
+.theme-creative .admin-paper-card {
+  background-color: rgba(17, 24, 39, 0.45) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+.theme-tech .admin-panel .glass-card,
+.theme-creative .admin-panel .glass-card {
+  background-color: rgba(17, 24, 39, 0.45) !important;
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+}
+.theme-tech .admin-panel textarea,
+.theme-creative .admin-panel textarea {
+  color: #f8fafc !important;
+}
+.theme-tech .admin-editor-content,
+.theme-creative .admin-editor-content {
+  color: #e2e8f0 !important;
+  background-color: #0b0f19 !important;
+}
+.theme-tech .admin-editor-content h2,
+.theme-tech .admin-editor-content h3,
+.theme-tech .admin-editor-content strong,
+.theme-creative .admin-editor-content h2,
+.theme-creative .admin-editor-content h3,
+.theme-creative .admin-editor-content strong {
+  color: #ffffff !important;
+}
+.theme-tech .admin-panel table,
+.theme-creative .admin-panel table {
+  background: rgba(17, 24, 39, 0.45) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+.theme-tech .admin-panel table thead tr,
+.theme-creative .admin-panel table thead tr {
+  background-color: rgba(255, 255, 255, 0.02) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+.theme-tech .admin-panel table thead th,
+.theme-creative .admin-panel table thead th {
+  color: #94a3b8 !important;
+}
+.theme-tech .admin-panel table tbody tr,
+.theme-creative .admin-panel table tbody tr {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04) !important;
+}
+.theme-tech .admin-panel table tbody tr:hover,
+.theme-creative .admin-panel table tbody tr:hover {
+  background-color: rgba(255, 255, 255, 0.04) !important;
+}
+.theme-tech .admin-panel table tbody td,
+.theme-creative .admin-panel table tbody td {
+  color: #cbd5e1 !important;
 }
 
 

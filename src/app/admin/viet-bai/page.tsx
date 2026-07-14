@@ -378,7 +378,7 @@ function VietBaiContent() {
     <div className="admin-panel min-h-screen bg-[#f8fafc] text-slate-900 flex flex-col">
 
       {/* Top Bar */}
-      <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/95 backdrop-blur-md">
+      <header className="admin-header sticky top-0 z-50 border-b border-slate-200 bg-white/95 backdrop-blur-md">
         <div className="max-w-[1600px] mx-auto px-4 py-3 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <Link href="/admin/website" className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-500 hover:text-slate-900 transition">

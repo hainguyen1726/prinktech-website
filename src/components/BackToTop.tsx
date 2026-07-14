@@ -2,11 +2,17 @@
 
 import { useState, useEffect } from 'react';
 import { ArrowUp } from 'lucide-react';
+import { usePathname } from 'next/navigation';
 
 export default function BackToTop() {
+  const pathname = usePathname();
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
+    if (pathname?.startsWith('/admin') || pathname === '/login') {
+      setIsVisible(false);
+      return;
+    }
     const toggleVisibility = () => {
       if (window.scrollY > 400) {
         setIsVisible(true);
@@ -17,7 +23,7 @@ export default function BackToTop() {
 
     window.addEventListener('scroll', toggleVisibility);
     return () => window.removeEventListener('scroll', toggleVisibility);
-  }, []);
+  }, [pathname]);
 
   const scrollToTop = () => {
     window.scrollTo({
@@ -25,6 +31,10 @@ export default function BackToTop() {
       behavior: 'smooth',
     });
   };
+
+  if (pathname?.startsWith('/admin') || pathname === '/login') {
+    return null;
+  }
 
   return (
     <button

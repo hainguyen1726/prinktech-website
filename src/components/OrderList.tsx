@@ -477,14 +477,14 @@ export default function OrderList() {
     <AdminGuard>
       <div className="admin-panel min-h-screen bg-[#f1f5f9] text-slate-900 transition-colors duration-300">
       {/* Header Admin Nav */}
-      <nav className="sticky top-0 z-40 border-b border-card-border bg-background/85 backdrop-blur-xl">
+      <nav className="admin-header sticky top-0 z-40 border-b border-card-border bg-background/85 backdrop-blur-xl">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Link href="/admin/website" className="text-text-muted hover:text-foreground transition-colors text-sm font-semibold">
               ← Trang Admin
             </Link>
-            <span className="text-slate-700">/</span>
-            <span className="text-foreground font-semibold text-sm">Admin Quản lý đơn hàng</span>
+            <span className="hidden sm:inline text-slate-700">/</span>
+            <span className="hidden sm:inline text-foreground font-semibold text-sm">Admin Quản lý đơn hàng</span>
           </div>
 
           <div className="flex items-center gap-3">
@@ -514,25 +514,25 @@ export default function OrderList() {
 
             <Link
               href="/admin/khach-hang"
-              className="px-3.5 py-1.5 rounded-xl text-xs font-bold border border-card-border text-foreground hover:bg-block-bg hover:text-[var(--accent)] transition-all cursor-pointer"
+              className="hidden md:inline-flex px-3.5 py-1.5 rounded-xl text-xs font-bold border border-card-border text-foreground hover:bg-block-bg hover:text-[var(--accent)] transition-all cursor-pointer"
             >
               👥 Khách hàng & Đơn
             </Link>
             <Link
               href="/admin/website"
-              className="px-3.5 py-1.5 rounded-xl text-xs font-bold border border-card-border text-foreground hover:bg-block-bg hover:text-[var(--accent)] transition-all cursor-pointer"
+              className="hidden md:inline-flex px-3.5 py-1.5 rounded-xl text-xs font-bold border border-card-border text-foreground hover:bg-block-bg hover:text-[var(--accent)] transition-all cursor-pointer"
             >
               🖥️ Quản lý Website
             </Link>
             <Link
               href="/admin/viet-bai"
-              className="px-3.5 py-1.5 rounded-xl text-xs font-bold border border-card-border text-foreground hover:bg-block-bg hover:text-[var(--accent)] transition-all cursor-pointer"
+              className="hidden md:inline-flex px-3.5 py-1.5 rounded-xl text-xs font-bold border border-card-border text-foreground hover:bg-block-bg hover:text-[var(--accent)] transition-all cursor-pointer"
             >
               ✍️ Viết bài mới
             </Link>
             <Link
               href="/bao-gia"
-              className="hidden sm:inline-block px-3.5 py-1.5 rounded-xl text-xs font-bold border border-card-border text-text-muted hover:bg-block-bg transition-all"
+              className="hidden lg:inline-block px-3.5 py-1.5 rounded-xl text-xs font-bold border border-card-border text-text-muted hover:bg-block-bg transition-all"
             >
               Báo giá
             </Link>

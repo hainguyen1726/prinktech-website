@@ -802,7 +802,7 @@ export default function AdminSEOAuditPage() {
   const unresolvedIssues = totalIssues - resolvedIssues;
 
   return (
-    <div className="min-h-screen bg-[#f1f5f9] text-slate-800 font-sans antialiased pb-24 relative">
+    <div className="admin-panel min-h-screen bg-[#f1f5f9] text-slate-800 font-sans antialiased pb-24 relative">
       {/* Background Glow Decorations */}
       <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl pointer-events-none"></div>
       <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none"></div>
@@ -816,8 +816,8 @@ export default function AdminSEOAuditPage() {
       )}
 
       {/* TOP HEADER */}
-      <header className="rounded-none border-0 border-b border-slate-800 py-4 px-6 sticky top-0 z-30 bg-[#0d1117] flex justify-between items-center w-full shadow-md text-slate-200">
-        <div className="flex items-center gap-3">
+      <header className="admin-header rounded-none border-0 border-b border-slate-800 py-3 px-4 sm:py-4 sm:px-6 sticky top-0 z-30 bg-[#0d1117] flex justify-between items-center w-full shadow-md text-slate-200">
+        <div className="flex items-center gap-2 sm:gap-3">
           <Link 
             href="/admin/website" 
             className="flex items-center justify-center w-8 h-8 rounded-lg bg-slate-800 border border-slate-700 text-slate-400 hover:text-slate-100 hover:bg-slate-700 transition"
@@ -825,23 +825,23 @@ export default function AdminSEOAuditPage() {
           >
             <ArrowLeft size={16} />
           </Link>
-          <img src="/logo-horizontal.png" alt="PrinK Tech" className="h-10 object-contain" />
-          <span className="h-4 w-px bg-slate-750"></span>
-          <h2 className="font-medium text-sm tracking-wider text-white uppercase flex items-center gap-1.5">
+          <img src="/logo-horizontal.png" alt="PrinK Tech" className="h-7 sm:h-10 object-contain" />
+          <span className="hidden md:block h-4 w-px bg-slate-700"></span>
+          <h2 className="hidden md:flex font-medium text-sm tracking-wider text-white uppercase items-center gap-1.5">
             <BarChart size={18} className="text-teal-400" />
             SEO Audit Center
           </h2>
         </div>
-        <div className="flex items-center gap-4">
-          <span className="text-xs font-medium text-slate-300">
+        <div className="flex items-center gap-2 sm:gap-4">
+          <span className="hidden sm:inline text-xs font-medium text-slate-300">
             Chào, <strong className="text-white font-medium">{adminUser?.name || 'Admin'}</strong>
           </span>
           <Link href="/" target="_blank" className="text-xs font-medium text-teal-400 hover:text-teal-300 transition flex items-center gap-1">
-            <Globe size={14} /> Xem Website
+            <Globe size={14} /> <span className="hidden sm:inline">Xem Website</span>
           </Link>
           <button 
             onClick={handleLogout} 
-            className="p-2 bg-slate-850 hover:bg-slate-800 text-rose-400 border border-slate-700 rounded-lg transition cursor-pointer" 
+            className="p-1.5 sm:p-2 bg-slate-850 hover:bg-slate-800 text-rose-400 border border-slate-700 rounded-lg transition cursor-pointer" 
             title="Đăng xuất"
           >
             <LogOut size={14} />
@@ -1053,7 +1053,7 @@ export default function AdminSEOAuditPage() {
             </aside>
 
             {/* Vùng chi tiết Technical Audit */}
-            <div className="flex-1 flex flex-col gap-6">
+            <div className="flex-1 flex flex-col gap-6 min-w-0">
               {selectedAudit ? (
                 <>
                   {/* Điểm số và tóm tắt */}
@@ -1093,7 +1093,7 @@ export default function AdminSEOAuditPage() {
                             {selectedAudit.id}
                           </span>
                         </div>
-                        <p className="text-xs text-slate-505 text-slate-500 leading-relaxed font-normal">
+                        <p className="text-xs text-slate-500 leading-relaxed font-normal">
                           {selectedAudit.summary || 'Chưa có mô tả tóm tắt cho phiên kiểm tra này.'}
                         </p>
                       </div>
@@ -1215,7 +1215,7 @@ export default function AdminSEOAuditPage() {
                                         onClick={(e) => handleToggleIssue(issue.id, issue.resolved, e)}
                                         className={`flex items-center justify-center w-5.5 h-5.5 mx-auto rounded border transition-all ${
                                           issue.resolved 
-                                            ? 'bg-emerald-50 border-emerald-500 text-emerald-650 text-emerald-600' 
+                                            ? 'bg-emerald-50 border-emerald-500 text-emerald-600' 
                                             : 'border-slate-300 hover:border-slate-400 hover:bg-slate-100 bg-white'
                                         }`}
                                       >
@@ -1232,7 +1232,7 @@ export default function AdminSEOAuditPage() {
                                       </span>
                                     </td>
                                     <td className="p-4">
-                                      <span className="font-normal text-xs text-slate-650 bg-slate-100 px-2 py-0.5 rounded border border-slate-200/50">
+                                      <span className="font-normal text-xs text-slate-600 bg-slate-100 px-2 py-0.5 rounded border border-slate-200/50">
                                         {issue.area}
                                       </span>
                                     </td>
@@ -1370,7 +1370,7 @@ export default function AdminSEOAuditPage() {
                 Không tìm thấy bài viết nào phù hợp.
               </div>
             ) : (
-              <div className="border border-slate-100 rounded-xl overflow-hidden">
+              <div className="border border-slate-100 rounded-xl overflow-x-auto">
                 {/* Bảng chấm điểm bài viết - Tăng lên text-base, bỏ bold cho tiêu đề bài viết */}
                 <table className="w-full text-left border-collapse text-base">
                   <thead>
@@ -1669,19 +1669,19 @@ export default function AdminSEOAuditPage() {
                                   <ArrowUpRight size={10} className="shrink-0" />
                                 </a>
                               </td>
-                              <td className="p-4 text-center font-mono tabular-nums text-xs text-slate-650">
+                              <td className="p-4 text-center font-mono tabular-nums text-xs text-slate-600">
                                 {kw.searchVolume || '—'}
                               </td>
-                              <td className="p-4 text-center font-mono text-xs text-slate-655">
+                              <td className="p-4 text-center font-mono text-xs text-slate-600">
                                 {kw.clicks !== undefined ? (
                                   <div>
                                     <span className="font-bold text-slate-800">{kw.clicks}</span>
-                                    <span className="text-slate-450 mx-1">/</span>
+                                    <span className="text-slate-400 mx-1">/</span>
                                     <span>{kw.impressions}</span>
                                   </div>
                                 ) : '—'}
                               </td>
-                              <td className="p-4 text-center font-mono text-xs text-slate-650">
+                              <td className="p-4 text-center font-mono text-xs text-slate-600">
                                 {kw.ctr !== undefined ? `${kw.ctr.toFixed(1)}%` : '—'}
                               </td>
                               <td className="p-4 text-center">
