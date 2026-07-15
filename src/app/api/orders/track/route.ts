@@ -74,56 +74,72 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    if (!targetPhone) {
+    if (!targetPhone && !targetOrderNumber) {
       return NextResponse.json(
-        { error: 'Số điện thoại là bắt buộc để tra cứu và bảo mật đơn hàng' },
+        { error: 'Vui lòng cung cấp Số điện thoại hoặc Mã đơn hàng để tra cứu' },
         { status: 400 }
       );
     }
 
-    const phoneClean = targetPhone.replace(/[^0-9]/g, '');
-    if (phoneClean.length < 9) {
+    const phoneClean = targetPhone ? targetPhone.replace(/[^0-9]/g, '') : '';
+    if (phoneClean && phoneClean.length < 9) {
       return NextResponse.json(
-        { error: 'Số điện thoại không hợp lệ' },
+        { error: 'Số điện thoại không hợp lệ (phải từ 9 chữ số trở lên)' },
         { status: 400 }
       );
     }
 
     // 1. Tìm trong retail_orders (đơn hàng đặt từ Web)
-    let retailQuery = supabase.from('retail_orders').select('*').eq('customer_phone', phoneClean);
-    if (targetOrderNumber) {
-      retailQuery = retailQuery.eq('order_number', targetOrderNumber.toUpperCase());
-    }
-    const { data: retailOrders, error: retailError } = await retailQuery;
-
-    if (retailError) throw retailError;
-
-    // 2. Tìm trong orders (đơn hàng tạo bởi Admin) - Lấy 300 đơn gần nhất để lọc khớp số điện thoại
-    const adminQuery = supabase.from('orders').select('*, partners(*)').order('created_at', { ascending: false }).limit(300);
-    const { data: adminOrders, error: adminError } = await adminQuery;
-
-    if (adminError) throw adminError;
-
-    // Lọc các đơn admin khớp số điện thoại và mã đơn (nếu có)
-    let matchedAdminOrders = adminOrders || [];
-    
-    if (targetOrderNumber) {
-      matchedAdminOrders = matchedAdminOrders.filter(o => o.order_code?.toUpperCase() === targetOrderNumber.toUpperCase());
-    }
-    
-    matchedAdminOrders = matchedAdminOrders.filter(o => {
-      // Khớp số điện thoại trong note
-      if (o.note) {
-        const noteDigits = o.note.replace(/[^0-9]/g, '');
-        if (noteDigits.includes(phoneClean)) return true;
+    let retailOrders: any[] = [];
+    if (targetOrderNumber || phoneClean) {
+      let retailQuery = supabase.from('retail_orders').select('*');
+      if (targetOrderNumber) {
+        retailQuery = retailQuery.eq('order_number', targetOrderNumber.toUpperCase());
       }
-      // Khớp số điện thoại trong partner
-      if (o.partners?.phone) {
-        const partnerPhoneClean = o.partners.phone.replace(/[^0-9]/g, '');
-        if (partnerPhoneClean === phoneClean) return true;
+      if (phoneClean) {
+        retailQuery = retailQuery.eq('customer_phone', phoneClean);
       }
-      return false;
-    });
+      const { data, error: retailError } = await retailQuery;
+      if (retailError) throw retailError;
+      retailOrders = data || [];
+    }
+
+    // 2. Tìm trong orders (đơn hàng tạo bởi Admin)
+    let matchedAdminOrders: any[] = [];
+    if (targetOrderNumber) {
+      // Nếu có mã đơn, truy vấn trực tiếp bằng order_code (rất nhanh)
+      const { data: adminOrders, error: adminError } = await supabase
+        .from('orders')
+        .select('*, partners(*)')
+        .eq('order_code', targetOrderNumber.toUpperCase());
+      
+      if (adminError) throw adminError;
+      matchedAdminOrders = adminOrders || [];
+
+      // Nếu có nhập thêm sđt, lọc tiếp để đảm bảo khớp thông tin bảo mật
+      if (phoneClean && matchedAdminOrders.length > 0) {
+        matchedAdminOrders = matchedAdminOrders.filter(o => {
+          if (o.note && o.note.replace(/[^0-9]/g, '').includes(phoneClean)) return true;
+          if (o.partners?.phone && o.partners.phone.replace(/[^0-9]/g, '') === phoneClean) return true;
+          return false;
+        });
+      }
+    } else if (phoneClean) {
+      // Nếu chỉ có sđt, lấy 300 đơn gần nhất để lọc khớp số điện thoại
+      const { data: adminOrders, error: adminError } = await supabase
+        .from('orders')
+        .select('*, partners(*)')
+        .order('created_at', { ascending: false })
+        .limit(300);
+
+      if (adminError) throw adminError;
+
+      matchedAdminOrders = (adminOrders || []).filter(o => {
+        if (o.note && o.note.replace(/[^0-9]/g, '').includes(phoneClean)) return true;
+        if (o.partners?.phone && o.partners.phone.replace(/[^0-9]/g, '') === phoneClean) return true;
+        return false;
+      });
+    }
 
     // 3. Chuẩn hóa và mask thông tin retail_orders
     const formattedRetail = (retailOrders || []).map(o => ({

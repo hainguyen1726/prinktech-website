@@ -246,15 +246,25 @@ function TraCuuContent() {
     if (p) setPhone(p);
     if (o) setOrderNumber(o);
 
-    if (p.trim().length >= 9) {
+    const phoneClean = p.trim().replace(/[^0-9]/g, '');
+    const orderClean = o.trim();
+
+    if (orderClean || (phoneClean && phoneClean.length >= 9)) {
       triggerSearch(p, o);
     }
   }, [searchParams]);
 
   const triggerSearch = async (phoneVal: string, orderVal: string) => {
     const phoneClean = phoneVal.trim().replace(/[^0-9]/g, '');
-    if (!phoneClean || phoneClean.length < 9) {
-      setError('Vui lòng nhập Số điện thoại hợp lệ để xác thực và bảo mật đơn hàng');
+    const orderClean = orderVal.trim();
+
+    if (!phoneClean && !orderClean) {
+      setError('Vui lòng nhập Số điện thoại hoặc Mã đơn hàng để tra cứu');
+      return;
+    }
+
+    if (phoneClean && phoneClean.length < 9) {
+      setError('Số điện thoại không hợp lệ (phải từ 9 chữ số trở lên)');
       return;
     }
 
@@ -264,10 +274,10 @@ function TraCuuContent() {
     setSearched(true);
 
     try {
-      const params = new URLSearchParams({
-        phone: phoneClean,
-        order_number: orderVal.trim().toUpperCase()
-      });
+      const params = new URLSearchParams();
+      if (phoneClean) params.append('phone', phoneClean);
+      if (orderClean) params.append('order_number', orderClean.toUpperCase());
+
       const res = await fetch(`/api/orders/track?${params.toString()}`);
       const data = await res.json();
 
@@ -290,7 +300,16 @@ function TraCuuContent() {
 
   const getStatusIndex = (status: string) => {
     if (status === 'cancelled') return -1;
-    return STATUS_STEPS.findIndex(s => s.key === status);
+    
+    // Ánh xạ trạng thái thực tế từ DB sang các bước trên thanh tiến trình
+    let stepKey = status;
+    if (status === 'pending_file') {
+      stepKey = 'pending';
+    } else if (status === 'processing') {
+      stepKey = 'printing';
+    }
+    
+    return STATUS_STEPS.findIndex(s => s.key === stepKey);
   };
 
   const formatCurrency = (val: number) => {
@@ -312,7 +331,7 @@ function TraCuuContent() {
             </span>
           </h1>
           <p className="text-text-muted text-xs max-w-md mx-auto leading-relaxed">
-            Để bảo mật thông tin khách hàng, vui lòng nhập **Số điện thoại** đã đặt hàng và **Mã đơn hàng** (tùy chọn) để tra cứu trạng thái sản xuất.
+            Nhập **Số điện thoại** đặt hàng hoặc **Mã đơn hàng** để tra cứu tiến trình sản xuất và vận chuyển thời gian thực.
           </p>
         </div>
 
@@ -321,11 +340,10 @@ function TraCuuContent() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* SĐT */}
             <div>
-              <label className="block text-xs font-bold text-text-muted mb-1.5 uppercase tracking-wide">Số điện thoại *</label>
+              <label className="block text-xs font-bold text-text-muted mb-1.5 uppercase tracking-wide">Số điện thoại</label>
               <input
                 type="tel"
-                required
-                placeholder="Nhập SĐT đặt hàng (ví dụ: 0987654321)"
+                placeholder="Ví dụ: 0987654321"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 className="w-full h-11 px-3 rounded-xl border border-card-border bg-block-bg text-foreground text-sm font-semibold placeholder-text-muted/40 focus:outline-none focus:border-[var(--accent)]"
@@ -334,7 +352,7 @@ function TraCuuContent() {
 
             {/* Mã đơn */}
             <div>
-              <label className="block text-xs font-bold text-text-muted mb-1.5 uppercase tracking-wide">Mã đơn hàng (tùy chọn)</label>
+              <label className="block text-xs font-bold text-text-muted mb-1.5 uppercase tracking-wide">Mã đơn hàng</label>
               <input
                 type="text"
                 placeholder="Ví dụ: PK-20260708-4122"
