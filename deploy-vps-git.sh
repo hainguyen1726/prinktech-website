@@ -12,8 +12,8 @@ LOCKFILE="/tmp/prinktech-deploy.lock"
 if [ -f "$LOCKFILE" ]; then
     PID=$(cat "$LOCKFILE")
     if kill -0 "$PID" 2>/dev/null; then
-        echo -e "\033[0;31m❌ Một tiến trình deploy khác đang chạy (PID: $PID). Vui lòng thử lại sau để tránh lỗi xung đột build.\033[0m"
-        exit 1
+        echo -e "\033[1;33m⚠️  Một tiến trình deploy khác đang chạy (PID: $PID). Bỏ qua lượt build này để tránh xung đột.\033[0m"
+        exit 0
     fi
 fi
 echo $$ > "$LOCKFILE"
