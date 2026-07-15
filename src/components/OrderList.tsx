@@ -1190,6 +1190,50 @@ export default function OrderList() {
                   </div>
                 </div>
 
+                {/* Đối soát Xưởng in & Lợi nhuận gộp (Nội bộ Admin) */}
+                {selectedOrder.converted_length !== undefined && selectedOrder.converted_length !== null && (
+                  <div className="rounded-xl border border-dashed border-emerald-350 bg-emerald-50/20 dark:bg-emerald-950/10 p-3.5 space-y-2">
+                    <h4 className="text-[10px] uppercase font-bold text-emerald-600 dark:text-emerald-400 tracking-wider flex items-center gap-1">
+                      📊 Đối soát Xưởng & Lợi nhuận ròng
+                    </h4>
+                    
+                    <div className="space-y-1 text-xs">
+                      <div className="flex justify-between text-text-muted">
+                        <span>Mét in thực tế (Xưởng):</span>
+                        <span className="font-bold text-foreground font-mono">{selectedOrder.converted_length} m</span>
+                      </div>
+                      <div className="flex justify-between text-text-muted">
+                        <span>Giá vốn in trả xưởng (150k/m):</span>
+                        <span className="font-bold text-foreground font-mono">
+                          {formatCurrency(selectedOrder.converted_length * 150000)}
+                        </span>
+                      </div>
+                      <div className="flex justify-between text-text-muted">
+                        <span>Phí ship khách trả:</span>
+                        <span className="font-bold text-foreground font-mono">
+                          {formatCurrency(selectedOrder.shipping_fee)}
+                        </span>
+                      </div>
+                      <div className="flex justify-between text-text-muted">
+                        <span>Phí đóng gói định mức:</span>
+                        <span className="font-bold text-foreground font-mono">
+                          {formatCurrency(5000)}
+                        </span>
+                      </div>
+                      <div className="flex justify-between text-xs font-bold pt-1.5 border-t border-emerald-250 dark:border-emerald-800 text-emerald-700 dark:text-emerald-400">
+                        <span>Lợi nhuận ròng tạm tính:</span>
+                        <span className="font-mono">
+                          {formatCurrency(
+                            selectedOrder.total - 
+                            (selectedOrder.converted_length * 150000) - 
+                            5000
+                          )}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {/* Shipping Details Update (Admin controls) */}
                 <div className="border-b border-card-border pb-4 space-y-3">
                   <h3 className="text-xs font-bold text-text-muted uppercase tracking-wider">Vận chuyển & Giao nhận</h3>

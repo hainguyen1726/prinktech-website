@@ -210,6 +210,7 @@ export type Order = {
   design_url: string | null;
   shipping_carrier?: string | null;
   tracking_number?: string | null;
+  converted_length?: number;
   source?: string;
   created_at: string;
   updated_at: string;

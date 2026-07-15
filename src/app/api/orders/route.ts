@@ -107,6 +107,7 @@ export async function GET(req: NextRequest) {
       design_url: o.design_url,
       shipping_carrier: o.shipping_carrier || null,
       tracking_number: o.tracking_number || null,
+      converted_length: Number(o.converted_length) || 0,
       source: 'web',
       created_at: o.created_at
     }));
@@ -209,6 +210,37 @@ export async function GET(req: NextRequest) {
   }
 }
 
+function calculateConvertedLength(items: any[]): number {
+  let totalMeters = 0;
+  for (const item of items) {
+    const label = (item.product_label || item.product_type || '').toLowerCase();
+    const qty = Number(item.quantity) || 0;
+    const unit = (item.unit || '').toLowerCase();
+    
+    if (unit === 'mét' || unit === 'm' || label.includes('cuộn') || label.includes('roll')) {
+      totalMeters += qty;
+    } else if (unit === 'tờ a4' || label.includes('a4')) {
+      totalMeters += qty * 0.125;
+    } else if (unit === 'tờ a3' || label.includes('a3')) {
+      totalMeters += qty * 0.25;
+    } else {
+      // Thử parse kích thước con tem dạng "5x5cm", "10x10", "5x5" từ label
+      const sizeMatch = label.match(/(\d+(?:\.\d+)?)\s*x\s*(\d+(?:\.\d+)?)/);
+      if (sizeMatch) {
+        const width = parseFloat(sizeMatch[1]);
+        const height = parseFloat(sizeMatch[2]);
+        // Diện tích có cộng lề bế 0.5cm
+        const s = (width + 0.5) * (height + 0.5);
+        totalMeters += (qty * s) / 5800;
+      } else {
+        // Fallback: Nếu không parse được kích thước, giả định kích thước trung bình 5x5cm (s = 30.25 cm2)
+        totalMeters += (qty * 30.25) / 5800;
+      }
+    }
+  }
+  return Math.round(totalMeters * 1000) / 1000; // Làm tròn 3 chữ số thập phân
+}
+
 // POST /api/orders — tạo đơn hàng mới
 export async function POST(req: NextRequest) {
   try {
@@ -250,6 +282,7 @@ export async function POST(req: NextRequest) {
     }
 
     const order_number = generateOrderNumber();
+    const converted_length = calculateConvertedLength(items);
 
     const { data, error } = await supabase
       .from('retail_orders')
@@ -276,6 +309,7 @@ export async function POST(req: NextRequest) {
         vat_tax_code: vat_tax_code?.trim() || null,
         vat_company_address: vat_company_address?.trim() || null,
         vat_email: vat_email?.trim() || null,
+        converted_length
       })
       .select()
       .single();
