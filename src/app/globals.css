@@ -947,6 +947,219 @@ body.admin-panel {
   background-color: #030712 !important; /* Nền tối */
   color: #f8fafc !important; /* Chữ sáng */
 }
+
+/* 1. Nền các thẻ Card & Container chính */
+.theme-tech .admin-panel .bg-white,
+.theme-creative .admin-panel .bg-white,
+.theme-tech .admin-panel .bg-card-bg,
+.theme-creative .admin-panel .bg-card-bg {
+  background-color: var(--card-bg) !important;
+}
+
+/* 2. Nền các ô khối phụ, header của bảng, hoặc panel tìm kiếm */
+.theme-tech .admin-panel .bg-slate-50,
+.theme-creative .admin-panel .bg-slate-50,
+.theme-tech .admin-panel .bg-slate-100,
+.theme-creative .admin-panel .bg-slate-100,
+.theme-tech .admin-panel .bg-slate-200,
+.theme-creative .admin-panel .bg-slate-200,
+.theme-tech .admin-panel .bg-slate-50\/30,
+.theme-creative .admin-panel .bg-slate-50\/30,
+.theme-tech .admin-panel .bg-slate-50\/50,
+.theme-creative .admin-panel .bg-slate-50\/50,
+.theme-tech .admin-panel .bg-slate-55\/60,
+.theme-creative .admin-panel .bg-slate-55\/60,
+.theme-tech .admin-panel .bg-slate-50\/80,
+.theme-creative .admin-panel .bg-slate-50\/80 {
+  background-color: var(--block-bg) !important;
+}
+
+/* Bộ chọn tab hoặc khối nền tối cũ */
+.theme-tech .admin-panel .bg-black\/5,
+.theme-creative .admin-panel .bg-black\/5 {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+/* 3. Màu viền (Borders & Dividers) */
+.theme-tech .admin-panel .border-slate-100,
+.theme-creative .admin-panel .border-slate-100,
+.theme-tech .admin-panel .border-slate-200,
+.theme-creative .admin-panel .border-slate-200,
+.theme-tech .admin-panel .border-slate-300,
+.theme-creative .admin-panel .border-slate-300,
+.theme-tech .admin-panel .border-slate-350,
+.theme-creative .admin-panel .border-slate-350,
+.theme-tech .admin-panel .border-slate-200\/50,
+.theme-creative .admin-panel .border-slate-200\/50,
+.theme-tech .admin-panel .border-slate-100\/50,
+.theme-creative .admin-panel .border-slate-100\/50,
+.theme-tech .admin-panel .border-slate-100\/40,
+.theme-creative .admin-panel .border-slate-100\/40,
+.theme-tech .admin-panel .border-card-border,
+.theme-creative .admin-panel .border-card-border {
+  border-color: var(--card-border) !important;
+}
+
+.theme-tech .admin-panel .divide-slate-100 > :not([hidden]) ~ :not([hidden]),
+.theme-creative .admin-panel .divide-slate-100 > :not([hidden]) ~ :not([hidden]),
+.theme-tech .admin-panel .divide-slate-200 > :not([hidden]) ~ :not([hidden]),
+.theme-creative .admin-panel .divide-slate-200 > :not([hidden]) ~ :not([hidden]),
+.theme-tech .admin-panel .divide-slate-200\/40 > :not([hidden]) ~ :not([hidden]),
+.theme-creative .admin-panel .divide-slate-200\/40 > :not([hidden]) ~ :not([hidden]),
+.theme-tech .admin-panel .divide-slate-200\/50 > :not([hidden]) ~ :not([hidden]),
+.theme-creative .admin-panel .divide-slate-200\/50 > :not([hidden]) ~ :not([hidden]) {
+  border-color: var(--card-border) !important;
+}
+
+/* 4. Màu chữ tiêu đề & nội dung chính */
+.theme-tech .admin-panel .text-slate-955,
+.theme-creative .admin-panel .text-slate-955,
+.theme-tech .admin-panel .text-slate-950,
+.theme-creative .admin-panel .text-slate-950,
+.theme-tech .admin-panel .text-slate-900,
+.theme-creative .admin-panel .text-slate-900,
+.theme-tech .admin-panel .text-slate-850,
+.theme-creative .admin-panel .text-slate-850,
+.theme-tech .admin-panel .text-slate-800,
+.theme-creative .admin-panel .text-slate-800,
+.theme-tech .admin-panel .text-slate-700,
+.theme-creative .admin-panel .text-slate-700,
+.theme-tech .admin-panel .text-slate-655,
+.theme-creative .admin-panel .text-slate-655,
+.theme-tech .admin-panel .text-slate-600,
+.theme-creative .admin-panel .text-slate-600 {
+  color: var(--foreground) !important;
+}
+
+/* Màu chữ phụ, chú thích, icon nhạt */
+.theme-tech .admin-panel .text-slate-500,
+.theme-creative .admin-panel .text-slate-500,
+.theme-tech .admin-panel .text-slate-400,
+.theme-creative .admin-panel .text-slate-400,
+.theme-tech .admin-panel .text-slate-300,
+.theme-creative .admin-panel .text-slate-300 {
+  color: var(--text-muted) !important;
+}
+
+/* Màu liên kết và text nhấn mạnh màu xanh/tím */
+.theme-tech .admin-panel .text-blue-600,
+.theme-creative .admin-panel .text-blue-600,
+.theme-tech .admin-panel .text-blue-750,
+.theme-creative .admin-panel .text-blue-750,
+.theme-tech .admin-panel .text-blue-800,
+.theme-creative .admin-panel .text-blue-800,
+.theme-tech .admin-panel .text-purple-650,
+.theme-creative .admin-panel .text-purple-650 {
+  color: var(--accent) !important;
+}
+
+/* 5. Giao diện Form Điều khiển (Inputs, Selects, Textareas) */
+.theme-tech .admin-panel input:not([type="checkbox"]):not([type="radio"]),
+.theme-creative .admin-panel input:not([type="checkbox"]):not([type="radio"]),
+.theme-tech .admin-panel select,
+.theme-creative .admin-panel select,
+.theme-tech .admin-panel textarea,
+.theme-creative .admin-panel textarea {
+  background-color: rgba(255, 255, 255, 0.03) !important;
+  border-color: var(--card-border) !important;
+  color: var(--foreground) !important;
+}
+.theme-tech .admin-panel input:not([type="checkbox"]):not([type="radio"]):focus,
+.theme-creative .admin-panel input:not([type="checkbox"]):not([type="radio"]):focus,
+.theme-tech .admin-panel select:focus,
+.theme-creative .admin-panel select:focus,
+.theme-tech .admin-panel textarea:focus,
+.theme-creative .admin-panel textarea:focus {
+  border-color: var(--accent) !important;
+  outline: none !important;
+}
+.theme-tech .admin-panel input::placeholder,
+.theme-creative .admin-panel input::placeholder,
+.theme-tech .admin-panel textarea::placeholder,
+.theme-creative .admin-panel textarea::placeholder {
+  color: var(--text-muted) !important;
+  opacity: 0.7 !important;
+}
+
+/* Trạng thái hover dòng trong bảng */
+.theme-tech .admin-panel tr.hover\:bg-slate-50:hover,
+.theme-creative .admin-panel tr.hover\:bg-slate-50:hover,
+.theme-tech .admin-panel tr.hover\:bg-slate-50\/50:hover,
+.theme-creative .admin-panel tr.hover\:bg-slate-50\/50:hover,
+.theme-tech .admin-panel tr.hover\:bg-slate-50\/80:hover,
+.theme-creative .admin-panel tr.hover\:bg-slate-50\/80:hover,
+.theme-tech .admin-panel tr.hover\:bg-slate-50\/30:hover,
+.theme-creative .admin-panel tr.hover\:bg-slate-50\/30:hover {
+  background-color: rgba(255, 255, 255, 0.04) !important;
+}
+
+/* 6. Giao diện nhãn trạng thái (Badges) */
+.theme-tech .admin-panel .bg-green-50,
+.theme-creative .admin-panel .bg-green-50,
+.theme-tech .admin-panel .bg-emerald-50,
+.theme-creative .admin-panel .bg-emerald-50 {
+  background-color: rgba(16, 185, 129, 0.15) !important;
+}
+.theme-tech .admin-panel .text-green-700,
+.theme-creative .admin-panel .text-green-700,
+.theme-tech .admin-panel .text-emerald-700,
+.theme-creative .admin-panel .text-emerald-700,
+.theme-tech .admin-panel .text-emerald-800,
+.theme-creative .admin-panel .text-emerald-800 {
+  color: #34d399 !important;
+}
+
+.theme-tech .admin-panel .bg-sky-50,
+.theme-creative .admin-panel .bg-sky-50,
+.theme-tech .admin-panel .bg-blue-50,
+.theme-creative .admin-panel .bg-blue-50 {
+  background-color: rgba(14, 165, 233, 0.15) !important;
+}
+.theme-tech .admin-panel .text-sky-700,
+.theme-creative .admin-panel .text-sky-700,
+.theme-tech .admin-panel .text-blue-700,
+.theme-creative .admin-panel .text-blue-700,
+.theme-tech .admin-panel .text-blue-800,
+.theme-creative .admin-panel .text-blue-800 {
+  color: #38bdf8 !important;
+}
+
+.theme-tech .admin-panel .bg-violet-50,
+.theme-creative .admin-panel .bg-violet-50 {
+  background-color: rgba(139, 92, 246, 0.15) !important;
+}
+.theme-tech .admin-panel .text-violet-700,
+.theme-creative .admin-panel .text-violet-700 {
+  color: #a78bfa !important;
+}
+
+.theme-tech .admin-panel .bg-amber-50,
+.theme-creative .admin-panel .bg-amber-50,
+.theme-tech .admin-panel .bg-yellow-50,
+.theme-creative .admin-panel .bg-yellow-50 {
+  background-color: rgba(245, 158, 11, 0.15) !important;
+}
+.theme-tech .admin-panel .text-amber-700,
+.theme-creative .admin-panel .text-amber-700,
+.theme-tech .admin-panel .text-yellow-750,
+.theme-creative .admin-panel .text-yellow-750,
+.theme-tech .admin-panel .text-yellow-700,
+.theme-creative .admin-panel .text-yellow-700 {
+  color: #fbbf24 !important;
+}
+
+.theme-tech .admin-panel .bg-rose-50,
+.theme-creative .admin-panel .bg-rose-50,
+.theme-tech .admin-panel .bg-red-50,
+.theme-creative .admin-panel .bg-red-50 {
+  background-color: rgba(239, 68, 68, 0.15) !important;
+}
+.theme-tech .admin-panel .text-rose-700,
+.theme-creative .admin-panel .text-rose-700,
+.theme-tech .admin-panel .text-red-700,
+.theme-creative .admin-panel .text-red-700 {
+  color: #f87171 !important;
+}
 .theme-tech .admin-panel body,
 .theme-tech body.admin-panel,
 .theme-creative .admin-panel body,
