@@ -182,6 +182,10 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
 
             <span className="hidden lg:block h-px bg-slate-200 dark:bg-slate-800 my-2"></span>
             
+            {renderSidebarItem("Nhật ký Hoạt động", <FileText size={16} className="text-purple-500" />, "/admin/logs")}
+            
+            <span className="hidden lg:block h-px bg-slate-200 dark:bg-slate-800 my-2"></span>
+
             <Link
               href="/marketing"
               className="w-auto lg:w-full shrink-0 flex items-center gap-2 lg:gap-2.5 px-3 lg:px-4 py-2 lg:py-3 rounded-lg text-xs font-bold text-left text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-900/30 border border-transparent transition cursor-pointer"

@@ -21,15 +21,17 @@ export async function verifyAdminOrStaff(request: NextRequest): Promise<AdminAut
   }
   
   const [userId] = token.split(':');
-  if (userId !== 'website-admin-id') {
+  if (userId !== 'website-admin-id' && userId !== 'website-admin-thanh') {
     return { error: 'Tài khoản không được cấp quyền truy cập chức năng này.', status: 403 };
   }
 
+  const isThanh = userId === 'website-admin-thanh';
+
   return {
     user: {
-      id: 'website-admin-id',
-      name: 'Website Admin',
-      email: 'admin@prinktech.com',
+      id: userId,
+      name: isThanh ? 'Thanh' : 'Website Admin',
+      email: isThanh ? 'thanh@prinktech.com' : 'admin@prinktech.com',
       role_id: 1,
       roles: { name: 'admin' }
     }
@@ -43,16 +45,17 @@ export async function verifyAdminOrMarketing(request: NextRequest): Promise<Admi
   }
   
   const [userId] = token.split(':');
-  if (userId !== 'website-admin-id' && userId !== 'website-marketing-id') {
+  if (userId !== 'website-admin-id' && userId !== 'website-admin-thanh' && userId !== 'website-marketing-id') {
     return { error: 'Tài khoản không được cấp quyền truy cập chức năng này.', status: 403 };
   }
 
-  if (userId === 'website-admin-id') {
+  if (userId === 'website-admin-id' || userId === 'website-admin-thanh') {
+    const isThanh = userId === 'website-admin-thanh';
     return {
       user: {
-        id: 'website-admin-id',
-        name: 'Website Admin',
-        email: 'admin@prinktech.com',
+        id: userId,
+        name: isThanh ? 'Thanh' : 'Website Admin',
+        email: isThanh ? 'thanh@prinktech.com' : 'admin@prinktech.com',
         role_id: 1,
         roles: { name: 'admin' }
       }

@@ -8,16 +8,17 @@ export async function GET(request: NextRequest) {
     }
     
     const [userId] = token.split(':');
-    if (userId !== 'website-admin-id' && userId !== 'website-marketing-id') {
+    if (userId !== 'website-admin-id' && userId !== 'website-admin-thanh' && userId !== 'website-marketing-id') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    if (userId === 'website-admin-id') {
+    if (userId === 'website-admin-id' || userId === 'website-admin-thanh') {
+      const isThanh = userId === 'website-admin-thanh';
       return NextResponse.json({
         user: {
-          id: 'website-admin-id',
-          name: 'Website Admin',
-          email: 'admin@prinktech.com',
+          id: userId,
+          name: isThanh ? 'Thanh' : 'Website Admin',
+          email: isThanh ? 'thanh@prinktech.com' : 'admin@prinktech.com',
           role_id: 1,
           roles: { name: 'admin' },
           role: 'admin'

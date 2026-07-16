@@ -11,8 +11,11 @@ export async function POST(request: NextRequest) {
     const inputUser = email.trim().toLowerCase();
     
     // Kiểm tra tài khoản admin website tĩnh độc lập
-    if ((inputUser === 'admin' || inputUser === 'admin@prinktech.com') && password === 'WebxuongIn#Prink') {
-      const userId = 'website-admin-id';
+    const isAdminDefault = (inputUser === 'admin' || inputUser === 'admin@prinktech.com') && password === 'WebxuongIn#Prink';
+    const isAdminThanh = (inputUser === 'thanh' || inputUser === 'thanh@prinktech.com') && password === 'ThanhBeo18@';
+
+    if (isAdminDefault || isAdminThanh) {
+      const userId = isAdminThanh ? 'website-admin-thanh' : 'website-admin-id';
       const timestamp = Date.now();
       const tokenValue = `${userId}:${timestamp}`;
 
@@ -20,8 +23,8 @@ export async function POST(request: NextRequest) {
         success: true,
         user: {
           id: userId,
-          email: 'admin@prinktech.com',
-          name: 'Website Admin',
+          email: isAdminThanh ? 'thanh@prinktech.com' : 'admin@prinktech.com',
+          name: isAdminThanh ? 'Thanh' : 'Website Admin',
           role: 'admin',
         },
       });
