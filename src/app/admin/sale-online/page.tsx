@@ -55,8 +55,7 @@ const PRESETS = [
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function fmt(n: number) {
-  if (n >= 1_000_000) return (n / 1_000_000).toFixed(1).replace(/\.0$/, '') + 'M';
-  if (n >= 1_000) return (n / 1_000).toFixed(0) + 'k';
+  if (n >= 10_000_000) return (n / 1_000_000).toFixed(1).replace(/\.0$/, '') + 'M';
   return n.toLocaleString('vi-VN');
 }
 function fmtFull(n: number) {

@@ -242,7 +242,7 @@ export async function GET(req: NextRequest) {
   // Expense breakdown
   const expenseByChannel = CHANNELS.map(ch => ({
     channel: ch,
-    value: expenses.filter((e: any) => e.channel === ch).reduce((s: number, e: any) => s + Number(e.amount), 0),
+    value: filteredExpenses.filter((e: any) => e.channel === ch).reduce((s: number, e: any) => s + Number(e.amount), 0),
   }));
   const expenseByCategory = CATEGORIES.map(cat => ({
     category: cat,
