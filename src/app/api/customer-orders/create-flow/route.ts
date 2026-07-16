@@ -199,6 +199,8 @@ export async function POST(req: NextRequest) {
       `- PDF Báo giá: ${pdfLink}` +
       (design_link ? `\n- File thiết kế khách gửi: ${design_link}` : '');
 
+    const costAmount = meters ? Math.round(Number(meters) * 150000) : 0;
+
     const newOrder = {
       order_code: orderCode,
       partner_id: customer_id,
@@ -217,6 +219,7 @@ export async function POST(req: NextRequest) {
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
       tags: ['Tem UV DTF', 'Báo giá tự động', apply_vat !== false ? 'VAT 8%' : 'VAT 0%', 'prinktech', `nguồn: ${order_source || 'website'}`],
+      cost_amount: costAmount
     };
 
     const { data: orderData, error: oErr } = await supabaseAdmin

@@ -214,6 +214,7 @@ export type Order = {
   shipping_carrier?: string | null;
   tracking_number?: string | null;
   converted_length?: number;
+  cost_amount?: number;
   source?: string;
   created_at: string;
   updated_at: string;

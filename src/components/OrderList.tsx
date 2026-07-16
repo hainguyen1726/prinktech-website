@@ -159,9 +159,10 @@ export default function OrderList() {
     setConfirmModal({ show: true, title, message, onConfirm });
   };
 
-  // States cho cập nhật vận chuyển
+  // States cho cập nhật vận chuyển & giá vốn
   const [shippingCarrierInput, setShippingCarrierInput] = useState('');
   const [trackingNumberInput, setTrackingNumberInput] = useState('');
+  const [costAmountInput, setCostAmountInput] = useState<number>(0);
 
   const [orderHistory, setOrderHistory] = useState<any[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
@@ -170,6 +171,11 @@ export default function OrderList() {
     if (selectedOrder) {
       setShippingCarrierInput(selectedOrder.shipping_carrier || '');
       setTrackingNumberInput(selectedOrder.tracking_number || '');
+      setCostAmountInput(
+        selectedOrder.cost_amount !== undefined && selectedOrder.cost_amount !== null
+          ? Number(selectedOrder.cost_amount)
+          : Math.round((selectedOrder.converted_length || 0) * 150000)
+      );
       
       const fetchHistory = async () => {
         setLoadingHistory(true);
@@ -579,26 +585,29 @@ export default function OrderList() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           shipping_carrier: shippingCarrierInput || null,
-          tracking_number: trackingNumberInput || null
+          tracking_number: trackingNumberInput || null,
+          cost_amount: Number(costAmountInput) || 0
         }),
       });
-      if (!res.ok) throw new Error('Cập nhật vận chuyển thất bại');
+      if (!res.ok) throw new Error('Cập nhật thông tin thất bại');
       
       // Update state
       setOrders(prev => prev.map(o => o.id === orderId ? { 
         ...o, 
         shipping_carrier: shippingCarrierInput || null, 
-        tracking_number: trackingNumberInput || null 
+        tracking_number: trackingNumberInput || null,
+        cost_amount: Number(costAmountInput) || 0
       } : o));
       
       if (selectedOrder?.id === orderId) {
         setSelectedOrder(prev => prev ? { 
           ...prev, 
           shipping_carrier: shippingCarrierInput || null, 
-          tracking_number: trackingNumberInput || null 
+          tracking_number: trackingNumberInput || null,
+          cost_amount: Number(costAmountInput) || 0
         } : null);
       }
-      showToast('Cập nhật thông tin vận chuyển thành công!', 'success');
+      showToast('Cập nhật thông tin vận chuyển & giá vốn thành công!', 'success');
     } catch (err) {
       showToast((err as Error).message, 'error');
     } finally {
@@ -1465,7 +1474,8 @@ export default function OrderList() {
                 </div>
 
                 {/* Đối soát Xưởng in & Lợi nhuận gộp (Nội bộ Admin) */}
-                {selectedOrder.converted_length !== undefined && selectedOrder.converted_length !== null && (
+                {((selectedOrder.converted_length !== undefined && selectedOrder.converted_length !== null) || 
+                  (selectedOrder.cost_amount !== undefined && selectedOrder.cost_amount !== null)) && (
                   <div className="rounded-xl border border-dashed border-emerald-350 bg-emerald-50/20 dark:bg-emerald-950/10 p-3.5 space-y-2">
                     <h4 className="text-[10px] uppercase font-bold text-emerald-600 dark:text-emerald-400 tracking-wider flex items-center gap-1">
                       📊 Đối soát Xưởng & Lợi nhuận ròng
@@ -1474,12 +1484,20 @@ export default function OrderList() {
                     <div className="space-y-1 text-xs">
                       <div className="flex justify-between text-text-muted">
                         <span>Mét in thực tế (Xưởng):</span>
-                        <span className="font-bold text-foreground font-mono">{selectedOrder.converted_length} m</span>
+                        <span className="font-bold text-foreground font-mono">
+                          {selectedOrder.converted_length !== undefined && selectedOrder.converted_length !== null 
+                            ? `${selectedOrder.converted_length} m` 
+                            : '—'}
+                        </span>
                       </div>
                       <div className="flex justify-between text-text-muted">
-                        <span>Giá vốn in trả xưởng (150k/m):</span>
+                        <span>Giá vốn in trả xưởng:</span>
                         <span className="font-bold text-foreground font-mono">
-                          {formatCurrency(selectedOrder.converted_length * 150000)}
+                          {formatCurrency(
+                            selectedOrder.cost_amount !== undefined && Number(selectedOrder.cost_amount) > 0
+                              ? Number(selectedOrder.cost_amount)
+                              : Math.round((selectedOrder.converted_length || 0) * 150000)
+                          )}
                         </span>
                       </div>
                       <div className="flex justify-between text-text-muted">
@@ -1495,11 +1513,13 @@ export default function OrderList() {
                         </span>
                       </div>
                       <div className="flex justify-between text-xs font-bold pt-1.5 border-t border-emerald-250 dark:border-emerald-800 text-emerald-700 dark:text-emerald-400">
-                        <span>Lợi nhuận ròng tạm tính:</span>
+                        <span>Lợi nhuận ròng thực tế:</span>
                         <span className="font-mono">
                           {formatCurrency(
                             selectedOrder.total - 
-                            (selectedOrder.converted_length * 150000) - 
+                            (selectedOrder.cost_amount !== undefined && Number(selectedOrder.cost_amount) > 0
+                              ? Number(selectedOrder.cost_amount)
+                              : Math.round((selectedOrder.converted_length || 0) * 150000)) - 
                             5000
                           )}
                         </span>
@@ -1580,12 +1600,27 @@ export default function OrderList() {
                       )}
                     </div>
 
+                    <div>
+                      <label className="block text-[10px] font-bold text-text-muted uppercase mb-1">Giá vốn xưởng (Cost)</label>
+                      <div className="relative">
+                        <input
+                          type="number"
+                          value={costAmountInput}
+                          onChange={e => setCostAmountInput(Number(e.target.value) || 0)}
+                          placeholder="Mặc định: Số mét * 150k"
+                          className="w-full h-9 pl-3 pr-8 rounded-lg border border-card-border bg-background text-foreground text-xs font-semibold focus:outline-none focus:border-[var(--accent)]"
+                        />
+                        <span className="absolute right-3 inset-y-0 flex items-center text-[10px] text-text-muted font-bold pointer-events-none">đ</span>
+                      </div>
+                      <p className="text-[9px] text-text-muted font-semibold mt-1">Mặc định tự động tính theo số mét thực tế của xưởng in × 150.000đ/m.</p>
+                    </div>
+
                     <button
                       onClick={() => handleShippingUpdate(selectedOrder.id)}
                       disabled={updatingId === selectedOrder.id}
                       className="w-full h-9 rounded-lg bg-[var(--accent)] hover:bg-[var(--accent)]/90 text-white text-xs font-bold transition flex items-center justify-center gap-1 cursor-pointer disabled:opacity-50"
                     >
-                      📦 Cập nhật vận chuyển
+                      📦 Cập nhật Vận chuyển & Giá vốn
                     </button>
                   </div>
                 </div>

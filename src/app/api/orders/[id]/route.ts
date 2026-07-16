@@ -34,7 +34,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
   const { id } = await params;
   const body = await req.json();
-  const { status, payment_status, shipping_carrier, tracking_number } = body;
+  const { status, payment_status, shipping_carrier, tracking_number, cost_amount } = body;
 
   // Lấy đơn hàng hiện tại để đối chiếu sự thay đổi cho việc ghi log
   const { data: isRetail } = await supabase
@@ -65,6 +65,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     if (payment_status) updates.payment_status = payment_status;
     if (shipping_carrier !== undefined) updates.shipping_carrier = shipping_carrier;
     if (tracking_number !== undefined) updates.tracking_number = tracking_number;
+    if (cost_amount !== undefined) updates.cost_amount = Number(cost_amount) || 0;
 
     // Tự động set timestamp khi thay đổi trạng thái
     if (status === 'confirmed') updates.confirmed_at = new Date().toISOString();
@@ -94,6 +95,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     const updates: Record<string, unknown> = {};
     if (status) updates.status = status;
     if (payment_status) updates.payment_status = payment_status;
+    if (cost_amount !== undefined) updates.cost_amount = Number(cost_amount) || 0;
 
     // Tự động set timestamp khi thay đổi trạng thái
     if (status === 'confirmed') updates.confirmed_at = new Date().toISOString();
@@ -176,6 +178,10 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   if (tracking_number !== undefined && oldOrder.tracking_number !== tracking_number) {
     logDesc += ` vận đơn [${oldOrder.tracking_number || 'chưa có'} ➔ ${tracking_number || 'đã xóa'}];`;
     details.tracking_number = { old: oldOrder.tracking_number, new: tracking_number };
+  }
+  if (cost_amount !== undefined && Number(oldOrder.cost_amount) !== Number(cost_amount)) {
+    logDesc += ` giá vốn xưởng [${oldOrder.cost_amount || 0}đ ➔ ${cost_amount}đ];`;
+    details.cost_amount = { old: oldOrder.cost_amount, new: cost_amount };
   }
 
   await logActivity({

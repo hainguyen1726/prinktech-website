@@ -340,7 +340,8 @@ export async function POST(req: NextRequest) {
         vat_tax_code: vat_tax_code?.trim() || null,
         vat_company_address: vat_company_address?.trim() || null,
         vat_email: vat_email?.trim() || null,
-        converted_length
+        converted_length,
+        cost_amount: Math.round(converted_length * 150000)
       })
       .select()
       .single();
