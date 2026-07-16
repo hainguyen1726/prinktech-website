@@ -97,6 +97,7 @@ export default function OrderList() {
     shipping_fee: 30000,
     design_link: '',
     note: '',
+    order_source: 'website',
   });
   const [customersList, setCustomersList] = useState<any[]>([]);
   const [submittingForm, setSubmittingForm] = useState(false);
@@ -137,7 +138,7 @@ export default function OrderList() {
 
   const handleProductChange = (type: string) => {
     if (type === 'other') {
-      setCreateFormData({
+      setCreateFormData(prev => ({
         product_type: 'other' as any,
         product_label: '',
         size_label: 'cái',
@@ -147,7 +148,8 @@ export default function OrderList() {
         shipping_fee: 30000,
         design_link: '',
         note: '',
-      });
+        order_source: prev.order_source || 'website',
+      }));
       return;
     }
 
@@ -166,7 +168,7 @@ export default function OrderList() {
     }
     const priceExclVat = Math.round(priceInclVat / 1.08);
 
-    setCreateFormData({
+    setCreateFormData(prev => ({
       product_type: type,
       product_label: label,
       size_label: size,
@@ -176,7 +178,8 @@ export default function OrderList() {
       shipping_fee: 30000,
       design_link: '',
       note: '',
-    });
+      order_source: prev.order_source || 'website',
+    }));
   };
 
   const handleQtyChange = (qty: number) => {
@@ -283,6 +286,7 @@ export default function OrderList() {
           shipping_fee: createFormData.shipping_fee,
           note: createFormData.note,
           design_link: createFormData.design_link,
+          order_source: createFormData.order_source,
         }),
       });
 
@@ -306,6 +310,7 @@ export default function OrderList() {
         shipping_fee: 30000,
         design_link: '',
         note: '',
+        order_source: 'website',
       });
       
       fetchOrders();
@@ -738,6 +743,21 @@ export default function OrderList() {
                     </div>
 
                     <div className="space-y-1">
+                      <label className="block text-xs font-bold text-slate-600">Nguồn đơn hàng *</label>
+                      <select
+                        value={createFormData.order_source}
+                        onChange={e => setCreateFormData(prev => ({ ...prev, order_source: e.target.value }))}
+                        className="w-full h-10 px-3 rounded-xl border border-card-border bg-background text-slate-900 text-sm font-semibold focus:outline-none focus:border-purple-650"
+                      >
+                        <option value="website">🌐 Website</option>
+                        <option value="fb">📘 Facebook (Mạng xã hội)</option>
+                        <option value="shopee">🛍️ Shopee</option>
+                        <option value="tiktok">🎵 Tiktok</option>
+                        <option value="other">❓ Khác</option>
+                      </select>
+                    </div>
+
+                    <div className="space-y-1">
                       <label className="block text-xs font-bold text-slate-600">Ghi chú đơn hàng</label>
                       <textarea
                         rows={2}
@@ -847,8 +867,12 @@ export default function OrderList() {
             className="h-10 px-3 rounded-xl border border-card-border bg-background text-slate-900 text-sm font-semibold focus:outline-none focus:border-[var(--accent)]"
           >
             <option value="all" className="bg-card-bg text-slate-900">Tất cả nguồn đơn</option>
-            <option value="web" className="bg-card-bg text-slate-900">🌐 Đơn từ Website</option>
-            <option value="admin" className="bg-card-bg text-slate-900">👤 Đơn do Admin tạo</option>
+            <option value="website" className="bg-card-bg text-slate-900">🌐 Website</option>
+            <option value="fb" className="bg-card-bg text-slate-900">📘 Facebook</option>
+            <option value="shopee" className="bg-card-bg text-slate-900">🛍️ Shopee</option>
+            <option value="tiktok" className="bg-card-bg text-slate-900">🎵 Tiktok</option>
+            <option value="admin" className="bg-card-bg text-slate-900">👤 Admin tạo (Chưa phân loại)</option>
+            <option value="other" className="bg-card-bg text-slate-900">❓ Khác</option>
           </select>
           <button
             onClick={handleSearchSubmit}
@@ -900,11 +924,23 @@ export default function OrderList() {
                             <span className="font-mono font-bold text-xs text-[var(--accent)]">{order.order_number}</span>
                             <div className="mt-1">
                               <span className={`inline-block px-1.5 py-0.5 rounded text-[9px] font-bold border ${
-                                order.source === 'web' 
-                                  ? 'bg-blue-50 text-blue-600 border-blue-200' 
-                                  : 'bg-amber-55 text-amber-800 border-amber-200'
+                                order.source === 'website' || order.source === 'web'
+                                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200' 
+                                  : order.source === 'fb' || order.source === 'facebook'
+                                  ? 'bg-blue-50 text-blue-700 border-blue-200'
+                                  : order.source === 'shopee'
+                                  ? 'bg-orange-50 text-orange-700 border-orange-200'
+                                  : order.source === 'tiktok'
+                                  ? 'bg-slate-50 text-slate-800 border-slate-300'
+                                  : order.source === 'other' || order.source === 'khác'
+                                  ? 'bg-yellow-50 text-yellow-800 border-yellow-200'
+                                  : 'bg-purple-50 text-purple-700 border-purple-200'
                               }`}>
-                                {order.source === 'web' ? '🌐 Web' : '👤 Admin'}
+                                {order.source === 'website' || order.source === 'web' ? '🌐 Website' :
+                                 order.source === 'fb' || order.source === 'facebook' ? '📘 Facebook' :
+                                 order.source === 'shopee' ? '🛍️ Shopee' :
+                                 order.source === 'tiktok' ? '🎵 Tiktok' :
+                                 order.source === 'other' || order.source === 'khác' ? '❓ Khác' : '👤 Admin tạo'}
                               </span>
                             </div>
                             <h4 className="font-bold text-sm text-foreground mt-1">{order.customer_name}</h4>
@@ -960,11 +996,23 @@ export default function OrderList() {
                               <span className="text-[var(--accent)]">{order.order_number}</span>
                               <div className="mt-1">
                                 <span className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-extrabold border shadow-sm ${
-                                  order.source === 'web' 
+                                  order.source === 'website' || order.source === 'web'
                                     ? 'bg-emerald-50 text-emerald-700 border-emerald-200' 
+                                    : order.source === 'fb' || order.source === 'facebook'
+                                    ? 'bg-blue-50 text-blue-700 border-blue-200'
+                                    : order.source === 'shopee'
+                                    ? 'bg-orange-50 text-orange-700 border-orange-200'
+                                    : order.source === 'tiktok'
+                                    ? 'bg-slate-50 text-slate-800 border-slate-300'
+                                    : order.source === 'other' || order.source === 'khác'
+                                    ? 'bg-yellow-50 text-yellow-800 border-yellow-200'
                                     : 'bg-purple-50 text-purple-700 border-purple-200'
                                  }`}>
-                                   {order.source === 'web' ? '🌐 Khách đặt' : '👤 Admin tạo'}
+                                  {order.source === 'website' || order.source === 'web' ? '🌐 Website' :
+                                   order.source === 'fb' || order.source === 'facebook' ? '📘 Facebook' :
+                                   order.source === 'shopee' ? '🛍️ Shopee' :
+                                   order.source === 'tiktok' ? '🎵 Tiktok' :
+                                   order.source === 'other' || order.source === 'khác' ? '❓ Khác' : '👤 Admin tạo'}
                                  </span>
                               </div>
                             </td>

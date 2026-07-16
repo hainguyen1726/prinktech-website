@@ -108,7 +108,7 @@ export async function GET(req: NextRequest) {
       shipping_carrier: o.shipping_carrier || null,
       tracking_number: o.tracking_number || null,
       converted_length: Number(o.converted_length) || 0,
-      source: 'web',
+      source: 'website',
       created_at: o.created_at
     }));
 
@@ -152,6 +152,14 @@ export async function GET(req: NextRequest) {
       const discount = Number(o.discount_amount) || 0;
       const total = itemSubtotal + shippingFee - discount;
 
+      let orderSource = 'admin';
+      if (Array.isArray(o.tags)) {
+        const found = o.tags.find((t: string) => t.toLowerCase().startsWith('nguồn:'));
+        if (found) {
+          orderSource = found.replace(/nguồn:\s*/i, '').trim().toLowerCase();
+        }
+      }
+
       return {
         id: o.id,
         order_number: o.order_code,
@@ -174,7 +182,7 @@ export async function GET(req: NextRequest) {
         quote_pdf_url: pdfUrl,
         shipping_carrier: shippingCarrier,
         tracking_number: trackingNumber,
-        source: 'admin',
+        source: orderSource,
         created_at: o.created_at
       };
     });

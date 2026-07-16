@@ -31,6 +31,7 @@ export async function POST(req: NextRequest) {
       shipping_fee,
       note,
       design_link, // Link thiết kế ban đầu
+      order_source, // Nguồn đơn hàng (website, fb, shopee, tiktok, other)
     } = body;
 
     // Validate bắt buộc
@@ -213,7 +214,7 @@ export async function POST(req: NextRequest) {
       note: orderNote,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
-      tags: ['Tem UV DTF', 'Báo giá tự động', 'VAT 8%', 'prinktech'],
+      tags: ['Tem UV DTF', 'Báo giá tự động', 'VAT 8%', 'prinktech', `nguồn: ${order_source || 'website'}`],
     };
 
     const { data: orderData, error: oErr } = await supabaseAdmin
