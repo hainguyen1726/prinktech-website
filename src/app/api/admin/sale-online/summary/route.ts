@@ -38,7 +38,7 @@ function channelFromTags(tags: string[] | null): string {
 }
 
 // ─── Date range helpers ───────────────────────────────
-function getDateRange(preset: string): { from: string; to: string } {
+function getDateRange(preset: string, paramFrom?: string | null, paramTo?: string | null): { from: string; to: string } {
   const now = new Date();
   const toDay = now.toISOString().slice(0, 10);
 
@@ -69,6 +69,12 @@ function getDateRange(preset: string): { from: string; to: string } {
     case 'last_year': {
       const y = now.getFullYear() - 1;
       return { from: `${y}-01-01`, to: `${y}-12-31` };
+    }
+    case 'all': {
+      return { from: '2026-01-01', to: toDay };
+    }
+    case 'custom': {
+      return { from: paramFrom || '2026-01-01', to: paramTo || toDay };
     }
     default: {
       const from = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
@@ -179,8 +185,8 @@ export async function GET(req: NextRequest) {
   let from = searchParams.get('from');
   let to = searchParams.get('to');
 
-  if (!from || !to) {
-    const range = getDateRange(preset);
+  if (!from || !to || preset !== 'custom') {
+    const range = getDateRange(preset, from, to);
     from = range.from; to = range.to;
   }
 

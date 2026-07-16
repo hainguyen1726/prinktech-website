@@ -47,6 +47,8 @@ export async function GET(req: NextRequest) {
     const search = searchParams.get('search');
     const source = searchParams.get('source') || 'all';
     const vat = searchParams.get('vat') || 'all'; // all, yes, no
+    const from = searchParams.get('from'); // YYYY-MM-DD
+    const to = searchParams.get('to'); // YYYY-MM-DD
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '20');
     const offset = (page - 1) * limit;
@@ -59,6 +61,12 @@ export async function GET(req: NextRequest) {
     if (status && status !== 'all') {
       retailQuery = retailQuery.eq('status', status);
     }
+    if (from) {
+      retailQuery = retailQuery.gte('created_at', `${from}T00:00:00.000Z`);
+    }
+    if (to) {
+      retailQuery = retailQuery.lte('created_at', `${to}T23:59:59.999Z`);
+    }
 
     // 2. Tạo query cho orders (đơn admin)
     let ordersQuery = supabase
@@ -67,6 +75,12 @@ export async function GET(req: NextRequest) {
 
     if (status && status !== 'all') {
       ordersQuery = ordersQuery.eq('status', status);
+    }
+    if (from) {
+      ordersQuery = ordersQuery.gte('created_at', `${from}T00:00:00.000Z`);
+    }
+    if (to) {
+      ordersQuery = ordersQuery.lte('created_at', `${to}T23:59:59.999Z`);
     }
 
     // Thực hiện query song song

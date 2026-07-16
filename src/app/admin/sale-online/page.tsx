@@ -1,12 +1,10 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import Link from 'next/link';
 import {
   TrendingUp, TrendingDown, Minus,
   DollarSign, ShoppingCart, BarChart2, Percent,
-  Package, Plus, Trash2, X, Check,
-  RefreshCw, AlertCircle, ExternalLink, Info
+  Package, RefreshCw, AlertCircle, Check, X, Info
 } from 'lucide-react';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -24,16 +22,6 @@ interface SummaryData {
     expenseByCategory: CategoryBreakdown[];
   };
   chartData: ChartPoint[];
-}
-interface Revenue {
-  id: string; date: string; channel: string;
-  amount_excl_vat: number; vat_amount: number; shipping_fee_collected: number;
-  has_vat: boolean; has_shipping: boolean; order_count: number;
-  order_ref?: string; note?: string; created_at: string;
-}
-interface Expense {
-  id: string; date: string; channel: string; category: string;
-  amount: number; description?: string; note?: string; created_at: string;
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -61,6 +49,8 @@ const PRESETS = [
   { value: 'last_week', label: 'Tuần trước' },
   { value: 'last_month', label: 'Tháng trước' },
   { value: 'last_year', label: 'Năm trước' },
+  { value: 'all', label: 'Tất cả thời gian' },
+  { value: 'custom', label: '📅 Tùy chọn' }
 ];
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -118,105 +108,119 @@ function KPICard({ label, value, pct, icon, format = 'currency', color }: {
       {trend !== null && (
         <div className={`flex items-center gap-1.5 text-xs font-bold ${trend === 'up' ? 'text-emerald-600' : trend === 'down' ? 'text-red-500' : 'text-slate-400'}`}>
           {trend === 'up' ? <TrendingUp size={13} /> : trend === 'down' ? <TrendingDown size={13} /> : <Minus size={13} />}
-          {pct !== null ? (Math.abs(pct).toFixed(1) + '% so kỳ trước') : 'Không có dữ liệu'}
+          <span>{pct !== null ? (pct > 0 ? '+' : '') + pct + '%' : '0%'}</span>
+          <span className="text-slate-400 dark:text-slate-500 font-medium">so kỳ trước</span>
         </div>
       )}
     </div>
   );
 }
 
-// Bar Chart
+// Custom Bar Chart (SVG-based)
 function BarChart({ data }: { data: ChartPoint[] }) {
-  const [tooltip, setTooltip] = useState<{ idx: number; x: number; y: number } | null>(null);
-  if (!data.length) return <div className="flex items-center justify-center h-48 text-slate-400 text-sm">Không có dữ liệu</div>;
+  if (data.length === 0) return <div className="h-48 flex items-center justify-center text-slate-400 text-xs">Chưa có dữ liệu thống kê</div>;
 
-  const maxVal = Math.max(...data.map(d => Math.max(d.revenue, d.expense)), 1);
-  const barW = Math.max(8, Math.min(36, Math.floor(560 / data.length / 2.5)));
-  const gap = Math.max(4, barW * 0.3);
+  const maxVal = Math.max(...data.map(d => Math.max(d.revenue, d.expense)), 1000);
+  const chartHeight = 160;
+  const barWidth = 14;
+  const gap = 16;
+  const paddingLeft = 45;
+  const paddingRight = 10;
+  const paddingTop = 15;
+  const paddingBottom = 25;
+  const viewWidth = paddingLeft + paddingRight + data.length * (barWidth * 2 + gap);
 
   return (
-    <div className="relative overflow-x-auto">
-      <svg
-        viewBox={`0 0 ${Math.max(600, data.length * (barW * 2 + gap + 8) + 60)} 200`}
-        className="w-full min-w-[500px]"
-        style={{ height: 200 }}
-        onMouseLeave={() => setTooltip(null)}
-      >
-        {[0, 0.25, 0.5, 0.75, 1].map(r => (
-          <line key={r} x1="40" y1={180 - r * 160} x2="99%" y2={180 - r * 160}
-            stroke="currentColor" strokeOpacity={0.06} strokeWidth={1} className="text-slate-600" />
-        ))}
-        {data.map((d, i) => {
-          const x = 48 + i * (barW * 2 + gap + 8);
-          const rh = Math.max(2, (d.revenue / maxVal) * 160);
-          const eh = Math.max(2, (d.expense / maxVal) * 160);
+    <div className="overflow-x-auto scrollbar-none">
+      <svg width={Math.max(viewWidth, 500)} height={chartHeight + paddingTop + paddingBottom} className="mx-auto font-sans">
+        {/* Y Axis Grid Lines & Labels */}
+        {[0, 0.25, 0.5, 0.75, 1].map((r, i) => {
+          const val = maxVal * r;
+          const y = paddingTop + chartHeight * (1 - r);
           return (
-            <g key={d.date}
-              onMouseEnter={e => setTooltip({ idx: i, x: e.clientX, y: e.clientY })}
-              style={{ cursor: 'pointer' }}>
-              {/* Revenue bar */}
-              <rect x={x} y={180 - rh} width={barW} height={rh} rx={3} fill="#10b981" opacity={0.85} />
-              {/* Expense bar */}
-              <rect x={x + barW + 3} y={180 - eh} width={barW} height={eh} rx={3} fill="#ef4444" opacity={0.75} />
-              {/* Date label */}
-              {i % Math.max(1, Math.floor(data.length / 8)) === 0 && (
-                <text x={x + barW} y={197} textAnchor="middle" fontSize={9} fill="currentColor" opacity={0.4} className="text-slate-600">
-                  {fmtDate(d.date)}
-                </text>
-              )}
+            <g key={i} className="opacity-40">
+              <line x1={paddingLeft} y1={y} x2="100%" y2={y} stroke="#e2e8f0" strokeDasharray="3 3" className="dark:stroke-slate-800" />
+              <text x={paddingLeft - 8} y={y + 3} textAnchor="end" className="text-[10px] font-bold fill-slate-400 dark:fill-slate-500">{fmt(val)}</text>
             </g>
           );
         })}
-        {/* Y axis labels */}
-        {[0, 0.5, 1].map(r => (
-          <text key={r} x={36} y={180 - r * 160 + 4} textAnchor="end" fontSize={9} fill="currentColor" opacity={0.4} className="text-slate-600">
-            {fmt(maxVal * r)}
-          </text>
-        ))}
+
+        {/* Bars */}
+        {data.map((d, i) => {
+          const groupWidth = barWidth * 2 + gap;
+          const xGroup = paddingLeft + i * groupWidth;
+          const revHeight = (d.revenue / maxVal) * chartHeight;
+          const expHeight = (d.expense / maxVal) * chartHeight;
+
+          const yRev = paddingTop + chartHeight - revHeight;
+          const yExp = paddingTop + chartHeight - expHeight;
+
+          return (
+            <g key={i} className="group">
+              {/* Revenue Bar */}
+              <rect x={xGroup} y={yRev} width={barWidth} height={revHeight} rx={3} fill="#10b981" className="hover:opacity-85 transition-opacity" />
+              {/* Expense Bar */}
+              <rect x={xGroup + barWidth + 2} y={yExp} width={barWidth} height={expHeight} rx={3} fill="#ef4444" className="hover:opacity-85 transition-opacity" />
+
+              {/* X Axis Label */}
+              <text x={xGroup + barWidth} y={paddingTop + chartHeight + 15} textAnchor="middle" className="text-[9px] font-bold fill-slate-400 dark:fill-slate-500">
+                {fmtDate(d.date)}
+              </text>
+
+              {/* Tooltip on hover */}
+              <title>{`Ngày: ${d.date}\nDoanh thu: ${fmtFull(d.revenue)}\nChi phí: ${fmtFull(d.expense)}\nĐơn hàng: ${d.orders} đơn`}</title>
+            </g>
+          );
+        })}
+        
+        {/* Bottom Line */}
+        <line x1={paddingLeft} y1={paddingTop + chartHeight} x2="100%" y2={paddingTop + chartHeight} stroke="#cbd5e1" className="dark:stroke-slate-700" />
       </svg>
-      {/* Tooltip */}
-      {tooltip !== null && data[tooltip.idx] && (
-        <div className="absolute bg-slate-900 text-white text-xs rounded-lg px-3 py-2 shadow-xl pointer-events-none z-10"
-          style={{ top: 8, left: Math.min(tooltip.idx * 50 + 60, 400) }}>
-          <div className="font-bold mb-1">{data[tooltip.idx].date}</div>
-          <div className="text-emerald-400">Doanh thu: {fmtFull(data[tooltip.idx].revenue)}</div>
-          <div className="text-red-400">Chi phí: {fmtFull(data[tooltip.idx].expense)}</div>
-          <div className={data[tooltip.idx].revenue - data[tooltip.idx].expense >= 0 ? 'text-blue-400' : 'text-orange-400'}>
-            Lợi nhuận: {fmtFull(data[tooltip.idx].revenue - data[tooltip.idx].expense)}
-          </div>
-        </div>
-      )}
-      {/* Legend */}
-      <div className="flex items-center gap-4 mt-2 justify-center text-xs font-semibold text-slate-500">
-        <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-emerald-500 inline-block" />Doanh thu</span>
-        <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-red-500 inline-block" />Chi phí</span>
-      </div>
     </div>
   );
 }
 
-// Simple donut chart via SVG
-function DonutChart({ data, total, colors }: { data: { label: string; value: number; color: string }[]; total: number; colors?: string[] }) {
-  if (total === 0) return <div className="text-center text-slate-400 text-xs py-4">Không có dữ liệu</div>;
-  const r = 48; const cx = 60; const cy = 60;
-  let cum = 0;
-  const arcs = data.filter(d => d.value > 0).map((d, i) => {
-    const startAngle = (cum / total) * 2 * Math.PI - Math.PI / 2;
-    cum += d.value;
-    const endAngle = (cum / total) * 2 * Math.PI - Math.PI / 2;
-    const x1 = cx + r * Math.cos(startAngle);
-    const y1 = cy + r * Math.sin(startAngle);
-    const x2 = cx + r * Math.cos(endAngle);
-    const y2 = cy + r * Math.sin(endAngle);
-    const large = (d.value / total) > 0.5 ? 1 : 0;
-    return { ...d, d: `M ${cx} ${cy} L ${x1} ${y1} A ${r} ${r} 0 ${large} 1 ${x2} ${y2} Z`, color: colors?.[i] || d.color };
-  });
+// Donut Chart
+function DonutChart({ data, total, colors }: { data: { label: string; value: number; color?: string }[]; total: number; colors?: string[] }) {
+  if (total === 0) return <div className="h-32 flex items-center justify-center text-slate-400 text-xs">Chưa có dữ liệu phân tích</div>;
+
+  const size = 120;
+  const radius = 45;
+  const circum = 2 * Math.PI * radius;
+  const strokeWidth = 14;
+  const center = size / 2;
+
+  let accumulatedAngle = 0;
+
   return (
-    <div className="flex items-center gap-4 flex-wrap">
-      <svg viewBox="0 0 120 120" className="w-24 h-24 shrink-0">
-        {arcs.map((arc, i) => <path key={i} d={arc.d} fill={arc.color} opacity={0.85} />)}
-        <circle cx={cx} cy={cy} r={28} fill="white" className="dark:fill-[#0f172a]" />
-      </svg>
+    <div className="flex flex-col sm:flex-row items-center gap-6 p-2">
+      <div className="relative shrink-0" style={{ width: size, height: size }}>
+        <svg width={size} height={size} className="transform -rotate-90">
+          <circle cx={center} cy={center} r={radius} fill="transparent" stroke="#e2e8f0" strokeWidth={strokeWidth} className="dark:stroke-slate-800" />
+          {data.map((d, i) => {
+            const percentage = d.value / total;
+            const strokeDashoffset = circum * (1 - percentage);
+            const strokeDasharray = `${circum} ${circum}`;
+            const rotation = (accumulatedAngle / total) * 360;
+            accumulatedAngle += d.value;
+
+            return (
+              <circle
+                key={i} cx={center} cy={center} r={radius} fill="transparent"
+                stroke={colors?.[i] || d.color || '#3b82f6'} strokeWidth={strokeWidth}
+                strokeDasharray={strokeDasharray} strokeDashoffset={strokeDashoffset}
+                transform={`rotate(${rotation} ${center} ${center})`}
+                className="transition-all duration-500 hover:opacity-90"
+              />
+            );
+          })}
+        </svg>
+        <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
+          <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Tổng cộng</span>
+          <span className="text-sm font-black text-slate-900 dark:text-white tabular-nums">{fmt(total)}</span>
+        </div>
+      </div>
+
       <div className="flex flex-col gap-1.5 text-xs">
         {data.filter(d => d.value > 0).map((d, i) => (
           <div key={i} className="flex items-center gap-2">
@@ -231,132 +235,46 @@ function DonutChart({ data, total, colors }: { data: { label: string; value: num
   );
 }
 
-
-
-// Expense form
-function ExpenseForm({ onSave, onCancel, today }: { onSave: (d: Partial<Expense>) => void; onCancel: () => void; today: string }) {
-  const [form, setForm] = useState({ date: today, channel: 'facebook', category: 'ads', amount: '', description: '', note: '' });
-  const set = (k: string, v: string) => setForm(p => ({ ...p, [k]: v }));
-
-  return (
-    <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50 rounded-2xl p-5 space-y-4">
-      <h4 className="font-bold text-red-700 dark:text-red-300 text-sm flex items-center gap-2"><TrendingDown size={15} /> Nhập chi phí mới</h4>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <div>
-          <label className="text-xs font-bold text-slate-600 dark:text-slate-400 mb-1 block">Ngày *</label>
-          <input type="date" value={form.date} onChange={e => set('date', e.target.value)} className="w-full text-sm border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 bg-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-red-500" />
-        </div>
-        <div>
-          <label className="text-xs font-bold text-slate-600 dark:text-slate-400 mb-1 block">Kênh</label>
-          <select value={form.channel} onChange={e => set('channel', e.target.value)} className="w-full text-sm border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 bg-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-red-500">
-            {[...CHANNELS.filter(c => c.value !== 'all'), { value: 'all', label: 'Tất cả kênh', color: '#64748b' }].map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
-          </select>
-        </div>
-        <div>
-          <label className="text-xs font-bold text-slate-600 dark:text-slate-400 mb-1 block">Loại chi phí *</label>
-          <select value={form.category} onChange={e => set('category', e.target.value)} className="w-full text-sm border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 bg-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-red-500">
-            {EXPENSE_CATEGORIES.map(c => <option key={c.value} value={c.value}>{c.icon} {c.label}</option>)}
-          </select>
-        </div>
-        <div>
-          <label className="text-xs font-bold text-slate-600 dark:text-slate-400 mb-1 block">Số tiền *</label>
-          <input type="number" min={0} value={form.amount} onChange={e => set('amount', e.target.value)} placeholder="0" className="w-full text-sm border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 bg-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-red-500" />
-        </div>
-      </div>
-      <div className="grid grid-cols-2 gap-3">
-        <div>
-          <label className="text-xs font-bold text-slate-600 dark:text-slate-400 mb-1 block">Mô tả</label>
-          <input value={form.description} onChange={e => set('description', e.target.value)} placeholder="VD: Facebook Ads tháng 7/2026" className="w-full text-sm border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 bg-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-red-500" />
-        </div>
-        <div>
-          <label className="text-xs font-bold text-slate-600 dark:text-slate-400 mb-1 block">Ghi chú</label>
-          <input value={form.note} onChange={e => set('note', e.target.value)} className="w-full text-sm border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 bg-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-red-500" />
-        </div>
-      </div>
-      <div className="flex gap-2 justify-end">
-        <button onClick={onCancel} className="px-4 py-2 text-xs font-bold text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition">Hủy</button>
-        <button onClick={() => onSave({ date: form.date, channel: form.channel, category: form.category, amount: Number(form.amount) || 0, description: form.description, note: form.note })} className="px-5 py-2 text-xs font-bold bg-red-600 hover:bg-red-700 text-white rounded-lg transition flex items-center gap-2">
-          <Check size={13} /> Lưu chi phí
-        </button>
-      </div>
-    </div>
-  );
-}
-
-// ─── Main Page ─────────────────────────────────────────────────────────────────
+// ─── Main Component ───────────────────────────────────────────────────────────
 export default function SaleOnlinePage() {
-  const today = new Date().toISOString().slice(0, 10);
   const [preset, setPreset] = useState('this_month');
   const [channel, setChannel] = useState('all');
+  const [customFrom, setCustomFrom] = useState('');
+  const [customTo, setCustomTo] = useState('');
+  
   const [summary, setSummary] = useState<SummaryData | null>(null);
-  const [revenues, setRevenues] = useState<Revenue[]>([]);
-  const [expenses, setExpenses] = useState<Expense[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'revenue' | 'expense' | 'entry'>('revenue');
-  const [showRevForm, setShowRevForm] = useState(false);
-  const [showExpForm, setShowExpForm] = useState(false);
+  const [activeTab, setActiveTab] = useState<'revenue' | 'expense'>('revenue');
   const [toast, setToast] = useState<{ msg: string; type: 'success' | 'error' } | null>(null);
-  const [deleting, setDeleting] = useState<string | null>(null);
 
   const showToast = (msg: string, type: 'success' | 'error' = 'success') => setToast({ msg, type });
 
   const fetchAll = useCallback(async () => {
     setLoading(true);
     try {
-      const [sumRes, revRes, expRes] = await Promise.all([
-        fetch(`/api/admin/sale-online/summary?preset=${preset}&channel=${channel}`),
-        fetch(`/api/admin/sale-online/revenues?limit=100`),
-        fetch(`/api/admin/sale-online/expenses?limit=100`),
-      ]);
-      if (sumRes.ok) setSummary(await sumRes.json());
-      if (revRes.ok) { const d = await revRes.json(); setRevenues(d.data || []); }
-      if (expRes.ok) { const d = await expRes.json(); setExpenses(d.data || []); }
+      const queryParams: Record<string, string> = {
+        preset,
+        channel
+      };
+
+      if (preset === 'custom') {
+        if (customFrom) queryParams.from = customFrom;
+        if (customTo) queryParams.to = customTo;
+      }
+
+      const params = new URLSearchParams(queryParams);
+      const sumRes = await fetch(`/api/admin/sale-online/summary?${params.toString()}`);
+      if (sumRes.ok) {
+        setSummary(await sumRes.json());
+      } else {
+        showToast('Lỗi tải dữ liệu báo cáo', 'error');
+      }
     } catch (e) {
       showToast('Lỗi tải dữ liệu', 'error');
     } finally { setLoading(false); }
-  }, [preset, channel]);
+  }, [preset, channel, customFrom, customTo]);
 
   useEffect(() => { fetchAll(); }, [fetchAll]);
-
-  const saveRevenue = async (data: Partial<Revenue>) => {
-    try {
-      const res = await fetch('/api/admin/sale-online/revenues', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
-      if (!res.ok) { const e = await res.json(); showToast(e.error || 'Lỗi lưu doanh thu', 'error'); return; }
-      showToast('Đã lưu doanh thu ✓');
-      setShowRevForm(false);
-      fetchAll();
-    } catch { showToast('Lỗi kết nối', 'error'); }
-  };
-
-  const saveExpense = async (data: Partial<Expense>) => {
-    try {
-      const res = await fetch('/api/admin/sale-online/expenses', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
-      if (!res.ok) { const e = await res.json(); showToast(e.error || 'Lỗi lưu chi phí', 'error'); return; }
-      showToast('Đã lưu chi phí ✓');
-      setShowExpForm(false);
-      fetchAll();
-    } catch { showToast('Lỗi kết nối', 'error'); }
-  };
-
-  const deleteRevenue = async (id: string) => {
-    setDeleting(id);
-    try {
-      const res = await fetch(`/api/admin/sale-online/revenues/${id}`, { method: 'DELETE' });
-      if (!res.ok) { showToast('Lỗi xóa doanh thu', 'error'); return; }
-      showToast('Đã xóa doanh thu');
-      fetchAll();
-    } catch { showToast('Lỗi kết nối', 'error'); } finally { setDeleting(null); }
-  };
-
-  const deleteExpense = async (id: string) => {
-    setDeleting(id);
-    try {
-      const res = await fetch(`/api/admin/sale-online/expenses/${id}`, { method: 'DELETE' });
-      if (!res.ok) { showToast('Lỗi xóa chi phí', 'error'); return; }
-      showToast('Đã xóa chi phí');
-      fetchAll();
-    } catch { showToast('Lỗi kết nối', 'error'); } finally { setDeleting(null); }
-  };
 
   const kpis = summary?.kpis;
   const breakdown = summary?.breakdown;
@@ -368,7 +286,7 @@ export default function SaleOnlinePage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-xl lg:text-2xl font-black text-slate-900 dark:text-white">📊 Sale Online Dashboard</h1>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Theo dõi doanh thu & chi phí theo kênh bán hàng</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Theo dõi phân tích doanh thu bán lẻ đa kênh & đối chiếu chi phí thực tế</p>
         </div>
         <button onClick={fetchAll} disabled={loading} className="flex items-center gap-2 px-3 py-2 text-xs font-bold border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition text-slate-600 dark:text-slate-300 disabled:opacity-50 w-fit">
           <RefreshCw size={13} className={loading ? 'animate-spin' : ''} /> Làm mới
@@ -378,17 +296,44 @@ export default function SaleOnlinePage() {
       {/* Filter Bar */}
       <div className="glass-card bg-white dark:bg-[#0f172a]/60 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 flex flex-col gap-3">
         {/* Preset buttons */}
-        <div className="flex flex-wrap gap-2">
-          {PRESETS.map(p => (
-            <button key={p.value} onClick={() => setPreset(p.value)}
-              className={`px-3 py-1.5 text-xs font-bold rounded-lg border transition ${preset === p.value ? 'bg-sky-500 text-white border-sky-500 shadow-sm' : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-sky-300 hover:text-sky-600'}`}>
-              {p.label}
-            </button>
-          ))}
+        <div className="flex flex-col gap-1.5">
+          <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Thời gian:</span>
+          <div className="flex flex-wrap gap-1.5">
+            {PRESETS.map(p => (
+              <button key={p.value} onClick={() => setPreset(p.value)}
+                className={`px-3 py-1.5 text-xs font-bold rounded-lg border transition ${preset === p.value ? 'bg-sky-500 text-white border-sky-500 shadow-sm' : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-sky-300 hover:text-sky-600'}`}>
+                {p.label}
+              </button>
+            ))}
+          </div>
         </div>
+
+        {preset === 'custom' && (
+          <div className="flex items-center gap-2 pt-1 animate-slide-down">
+            <div className="flex items-center gap-1.5 text-xs">
+              <span className="font-bold text-slate-400">Từ:</span>
+              <input 
+                type="date" 
+                value={customFrom} 
+                onChange={e => setCustomFrom(e.target.value)}
+                className="border border-slate-200 dark:border-slate-800 rounded-lg px-2.5 py-1 text-xs bg-white dark:bg-slate-900 text-foreground"
+              />
+            </div>
+            <div className="flex items-center gap-1.5 text-xs">
+              <span className="font-bold text-slate-400">Đến:</span>
+              <input 
+                type="date" 
+                value={customTo} 
+                onChange={e => setCustomTo(e.target.value)}
+                className="border border-slate-200 dark:border-slate-800 rounded-lg px-2.5 py-1 text-xs bg-white dark:bg-slate-900 text-foreground"
+              />
+            </div>
+          </div>
+        )}
+
         {/* Channel filter */}
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-xs font-bold text-slate-400 dark:text-slate-500">Kênh:</span>
+        <div className="flex items-center gap-2 flex-wrap pt-1 border-t border-slate-100 dark:border-slate-800/80">
+          <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider shrink-0 mr-1">Kênh lọc:</span>
           {CHANNELS.map(c => (
             <button key={c.value} onClick={() => setChannel(c.value)}
               className={`px-3 py-1 text-xs font-bold rounded-full border transition ${channel === c.value ? 'text-white border-transparent shadow-sm' : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:opacity-80'}`}
@@ -397,9 +342,10 @@ export default function SaleOnlinePage() {
             </button>
           ))}
         </div>
+        
         {summary?.period && (
-          <div className="text-xs text-slate-400 dark:text-slate-500 font-medium">
-            📅 {summary.period.from} → {summary.period.to}
+          <div className="text-[11px] text-slate-400 dark:text-slate-500 font-medium">
+            📅 Khoảng dữ liệu: {summary.period.from} ➔ {summary.period.to}
           </div>
         )}
       </div>
@@ -431,7 +377,6 @@ export default function SaleOnlinePage() {
           {([
             { key: 'revenue', label: '📈 Phân tích Doanh thu' },
             { key: 'expense', label: '💸 Phân tích Chi phí' },
-            { key: 'entry', label: '✏️ Nhập liệu' },
           ] as const).map(t => (
             <button key={t.key} onClick={() => setActiveTab(t.key)}
               className={`px-5 py-3.5 text-xs font-bold transition border-b-2 -mb-px ${activeTab === t.key ? 'border-sky-500 text-sky-600 dark:text-sky-400' : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}>
@@ -545,68 +490,6 @@ export default function SaleOnlinePage() {
                           <td className="py-2.5 px-3 text-slate-500">{kpis?.expenses.value ? Math.round((d.value / kpis.expenses.value) * 100) + '%' : '-'}</td>
                         </tr>
                       ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Data Entry Tab */}
-          {activeTab === 'entry' && (
-            <div className="space-y-6">
-              {/* Info panel */}
-              <div className="flex gap-3 p-4 rounded-xl bg-sky-50 dark:bg-sky-950/20 border border-sky-200 dark:border-sky-850 text-xs text-sky-850 dark:text-sky-300">
-                <Info size={16} className="shrink-0 mt-0.5" />
-                <div className="space-y-1">
-                  <p className="font-bold">Hệ thống Doanh thu tự động</p>
-                  <p>Doanh thu của mảng Sale Online được đồng bộ tự động 100% từ danh sách đơn hàng bán lẻ và đơn hàng B2B (các đơn có tag prinktech hoặc nguồn cụ thể).</p>
-                  <div className="pt-1.5">
-                    <Link href="/admin/don-hang" className="font-bold inline-flex items-center gap-1 text-sky-600 dark:text-sky-400 hover:underline">
-                      Đi đến trang Quản lý đơn hàng để thêm/sửa đơn hàng <ExternalLink size={12} />
-                    </Link>
-                  </div>
-                </div>
-              </div>
-
-              {/* Expense form section */}
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider">Chi phí phát sinh (nhập thủ công)</h4>
-                  {!showExpForm && (
-                    <button onClick={() => setShowExpForm(true)} className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold bg-red-600 hover:bg-red-700 text-white rounded-lg transition">
-                      <Plus size={12} /> Thêm chi phí
-                    </button>
-                  )}
-                </div>
-                {showExpForm && <ExpenseForm onSave={saveExpense} onCancel={() => setShowExpForm(false)} today={today} />}
-                {/* Expense history */}
-                <div className="overflow-x-auto mt-3">
-                  <table className="w-full text-xs">
-                    <thead>
-                      <tr className="border-b border-slate-200 dark:border-slate-700">
-                        {['Ngày', 'Loại', 'Kênh', 'Số tiền', 'Mô tả', 'Ghi chú', ''].map(h => (
-                          <th key={h} className="py-2 px-2 text-left font-bold text-slate-500 uppercase tracking-wider whitespace-nowrap">{h}</th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {expenses.slice(0, 35).map(e => (
-                        <tr key={e.id} className="border-b border-slate-100 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-800/30">
-                          <td className="py-2 px-2 font-semibold whitespace-nowrap">{e.date}</td>
-                          <td className="py-2 px-2" style={{ color: catColor(e.category) }}><b>{catLabel(e.category)}</b></td>
-                          <td className="py-2 px-2" style={{ color: channelColor(e.channel) }}>{channelLabel(e.channel)}</td>
-                          <td className="py-2 px-2 font-bold text-red-600">{fmtFull(Number(e.amount))}</td>
-                          <td className="py-2 px-2 text-slate-600 dark:text-slate-300 max-w-[120px] truncate">{e.description || '—'}</td>
-                          <td className="py-2 px-2 text-slate-400 max-w-[80px] truncate">{e.note || '—'}</td>
-                          <td className="py-2 px-2">
-                            <button onClick={() => { if (confirm('Xóa chi phí này?')) deleteExpense(e.id); }} disabled={deleting === e.id} className="p-1 text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded transition">
-                              {deleting === e.id ? <RefreshCw size={11} className="animate-spin" /> : <Trash2 size={11} />}
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                      {expenses.length === 0 && <tr><td colSpan={7} className="py-6 text-center text-slate-400">Chưa có chi phí nào được nhập</td></tr>}
                     </tbody>
                   </table>
                 </div>

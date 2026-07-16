@@ -60,12 +60,66 @@ export default function OrderList() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [sourceFilter, setSourceFilter] = useState('all');
   const [vatFilter, setVatFilter] = useState('all'); // all, yes, no
+  const [datePreset, setDatePreset] = useState('all'); // Mặc định hiển thị tất cả đơn hàng
+  const [customFrom, setCustomFrom] = useState('');
+  const [customTo, setCustomTo] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [localSearchTerm, setLocalSearchTerm] = useState('');
   const [page, setPage] = useState(1);
   const [totalOrders, setTotalOrders] = useState(0);
   const totalPages = Math.ceil(totalOrders / 20);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+
+  // Helper tính khoảng thời gian theo preset
+  const calculateDateRange = (preset: string, fromVal: string, toVal: string) => {
+    const now = new Date();
+    const toDay = now.toISOString().slice(0, 10);
+    
+    const getYesterdayStr = () => {
+      const y = new Date(); y.setDate(now.getDate() - 1);
+      return y.toISOString().slice(0, 10);
+    };
+
+    switch (preset) {
+      case 'today':
+        return { from: toDay, to: toDay };
+      case 'yesterday':
+        const yest = getYesterdayStr();
+        return { from: yest, to: yest };
+      case 'this_week': {
+        const day = now.getDay() || 7;
+        const mon = new Date(now); mon.setDate(now.getDate() - day + 1);
+        const sun = new Date(now); sun.setDate(now.getDate() - day + 7);
+        return { from: mon.toISOString().slice(0, 10), to: sun.toISOString().slice(0, 10) };
+      }
+      case 'last_week': {
+        const day = now.getDay() || 7;
+        const mon = new Date(now); mon.setDate(now.getDate() - day + 1 - 7);
+        const sun = new Date(mon); sun.setDate(mon.getDate() + 6);
+        return { from: mon.toISOString().slice(0, 10), to: sun.toISOString().slice(0, 10) };
+      }
+      case 'this_month': {
+        const from = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
+        return { from, to: toDay };
+      }
+      case 'last_month': {
+        const lm = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+        const lme = new Date(now.getFullYear(), now.getMonth(), 0);
+        return { from: lm.toISOString().slice(0, 10), to: lme.toISOString().slice(0, 10) };
+      }
+      case 'this_year':
+        return { from: `${now.getFullYear()}-01-01`, to: toDay };
+      case 'last_year': {
+        const y = now.getFullYear() - 1;
+        return { from: `${y}-01-01`, to: `${y}-12-31` };
+      }
+      case 'custom':
+        return { from: fromVal, to: toVal };
+      case 'all':
+      default:
+        return { from: undefined, to: undefined };
+    }
+  };
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [activeTheme, setActiveTheme] = useState<'tech' | 'elegant'>('elegant');
 
@@ -420,14 +474,21 @@ export default function OrderList() {
     setLoading(true);
     setError(null);
     try {
-      const params = new URLSearchParams({
+      const { from, to } = calculateDateRange(datePreset, customFrom, customTo);
+      
+      const queryParams: Record<string, string> = {
         status: statusFilter,
         source: sourceFilter,
         vat: vatFilter,
         search: searchTerm,
         page: String(page),
         limit: '20',
-      });
+      };
+
+      if (from) queryParams.from = from;
+      if (to) queryParams.to = to;
+
+      const params = new URLSearchParams(queryParams);
       const res = await fetch(`/api/orders?${params.toString()}`);
       if (!res.ok) {
         throw new Error('Không thể tải danh sách đơn hàng');
@@ -440,7 +501,7 @@ export default function OrderList() {
     } finally {
       setLoading(false);
     }
-  }, [statusFilter, sourceFilter, vatFilter, searchTerm, page]);
+  }, [statusFilter, sourceFilter, vatFilter, searchTerm, page, datePreset, customFrom, customTo]);
 
   useEffect(() => {
     fetchOrders();
@@ -928,6 +989,69 @@ export default function OrderList() {
             </div>
           </div>
         )}
+
+        {/* Bộ lọc thời gian đồng bộ */}
+        <div className="rounded-2xl border border-card-border bg-card-bg p-4 mb-3 shadow-sm space-y-3">
+          <div className="flex flex-col gap-1.5">
+            <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Thời gian:</span>
+            <div className="flex flex-wrap gap-1.5">
+              {[
+                { value: 'all', label: 'Tất cả thời gian' },
+                { value: 'today', label: 'Hôm nay' },
+                { value: 'yesterday', label: 'Hôm qua' },
+                { value: 'this_week', label: 'Tuần này' },
+                { value: 'last_week', label: 'Tuần trước' },
+                { value: 'this_month', label: 'Tháng này' },
+                { value: 'last_month', label: 'Tháng trước' },
+                { value: 'this_year', label: 'Năm nay' },
+                { value: 'last_year', label: 'Năm trước' },
+                { value: 'custom', label: '📅 Tùy chọn' }
+              ].map(p => (
+                <button 
+                  key={p.value} 
+                  type="button"
+                  onClick={() => { setDatePreset(p.value); setPage(1); }}
+                  className={`px-3 py-1.5 text-xs font-bold rounded-lg border transition ${
+                    datePreset === p.value 
+                      ? 'bg-purple-650 text-white border-purple-650 shadow-sm' 
+                      : 'border-slate-200 dark:border-slate-800 text-slate-650 dark:text-slate-300 hover:border-purple-300 hover:text-purple-650'
+                  }`}
+                >
+                  {p.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {datePreset === 'custom' && (
+            <div className="flex items-center gap-2 pt-1 animate-slide-down">
+              <div className="flex items-center gap-1.5 text-xs">
+                <span className="font-bold text-slate-400">Từ:</span>
+                <input 
+                  type="date" 
+                  value={customFrom} 
+                  onChange={e => { setCustomFrom(e.target.value); setPage(1); }}
+                  className="border border-card-border rounded-lg px-2.5 py-1 text-xs bg-background text-foreground"
+                />
+              </div>
+              <div className="flex items-center gap-1.5 text-xs">
+                <span className="font-bold text-slate-400">Đến:</span>
+                <input 
+                  type="date" 
+                  value={customTo} 
+                  onChange={e => { setCustomTo(e.target.value); setPage(1); }}
+                  className="border border-card-border rounded-lg px-2.5 py-1 text-xs bg-background text-foreground"
+                />
+              </div>
+            </div>
+          )}
+
+          {datePreset !== 'all' && (
+            <div className="text-[10px] text-slate-400 font-semibold italic">
+              📅 Đang lọc đơn từ: {calculateDateRange(datePreset, customFrom, customTo).from || '—'} ➔ {calculateDateRange(datePreset, customFrom, customTo).to || '—'}
+            </div>
+          )}
+        </div>
 
         {/* Filters */}
         <div className="rounded-2xl border border-card-border bg-card-bg p-4 mb-6 flex flex-col sm:flex-row gap-3 shadow-sm">

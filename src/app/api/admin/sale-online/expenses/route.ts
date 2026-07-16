@@ -18,17 +18,50 @@ export async function GET(req: NextRequest) {
   const to = searchParams.get('to');
   const channel = searchParams.get('channel');
   const category = searchParams.get('category');
-  const limit = parseInt(searchParams.get('limit') || '50');
+  const search = searchParams.get('search');
+  const limit = parseInt(searchParams.get('limit') || '30');
+  const offset = parseInt(searchParams.get('offset') || '0');
 
-  let q = mktSupabase.from('sale_expenses').select('*').order('date', { ascending: false }).limit(limit);
+  // Query chính có phân trang
+  let q = mktSupabase
+    .from('sale_expenses')
+    .select('*', { count: 'exact' });
+
   if (from) q = q.gte('date', from);
   if (to) q = q.lte('date', to);
   if (channel && channel !== 'all') q = q.eq('channel', channel);
   if (category && category !== 'all') q = q.eq('category', category);
+  
+  if (search && search.trim() !== '') {
+    q = q.or(`description.ilike.%${search}%,note.ilike.%${search}%`);
+  }
 
-  const { data, error } = await q;
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json({ data });
+  // Sắp xếp và phân trang
+  q = q.order('date', { ascending: false }).range(offset, offset + limit - 1);
+
+  // Tính tổng số tiền (không phân trang)
+  let sumQ = mktSupabase.from('sale_expenses').select('amount');
+  if (from) sumQ = sumQ.gte('date', from);
+  if (to) sumQ = sumQ.lte('date', to);
+  if (channel && channel !== 'all') sumQ = sumQ.eq('channel', channel);
+  if (category && category !== 'all') sumQ = sumQ.eq('category', category);
+  if (search && search.trim() !== '') {
+    sumQ = sumQ.or(`description.ilike.%${search}%,note.ilike.%${search}%`);
+  }
+
+  const [resList, resSum] = await Promise.all([q, sumQ]);
+
+  if (resList.error) return NextResponse.json({ error: resList.error.message }, { status: 500 });
+  if (resSum.error) return NextResponse.json({ error: resSum.error.message }, { status: 500 });
+
+  const total = resList.count || 0;
+  const sumAmount = (resSum.data || []).reduce((s, e) => s + (Number(e.amount) || 0), 0);
+
+  return NextResponse.json({ 
+    data: resList.data || [], 
+    total, 
+    sumAmount 
+  });
 }
 
 // POST /api/admin/sale-online/expenses
