@@ -221,7 +221,7 @@ export default function AdminSEOAuditPage() {
           'dinh-dang-file-in-an-nhan-mac-tot-nhat': 'in ấn logo dán',
           'gia-in-decal-uv-dtf-chi-tiet-moi-nhat': 'in decal uv',
           'gia-may-in-tem-uv-dtf-va-kinh-nghiem-dau-tu': 'in decal uv',
-          'huong-dan-chon-sticker-dan-hop-tai-nghe-airpods': 'in decal dán xe tải',
+          'huong-dan-chon-sticker-dan-hop-tai-nghe-airpods': 'in sticker theo yeu cau',
           'huong-dan-chon-tem-dan-binh-giu-nhiet-chong-troc-son': 'in decal dán bình dương',
           'huong-dan-dan-tem-uv-dtf-dung-cach': 'in decal uv dán',
           'huong-dan-thiet-ke-file-in-uv-dtf-ai': 'in decal và dán',
