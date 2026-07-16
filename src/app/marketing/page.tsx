@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { 
   BarChart3, MessageSquare, Settings, RefreshCw, Upload, PlusCircle, 
-  Send, Phone, CheckCircle, HelpCircle, LogOut, ChevronRight, Filter, 
+  Send, Phone, CheckCircle, HelpCircle, LogOut, ChevronRight, ChevronLeft, Filter, 
   Search, User, ShoppingBag, DollarSign, Activity, AlertCircle, Check, X,
   ExternalLink, BarChart
 } from 'lucide-react';
@@ -121,6 +121,15 @@ export default function MarketingDashboardPage() {
   const [crmFilterPhone, setCrmFilterPhone] = useState<string>('all'); // 'all', 'true', 'false'
   const [crmSyncing, setCrmSyncing] = useState(false);
   const [crmSearch, setCrmSearch] = useState('');
+
+  // States phân trang mới
+  const [adsPage, setAdsPage] = useState(1);
+  const adsLimit = 10;
+  const [crmLimit, setCrmLimit] = useState(15);
+
+  useEffect(() => {
+    setAdsPage(1);
+  }, [selectedPlatform]);
 
   // Chốt đơn Form State (Cột phải CRM)
   const [quoteCustomerName, setQuoteCustomerName] = useState('');
@@ -955,85 +964,117 @@ export default function MarketingDashboardPage() {
             {renderTrendChart()}
 
             {/* 5. Campaigns Performance Table */}
-            <div className="bg-zinc-900/40 border border-zinc-900 rounded-xl backdrop-blur-md overflow-hidden">
-              <div className="px-6 py-4 border-b border-zinc-900 flex items-center justify-between bg-zinc-900/20">
-                <h3 className="text-sm font-semibold text-zinc-300">Chi tiết hiệu quả theo chiến dịch</h3>
-                <span className="text-[10px] bg-zinc-800 text-zinc-400 px-2 py-0.5 rounded-full font-medium">
-                  {campaigns.length} chiến dịch quảng cáo
-                </span>
-              </div>
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs border-collapse">
-                  <thead>
-                    <tr className="border-b border-zinc-900 bg-zinc-950/40 text-zinc-500 font-semibold uppercase tracking-wider">
-                      <th className="px-6 py-3.5">Chi dịch</th>
-                      <th className="px-6 py-3.5">Trạng thái</th>
-                      <th className="px-6 py-3.5">Chi tiêu</th>
-                      <th className="px-6 py-3.5">Hiển thị / Clicks</th>
-                      <th className="px-6 py-3.5">CTR</th>
-                      <th className="px-6 py-3.5">Tin nhắn</th>
-                      <th className="px-6 py-3.5">Đơn hàng / Doanh thu</th>
-                      <th className="px-6 py-3.5 text-right">ROAS</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-zinc-900">
-                    {campaigns.map((camp) => {
-                      // Tính toán tổng số liệu riêng cho chiến dịch này trong khoảng thời gian đang chọn
-                      const campReports = reports.filter(r => r.campaign_id === camp.id);
-                      const spend = campReports.reduce((sum, r) => sum + r.spend, 0);
-                      const clicks = campReports.reduce((sum, r) => sum + r.clicks, 0);
-                      const imps = campReports.reduce((sum, r) => sum + r.impressions, 0);
-                      const convs = campReports.reduce((sum, r) => sum + r.conversations, 0);
-                      const pur = campReports.reduce((sum, r) => sum + r.purchases, 0);
-                      const rev = campReports.reduce((sum, r) => sum + r.revenue, 0);
+            {(() => {
+              const filteredCampaigns = selectedPlatform === 'all' 
+                ? campaigns 
+                : campaigns.filter(c => c.platform === selectedPlatform);
+              const paginatedCampaigns = filteredCampaigns.slice((adsPage - 1) * adsLimit, adsPage * adsLimit);
 
-                      const ctr = imps > 0 ? (clicks / imps) * 100 : 0;
-                      const roas = spend > 0 ? rev / spend : 0;
-
-                      return (
-                        <tr key={camp.id} className="hover:bg-zinc-900/10 transition-colors">
-                          <td className="px-6 py-4 font-medium text-zinc-200">
-                            <div className="font-semibold text-zinc-100">{camp.name}</div>
-                            <div className="text-[10px] text-zinc-500 mt-0.5 flex items-center gap-2">
-                              <span className="capitalize">{camp.platform} Ads</span>
-                              {camp.fb_campaign_id && (
-                                <span className="bg-zinc-800 text-zinc-400 px-1 py-0.2 rounded font-mono text-[9px]">ID: {camp.fb_campaign_id}</span>
-                              )}
-                            </div>
-                          </td>
-                          <td className="px-6 py-4">
-                            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium border ${camp.status === 'active' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-zinc-800 text-zinc-400 border-zinc-700'}`}>
-                              {camp.status === 'active' ? 'Đang chạy' : 'Tạm dừng'}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 font-semibold text-zinc-300">{formatVND(spend)}</td>
-                          <td className="px-6 py-4 text-zinc-400">
-                            <div>{imps.toLocaleString()} views</div>
-                            <div className="text-[10px] text-zinc-500 mt-0.5">{clicks.toLocaleString()} clicks</div>
-                          </td>
-                          <td className="px-6 py-4 font-medium text-zinc-300">{ctr.toFixed(2)}%</td>
-                          <td className="px-6 py-4 font-medium text-sky-400">
-                            <div>{convs} tin</div>
-                            {convs > 0 && (
-                              <div className="text-[10px] text-zinc-500 mt-0.5">{formatVND(spend / convs)}/tin</div>
-                            )}
-                          </td>
-                          <td className="px-6 py-4">
-                            <div className="font-medium text-pink-400">{pur} đơn</div>
-                            <div className="text-[10px] text-zinc-500 mt-0.5">{formatVND(rev)}</div>
-                          </td>
-                          <td className="px-6 py-4 text-right">
-                            <span className={`inline-block text-xs font-black px-2 py-0.5 rounded ${roas > 2.5 ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : roas > 1.0 ? 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20' : roas > 0 ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 'bg-zinc-800 text-zinc-400'}`}>
-                              {roas > 0 ? `${roas.toFixed(2)}x` : '-'}
-                            </span>
-                          </td>
+              return (
+                <div className="bg-zinc-900/40 border border-zinc-900 rounded-xl backdrop-blur-md overflow-hidden">
+                  <div className="px-6 py-4 border-b border-zinc-900 flex items-center justify-between bg-zinc-900/20">
+                    <h3 className="text-sm font-semibold text-zinc-300">Chi tiết hiệu quả theo chiến dịch</h3>
+                    <span className="text-[10px] bg-zinc-800 text-zinc-400 px-2 py-0.5 rounded-full font-medium">
+                      {filteredCampaigns.length} chiến dịch quảng cáo
+                    </span>
+                  </div>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-xs border-collapse">
+                      <thead>
+                        <tr className="border-b border-zinc-900 bg-zinc-950/40 text-zinc-500 font-semibold uppercase tracking-wider">
+                          <th className="px-6 py-3.5">Chi dịch</th>
+                          <th className="px-6 py-3.5">Trạng thái</th>
+                          <th className="px-6 py-3.5">Chi tiêu</th>
+                          <th className="px-6 py-3.5">Hiển thị / Clicks</th>
+                          <th className="px-6 py-3.5">CTR</th>
+                          <th className="px-6 py-3.5">Tin nhắn</th>
+                          <th className="px-6 py-3.5">Đơn hàng / Doanh thu</th>
+                          <th className="px-6 py-3.5 text-right">ROAS</th>
                         </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            </div>
+                      </thead>
+                      <tbody className="divide-y divide-zinc-900">
+                        {paginatedCampaigns.map((camp) => {
+                          // Tính toán tổng số liệu riêng cho chiến dịch này trong khoảng thời gian đang chọn
+                          const campReports = reports.filter(r => r.campaign_id === camp.id);
+                          const spend = campReports.reduce((sum, r) => sum + r.spend, 0);
+                          const clicks = campReports.reduce((sum, r) => sum + r.clicks, 0);
+                          const imps = campReports.reduce((sum, r) => sum + r.impressions, 0);
+                          const convs = campReports.reduce((sum, r) => sum + r.conversations, 0);
+                          const pur = campReports.reduce((sum, r) => sum + r.purchases, 0);
+                          const rev = campReports.reduce((sum, r) => sum + r.revenue, 0);
+
+                          const ctr = imps > 0 ? (clicks / imps) * 100 : 0;
+                          const roas = spend > 0 ? rev / spend : 0;
+
+                          return (
+                            <tr key={camp.id} className="hover:bg-zinc-900/10 transition-colors">
+                              <td className="px-6 py-4 font-medium text-zinc-200">
+                                <div className="font-semibold text-zinc-100">{camp.name}</div>
+                                <div className="text-[10px] text-zinc-500 mt-0.5 flex items-center gap-2">
+                                  <span className="capitalize">{camp.platform} Ads</span>
+                                  {camp.fb_campaign_id && (
+                                    <span className="bg-zinc-800 text-zinc-400 px-1 py-0.2 rounded font-mono text-[9px]">ID: {camp.fb_campaign_id}</span>
+                                  )}
+                                </div>
+                              </td>
+                              <td className="px-6 py-4">
+                                <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium border ${camp.status === 'active' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-zinc-800 text-zinc-400 border-zinc-700'}`}>
+                                  {camp.status === 'active' ? 'Đang chạy' : 'Tạm dừng'}
+                                </span>
+                              </td>
+                              <td className="px-6 py-4 font-semibold text-zinc-300">{formatVND(spend)}</td>
+                              <td className="px-6 py-4 text-zinc-400">
+                                <div>{imps.toLocaleString()} views</div>
+                                <div className="text-[10px] text-zinc-500 mt-0.5">{clicks.toLocaleString()} clicks</div>
+                              </td>
+                              <td className="px-6 py-4 font-medium text-zinc-300">{ctr.toFixed(2)}%</td>
+                              <td className="px-6 py-4 font-medium text-sky-400">
+                                <div>{convs} tin</div>
+                                {convs > 0 && (
+                                  <div className="text-[10px] text-zinc-500 mt-0.5">{formatVND(spend / convs)}/tin</div>
+                                )}
+                              </td>
+                              <td className="px-6 py-4">
+                                <div className="font-medium text-pink-400">{pur} đơn</div>
+                                <div className="text-[10px] text-zinc-500 mt-0.5">{formatVND(rev)}</div>
+                              </td>
+                              <td className="px-6 py-4 text-right">
+                                <span className={`inline-block text-xs font-black px-2 py-0.5 rounded ${roas > 2.5 ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : roas > 1.0 ? 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20' : roas > 0 ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 'bg-zinc-800 text-zinc-400'}`}>
+                                  {roas > 0 ? `${roas.toFixed(2)}x` : '-'}
+                                </span>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Campaigns Pagination Controls */}
+                  {filteredCampaigns.length > adsLimit && (
+                    <div className="flex items-center justify-between px-6 py-3.5 border-t border-zinc-900 bg-zinc-950/20">
+                      <button
+                        onClick={() => setAdsPage(p => Math.max(1, p - 1))}
+                        disabled={adsPage === 1}
+                        className="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-zinc-800 bg-zinc-950 text-[10px] font-bold text-zinc-400 hover:text-white disabled:opacity-40 transition cursor-pointer"
+                      >
+                        <ChevronLeft size={12} /> Trước
+                      </button>
+                      <span className="text-[10px] font-semibold text-zinc-500">
+                        Hiển thị {(adsPage - 1) * adsLimit + 1} - {Math.min(adsPage * adsLimit, filteredCampaigns.length)} trên {filteredCampaigns.length} chiến dịch
+                      </span>
+                      <button
+                        onClick={() => setAdsPage(p => p + 1)}
+                        disabled={adsPage * adsLimit >= filteredCampaigns.length}
+                        className="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-zinc-800 bg-zinc-950 text-[10px] font-bold text-zinc-400 hover:text-white disabled:opacity-40 transition cursor-pointer"
+                      >
+                        Sau <ChevronRight size={12} />
+                      </button>
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
           </>
         )}
 
@@ -1109,60 +1150,77 @@ export default function MarketingDashboardPage() {
                     Không có cuộc hội thoại nào khớp bộ lọc.
                   </div>
                 ) : (
-                  filteredConversations.map((conv) => {
-                    const isSelected = selectedConv?.id === conv.id;
+                  (() => {
+                    const paginatedConvs = filteredConversations.slice(0, crmLimit);
                     return (
-                      <div 
-                        key={conv.id}
-                        onClick={() => setSelectedConv(conv)}
-                        className={`p-3.5 cursor-pointer transition-all flex items-start justify-between gap-2.5 hover:bg-zinc-900/20 ${isSelected ? 'bg-sky-500/5 border-l-2 border-sky-500' : 'border-l-2 border-transparent'}`}
-                      >
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-1.5">
-                            <span className="text-xs font-semibold text-zinc-200 truncate block">
-                              {conv.customer_name}
-                            </span>
-                            {/* Loại icon */}
-                            {conv.type === 'inbox' ? (
-                              <span className="w-1.5 h-1.5 bg-blue-500 rounded-full inline-block" title="Tin nhắn"></span>
-                            ) : (
-                              <span className="w-1.5 h-1.5 bg-purple-500 rounded-full inline-block" title="Bình luận bài đăng"></span>
-                            )}
-                          </div>
-                          
-                          {/* Trích xuất bài đăng nếu là comment */}
-                          {conv.type === 'comment' && conv.fb_post_title && (
-                            <div className="text-[9px] text-purple-400 font-medium truncate mt-0.5">
-                              Post: {conv.fb_post_title}
+                      <>
+                        {paginatedConvs.map((conv) => {
+                          const isSelected = selectedConv?.id === conv.id;
+                          return (
+                            <div 
+                              key={conv.id}
+                              onClick={() => setSelectedConv(conv)}
+                              className={`p-3.5 cursor-pointer transition-all flex items-start justify-between gap-2.5 hover:bg-zinc-900/20 ${isSelected ? 'bg-sky-500/5 border-l-2 border-sky-500' : 'border-l-2 border-transparent'}`}
+                            >
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-1.5">
+                                  <span className="text-xs font-semibold text-zinc-200 truncate block">
+                                    {conv.customer_name}
+                                  </span>
+                                  {/* Loại icon */}
+                                  {conv.type === 'inbox' ? (
+                                    <span className="w-1.5 h-1.5 bg-blue-500 rounded-full inline-block" title="Tin nhắn"></span>
+                                  ) : (
+                                    <span className="w-1.5 h-1.5 bg-purple-500 rounded-full inline-block" title="Bình luận bài đăng"></span>
+                                  )}
+                                </div>
+                                
+                                {/* Trích xuất bài đăng nếu là comment */}
+                                {conv.type === 'comment' && conv.fb_post_title && (
+                                  <div className="text-[9px] text-purple-400 font-medium truncate mt-0.5">
+                                    Post: {conv.fb_post_title}
+                                  </div>
+                                )}
+
+                                <p className="text-[10px] text-zinc-500 truncate mt-1">
+                                  {conv.last_message}
+                                </p>
+                              </div>
+
+                              <div className="flex flex-col items-end gap-1.5 shrink-0">
+                                {/* Thời gian */}
+                                <span className="text-[9px] text-zinc-600">
+                                  {new Date(conv.updated_at).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
+                                </span>
+                                
+                                {/* Badge Số điện thoại */}
+                                {conv.has_phone && (
+                                  <span className="bg-orange-500/10 text-orange-400 text-[9px] font-bold px-1.5 py-0.2 rounded border border-orange-500/20 flex items-center gap-0.5">
+                                    📞
+                                  </span>
+                                )}
+
+                                {/* Badge Status */}
+                                <span className={`text-[8px] font-bold px-1 py-0.2 rounded-full uppercase tracking-wider ${conv.status === 'completed' ? 'bg-emerald-500/10 text-emerald-400' : conv.status === 'ignored' ? 'bg-zinc-800 text-zinc-500' : conv.status === 'processing' ? 'bg-yellow-500/10 text-yellow-400' : 'bg-red-500/10 text-red-400 animate-pulse'}`}>
+                                  {conv.status}
+                                </span>
+                              </div>
                             </div>
-                          )}
-
-                          <p className="text-[10px] text-zinc-500 truncate mt-1">
-                            {conv.last_message}
-                          </p>
-                        </div>
-
-                        <div className="flex flex-col items-end gap-1.5 shrink-0">
-                          {/* Thời gian */}
-                          <span className="text-[9px] text-zinc-600">
-                            {new Date(conv.updated_at).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
-                          </span>
-                          
-                          {/* Badge Số điện thoại */}
-                          {conv.has_phone && (
-                            <span className="bg-orange-500/10 text-orange-400 text-[9px] font-bold px-1.5 py-0.2 rounded border border-orange-500/20 flex items-center gap-0.5">
-                              📞
-                            </span>
-                          )}
-
-                          {/* Badge Status */}
-                          <span className={`text-[8px] font-bold px-1 py-0.2 rounded-full uppercase tracking-wider ${conv.status === 'completed' ? 'bg-emerald-500/10 text-emerald-400' : conv.status === 'ignored' ? 'bg-zinc-800 text-zinc-500' : conv.status === 'processing' ? 'bg-yellow-500/10 text-yellow-400' : 'bg-red-500/10 text-red-400 animate-pulse'}`}>
-                            {conv.status}
-                          </span>
-                        </div>
-                      </div>
+                          );
+                        })}
+                        {filteredConversations.length > crmLimit && (
+                          <div className="p-3 text-center bg-zinc-950/20 border-t border-zinc-900">
+                            <button 
+                              onClick={() => setCrmLimit(prev => prev + 15)}
+                              className="w-full py-2 rounded bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-[10px] font-bold text-zinc-400 hover:text-white transition-colors cursor-pointer"
+                            >
+                              ➕ Tải thêm hội thoại ({filteredConversations.length - crmLimit} cuộc)
+                            </button>
+                          </div>
+                        )}
+                      </>
                     );
-                  })
+                  })()
                 )}
               </div>
             </div>
