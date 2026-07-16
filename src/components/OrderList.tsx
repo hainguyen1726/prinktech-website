@@ -693,20 +693,13 @@ export default function OrderList() {
 
                     <div className="space-y-1">
                       <label className="block text-xs font-bold text-slate-600">
-                        {createFormData.product_type === 'other' ? 'Đơn giá trước VAT (VND) *' : 'Đơn giá trước VAT (tính tự động)'}
+                        Đơn giá trước VAT (VND) *
                       </label>
                       <input
-                        type={createFormData.product_type === 'other' ? 'number' : 'text'}
-                        disabled={createFormData.product_type !== 'other'}
-                        value={createFormData.product_type === 'other' ? createFormData.rate_excl_vat : formatCurrency(createFormData.rate_excl_vat)}
-                        onChange={e => {
-                          if (createFormData.product_type === 'other') {
-                            setCreateFormData(prev => ({ ...prev, rate_excl_vat: parseInt(e.target.value) || 0 }));
-                          }
-                        }}
-                        className={`w-full h-10 px-3 rounded-xl border border-card-border text-sm font-bold focus:outline-none ${
-                          createFormData.product_type === 'other' ? 'bg-background text-slate-900 focus:border-purple-650' : 'bg-slate-100 text-slate-600'
-                        }`}
+                        type="number"
+                        value={createFormData.rate_excl_vat}
+                        onChange={e => setCreateFormData(prev => ({ ...prev, rate_excl_vat: parseInt(e.target.value) || 0 }))}
+                        className="w-full h-10 px-3 rounded-xl border border-card-border bg-background text-slate-900 text-sm font-bold focus:outline-none focus:border-purple-650"
                       />
                     </div>
 
@@ -818,7 +811,7 @@ export default function OrderList() {
                     type="button"
                     disabled={submittingForm}
                     onClick={handleCreateOrderSubmit}
-                    className="w-full h-11 bg-purple-650 hover:bg-purple-550 text-white font-extrabold rounded-xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                    className="w-full h-11 bg-[#7c3aed] hover:bg-[#6d28d9] text-white font-extrabold rounded-xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
                   >
                     {submittingForm ? (
                       <>
