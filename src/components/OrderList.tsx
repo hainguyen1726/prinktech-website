@@ -109,13 +109,36 @@ export default function OrderList() {
   const [shippingCarrierInput, setShippingCarrierInput] = useState('');
   const [trackingNumberInput, setTrackingNumberInput] = useState('');
 
+  const [orderHistory, setOrderHistory] = useState<any[]>([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
+
   useEffect(() => {
     if (selectedOrder) {
       setShippingCarrierInput(selectedOrder.shipping_carrier || '');
       setTrackingNumberInput(selectedOrder.tracking_number || '');
+      
+      const fetchHistory = async () => {
+        setLoadingHistory(true);
+        try {
+          const res = await fetch(`/api/admin/orders/${selectedOrder.id}/history`);
+          if (res.ok) {
+            const data = await res.json();
+            setOrderHistory(data.data || []);
+          } else {
+            setOrderHistory([]);
+          }
+        } catch (err) {
+          console.error('Lỗi tải lịch sử đơn hàng:', err);
+          setOrderHistory([]);
+        } finally {
+          setLoadingHistory(false);
+        }
+      };
+      fetchHistory();
     } else {
       setShippingCarrierInput('');
       setTrackingNumberInput('');
+      setOrderHistory([]);
     }
   }, [selectedOrder]);
 
@@ -1471,6 +1494,48 @@ export default function OrderList() {
                       <option value="paid" className="bg-card-bg text-foreground">✅ Đã thanh toán</option>
                     </select>
                   </div>
+                </div>
+
+                {/* Timeline Lịch sử Thay đổi Đơn hàng */}
+                <div className="border-t border-card-border pt-4 mt-4 space-y-3">
+                  <h3 className="text-xs font-bold text-text-muted uppercase tracking-wider flex items-center gap-1.5">
+                    ⏱️ Lịch sử thay đổi đơn hàng
+                  </h3>
+                  {loadingHistory ? (
+                    <div className="text-[11px] text-text-muted font-medium py-3 text-center">
+                      Đang tải lịch sử...
+                    </div>
+                  ) : orderHistory.length > 0 ? (
+                    <div className="relative border-l border-slate-200 dark:border-slate-800 ml-2 pl-4 py-1 space-y-4 max-h-60 overflow-y-auto scrollbar-thin">
+                      {orderHistory.map((item, index) => {
+                        const date = new Date(item.created_at);
+                        const timeStr = `${date.toLocaleDateString('vi-VN')} ${date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}`;
+                        return (
+                          <div key={item.id || index} className="relative">
+                            <span className="absolute -left-[21px] top-1 flex h-2.5 w-2.5 items-center justify-center rounded-full bg-[var(--accent)] ring-4 ring-background" />
+                            <div className="space-y-0.5">
+                              <div className="flex items-center justify-between gap-2">
+                                <span className="text-[11px] font-bold text-foreground">
+                                  {item.description}
+                                </span>
+                                <span className="text-[9px] text-text-muted whitespace-nowrap">
+                                  {timeStr}
+                                </span>
+                              </div>
+                              <div className="text-[10px] text-text-muted font-semibold flex items-center gap-1">
+                                <span>Thực hiện bởi:</span>
+                                <span className="text-foreground">{item.created_by}</span>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <p className="text-[11px] text-text-muted font-medium py-2 text-center italic">
+                      Chưa ghi nhận lịch sử thay đổi nào cho đơn hàng này
+                    </p>
+                  )}
                 </div>
               </div>
             ) : (

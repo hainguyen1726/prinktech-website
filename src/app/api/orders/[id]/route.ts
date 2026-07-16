@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { verifyAdminOrStaff } from '@/lib/adminAuth';
+import { logActivity } from '@/lib/activityLogger';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
@@ -25,16 +27,35 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
 
 // PATCH /api/orders/[id] — cập nhật trạng thái & thông tin vận chuyển
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const auth = await verifyAdminOrStaff(req);
+  if (auth.error) {
+    return NextResponse.json({ error: auth.error }, { status: auth.status || 401 });
+  }
+
   const { id } = await params;
   const body = await req.json();
   const { status, payment_status, shipping_carrier, tracking_number } = body;
 
-  // Kiểm tra đơn hàng thuộc bảng nào (retail_orders hay orders)
+  // Lấy đơn hàng hiện tại để đối chiếu sự thay đổi cho việc ghi log
   const { data: isRetail } = await supabase
     .from('retail_orders')
-    .select('id')
+    .select('*')
     .eq('id', id)
     .maybeSingle();
+
+  let oldOrder: any = isRetail;
+  if (!isRetail) {
+    const { data: adminOrder } = await supabase
+      .from('orders')
+      .select('*')
+      .eq('id', id)
+      .maybeSingle();
+    oldOrder = adminOrder;
+  }
+
+  if (!oldOrder) {
+    return NextResponse.json({ error: 'Không tìm thấy đơn hàng' }, { status: 404 });
+  }
 
   let res;
 
@@ -81,13 +102,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
     // Xử lý cập nhật note cho shipping_carrier & tracking_number
     if (shipping_carrier !== undefined || tracking_number !== undefined) {
-      const { data: oldOrder } = await supabase
-        .from('orders')
-        .select('note')
-        .eq('id', id)
-        .maybeSingle();
-      
-      let note = oldOrder?.note || '';
+      let note = oldOrder.note || '';
       
       if (shipping_carrier !== undefined) {
         const carrierStr = shipping_carrier ? String(shipping_carrier).trim() : '';
@@ -144,14 +159,67 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   }
 
   if (res.error) return NextResponse.json({ error: res.error.message }, { status: 500 });
-  return NextResponse.json({ data: res.data });
 
+  // GHI LOG ACTIVITY HOẠT ĐỘNG
+  const updatedOrder = res.data;
+  let logDesc = `Cập nhật đơn hàng ${updatedOrder.order_number || updatedOrder.order_code || id}:`;
+  const details: Record<string, any> = {};
+
+  if (status && oldOrder.status !== status) {
+    logDesc += ` trạng thái [${oldOrder.status} ➔ ${status}];`;
+    details.status = { old: oldOrder.status, new: status };
+  }
+  if (payment_status && oldOrder.payment_status !== payment_status) {
+    logDesc += ` thanh toán [${oldOrder.payment_status} ➔ ${payment_status}];`;
+    details.payment_status = { old: oldOrder.payment_status, new: payment_status };
+  }
+  if (tracking_number !== undefined && oldOrder.tracking_number !== tracking_number) {
+    logDesc += ` vận đơn [${oldOrder.tracking_number || 'chưa có'} ➔ ${tracking_number || 'đã xóa'}];`;
+    details.tracking_number = { old: oldOrder.tracking_number, new: tracking_number };
+  }
+
+  await logActivity({
+    userId: auth.user?.id || 'admin',
+    userName: auth.user?.name || 'Website Admin',
+    action: 'update_status',
+    targetType: isRetail ? 'customer_order' : 'order',
+    targetId: id,
+    description: logDesc,
+    details
+  });
+
+  return NextResponse.json({ data: res.data });
 }
 
 // DELETE /api/orders/[id]
-export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const auth = await verifyAdminOrStaff(req);
+  if (auth.error) {
+    return NextResponse.json({ error: auth.error }, { status: auth.status || 401 });
+  }
+
   const { id } = await params;
+
+  // Lấy mã đơn hàng để ghi log
+  const { data: order } = await supabase
+    .from('retail_orders')
+    .select('order_number')
+    .eq('id', id)
+    .maybeSingle();
+
+  const orderNum = order?.order_number || id;
+
   const { error } = await supabase.from('retail_orders').delete().eq('id', id);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  await logActivity({
+    userId: auth.user?.id || 'admin',
+    userName: auth.user?.name || 'Website Admin',
+    action: 'delete_order',
+    targetType: 'customer_order',
+    targetId: id,
+    description: `Xóa đơn hàng bán lẻ mã ${orderNum} khỏi hệ thống.`
+  });
+
   return NextResponse.json({ success: true });
 }
