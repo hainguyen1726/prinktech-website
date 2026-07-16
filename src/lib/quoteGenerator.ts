@@ -15,11 +15,14 @@ export interface QuoteData {
   rateExclVat: number;
   shippingFee: number;
   note?: string;
+  vatRate?: number;
 }
 
 export async function generateExcelQuote(data: QuoteData, templatePath: string, outputPath: string) {
   const workbook = new ExcelJS.Workbook();
-  await workbook.xlsx.readFile(templatePath);
+  await workbook.xlsx.readFile(templatePath, {
+    ignore: ['drawing', 'picture']
+  } as any);
   
   const worksheet = workbook.getWorksheet(1);
   if (!worksheet) {
@@ -60,8 +63,9 @@ export async function generateExcelQuote(data: QuoteData, templatePath: string, 
     worksheet.getCell('H11').value = { formula: 'G11/D11' };
     
     // Khối VAT dòng 13-17
+    const vRate = data.vatRate !== undefined ? data.vatRate : 0.08;
     worksheet.getCell('H13').value = { formula: 'G11' };
-    worksheet.getCell('H14').value = { formula: 'H13*0.08' };
+    worksheet.getCell('H14').value = { formula: `H13*${vRate}` };
     worksheet.getCell('H15').value = { formula: 'H13+H14' };
     worksheet.getCell('H16').value = data.shippingFee;
     worksheet.getCell('H17').value = { formula: 'H15+H16' };
@@ -89,8 +93,9 @@ export async function generateExcelQuote(data: QuoteData, templatePath: string, 
     worksheet.getCell('G11').value = { formula: 'SUM(G10:G10)' };
     worksheet.getCell('H11').value = { formula: 'G11/D11' };
     
+    const vRate = data.vatRate !== undefined ? data.vatRate : 0.08;
     worksheet.getCell('H13').value = { formula: 'G11' };
-    worksheet.getCell('H14').value = { formula: 'H13*0.08' };
+    worksheet.getCell('H14').value = { formula: `H13*${vRate}` };
     worksheet.getCell('H15').value = { formula: 'H13+H14' };
     worksheet.getCell('H16').value = data.shippingFee;
     worksheet.getCell('H17').value = { formula: 'H15+H16' };
@@ -168,7 +173,8 @@ export function generatePdfQuote(data: QuoteData, outputPath: string): Promise<v
       const amountExclVat = useMeters 
         ? data.meters! * data.rateExclVat 
         : data.quantity * data.rateExclVat;
-      const vatAmount = amountExclVat * 0.08;
+      const vRate = data.vatRate !== undefined ? data.vatRate : 0.08;
+      const vatAmount = amountExclVat * vRate;
       const amountInclVat = amountExclVat + vatAmount;
       const totalAmount = amountInclVat + data.shippingFee;
 
@@ -207,7 +213,7 @@ export function generatePdfQuote(data: QuoteData, outputPath: string): Promise<v
       };
 
       drawSumRow("Cộng tiền hàng (chưa VAT):", fmt(amountExclVat));
-      drawSumRow("Thuế GTGT (VAT 8%):", fmt(vatAmount));
+      drawSumRow(`Thuế GTGT (VAT ${vRate * 100}%):`, fmt(vatAmount));
       drawSumRow("Tiền hàng đã gồm VAT:", fmt(amountInclVat));
       drawSumRow("Phí vận chuyển (Ship):", fmt(data.shippingFee));
       

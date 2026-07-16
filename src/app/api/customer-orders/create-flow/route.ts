@@ -32,6 +32,7 @@ export async function POST(req: NextRequest) {
       note,
       design_link, // Link thiết kế ban đầu
       order_source, // Nguồn đơn hàng (website, fb, shopee, tiktok, other)
+      apply_vat, // Toggle áp dụng VAT (mặc định là true)
     } = body;
 
     // Validate bắt buộc
@@ -92,6 +93,7 @@ export async function POST(req: NextRequest) {
       rateExclVat: Number(rate_excl_vat),
       shippingFee: Number(shipping_fee || 0),
       note: note || '',
+      vatRate: apply_vat !== false ? 0.08 : 0,
     };
 
     console.log('Generating Excel quote...', excelPath);
@@ -182,9 +184,9 @@ export async function POST(req: NextRequest) {
     }
 
     // 7. Tạo đơn hàng (Order) trong Supabase
-    // Đơn giá đã bao gồm VAT 8%
+    // Đơn giá đã bao gồm VAT (8% hoặc 0%)
     const amountExclVat = meters ? Number(meters) * Number(rate_excl_vat) : Number(quantity) * Number(rate_excl_vat);
-    const subtotalAfterVat = amountExclVat * 1.08;
+    const subtotalAfterVat = amountExclVat * (apply_vat !== false ? 1.08 : 1.0);
     const unitPriceInclVat = Math.round(subtotalAfterVat / (meters ? Number(meters) : Number(quantity)));
 
     const excelFile = filesToUpload[0].name;
@@ -214,7 +216,7 @@ export async function POST(req: NextRequest) {
       note: orderNote,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
-      tags: ['Tem UV DTF', 'Báo giá tự động', 'VAT 8%', 'prinktech', `nguồn: ${order_source || 'website'}`],
+      tags: ['Tem UV DTF', 'Báo giá tự động', apply_vat !== false ? 'VAT 8%' : 'VAT 0%', 'prinktech', `nguồn: ${order_source || 'website'}`],
     };
 
     const { data: orderData, error: oErr } = await supabaseAdmin

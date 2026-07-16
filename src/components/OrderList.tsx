@@ -59,6 +59,7 @@ export default function OrderList() {
   const [error, setError] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState('all');
   const [sourceFilter, setSourceFilter] = useState('all');
+  const [vatFilter, setVatFilter] = useState('all'); // all, yes, no
   const [searchTerm, setSearchTerm] = useState('');
   const [localSearchTerm, setLocalSearchTerm] = useState('');
   const [page, setPage] = useState(1);
@@ -67,6 +68,42 @@ export default function OrderList() {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [activeTheme, setActiveTheme] = useState<'tech' | 'elegant'>('elegant');
+
+  // Toast & Confirm states
+  interface ToastState {
+    show: boolean;
+    message: string;
+    type: 'success' | 'error' | 'warning' | 'info';
+  }
+  const [toast, setToast] = useState<ToastState>({ show: false, message: '', type: 'info' });
+
+  const showToast = (message: string, type: 'success' | 'error' | 'warning' | 'info' = 'info') => {
+    setToast({ show: true, message, type });
+  };
+
+  useEffect(() => {
+    if (toast.show) {
+      const timer = setTimeout(() => setToast(prev => ({ ...prev, show: false })), 3500);
+      return () => clearTimeout(timer);
+    }
+  }, [toast.show]);
+
+  interface ConfirmModalState {
+    show: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+  }
+  const [confirmModal, setConfirmModal] = useState<ConfirmModalState>({
+    show: false,
+    title: '',
+    message: '',
+    onConfirm: () => {},
+  });
+
+  const showConfirm = (title: string, message: string, onConfirm: () => void) => {
+    setConfirmModal({ show: true, title, message, onConfirm });
+  };
 
   // States cho cập nhật vận chuyển
   const [shippingCarrierInput, setShippingCarrierInput] = useState('');
@@ -98,6 +135,7 @@ export default function OrderList() {
     design_link: '',
     note: '',
     order_source: 'website',
+    apply_vat: true,
   });
   const [customersList, setCustomersList] = useState<any[]>([]);
   const [submittingForm, setSubmittingForm] = useState(false);
@@ -139,6 +177,7 @@ export default function OrderList() {
   const handleProductChange = (type: string) => {
     if (type === 'other') {
       setCreateFormData(prev => ({
+        ...prev,
         product_type: 'other' as any,
         product_label: '',
         size_label: 'cái',
@@ -148,7 +187,6 @@ export default function OrderList() {
         shipping_fee: 30000,
         design_link: '',
         note: '',
-        order_source: prev.order_source || 'website',
       }));
       return;
     }
@@ -169,6 +207,7 @@ export default function OrderList() {
     const priceExclVat = Math.round(priceInclVat / 1.08);
 
     setCreateFormData(prev => ({
+      ...prev,
       product_type: type,
       product_label: label,
       size_label: size,
@@ -178,7 +217,6 @@ export default function OrderList() {
       shipping_fee: 30000,
       design_link: '',
       note: '',
-      order_source: prev.order_source || 'website',
     }));
   };
 
@@ -253,72 +291,80 @@ export default function OrderList() {
       }
     } else {
       if (!customerId) {
-        alert('Vui lòng chọn khách hàng lẻ từ danh sách.');
+        showToast('Vui lòng chọn khách hàng lẻ từ danh sách.', 'error');
         return;
       }
     }
 
     if (createFormData.product_type === 'other' && !createFormData.product_label.trim()) {
-      alert('Vui lòng nhập tên sản phẩm custom.');
+      showToast('Vui lòng nhập tên sản phẩm custom.', 'error');
       return;
     }
 
-    if (!createFormData.design_link?.trim()) {
-      if (!confirm('Bạn chưa nhập link thiết kế chung (Google Drive). Vẫn muốn tiếp tục tạo đơn?')) {
+    const executeCreateOrder = async (cid: string) => {
+      setSubmittingForm(true);
+      try {
+        const res = await fetch('/api/customer-orders/create-flow', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            customer_id: cid,
+            product_type: createFormData.product_type,
+            product_label: createFormData.product_label,
+            size_label: createFormData.size_label,
+            quantity: createFormData.quantity,
+            meters: createFormData.product_type === 'cuon' ? createFormData.meters : undefined,
+            rate_excl_vat: createFormData.rate_excl_vat,
+            shipping_fee: createFormData.shipping_fee,
+            note: createFormData.note,
+            design_link: createFormData.design_link,
+            order_source: createFormData.order_source,
+            apply_vat: createFormData.apply_vat,
+          }),
+        });
+
+        const result = await res.json();
+        if (!res.ok) {
+          throw new Error(result.error || 'Tạo đơn hàng thất bại');
+        }
+
+        showToast(`Tạo đơn hàng thành công! Mã đơn: ${result.order_code}`, 'success');
+        
+        setShowCreateForm(false);
+        setNewCustomer({ name: '', phone: '', address: '', email: '' });
+        setSelectedCustomerId('');
+        setCreateFormData({
+          product_type: 'cuon',
+          product_label: 'In cuộn mét dài (Khổ 60cm)',
+          size_label: 'Khổ 60cm',
+          quantity: 200,
+          meters: 1.0,
+          rate_excl_vat: 134259,
+          shipping_fee: 30000,
+          design_link: '',
+          note: '',
+          order_source: 'website',
+          apply_vat: true,
+        });
+        
+        fetchOrders();
+      } catch (err: any) {
+        showToast(err.message || 'Lỗi hệ thống', 'error');
+      } finally {
         setSubmittingForm(false);
-        return;
       }
+    };
+
+    if (!createFormData.design_link?.trim()) {
+      showConfirm(
+        'Xác nhận tạo đơn hàng',
+        'Bạn chưa nhập link thiết kế chung (Google Drive). Vẫn muốn tiếp tục tạo đơn hàng và báo giá?',
+        () => executeCreateOrder(customerId)
+      );
+      return;
     }
 
-    setSubmittingForm(true);
-    try {
-      const res = await fetch('/api/customer-orders/create-flow', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          customer_id: customerId,
-          product_type: createFormData.product_type,
-          product_label: createFormData.product_label,
-          size_label: createFormData.size_label,
-          quantity: createFormData.quantity,
-          meters: createFormData.product_type === 'cuon' ? createFormData.meters : undefined,
-          rate_excl_vat: createFormData.rate_excl_vat,
-          shipping_fee: createFormData.shipping_fee,
-          note: createFormData.note,
-          design_link: createFormData.design_link,
-          order_source: createFormData.order_source,
-        }),
-      });
-
-      const result = await res.json();
-      if (!res.ok) {
-        throw new Error(result.error || 'Tạo đơn hàng thất bại');
-      }
-
-      alert(`Tạo đơn hàng thành công!\nMã đơn: ${result.order_code}\nĐã upload báo giá và chia sẻ Drive.`);
-      
-      setShowCreateForm(false);
-      setNewCustomer({ name: '', phone: '', address: '', email: '' });
-      setSelectedCustomerId('');
-      setCreateFormData({
-        product_type: 'cuon',
-        product_label: 'In cuộn mét dài (Khổ 60cm)',
-        size_label: 'Khổ 60cm',
-        quantity: 200,
-        meters: 1.0,
-        rate_excl_vat: 134259,
-        shipping_fee: 30000,
-        design_link: '',
-        note: '',
-        order_source: 'website',
-      });
-      
-      fetchOrders();
-    } catch (err: any) {
-      alert(err.message || 'Lỗi hệ thống');
-    } finally {
-      setSubmittingForm(false);
-    }
+    executeCreateOrder(customerId);
   };
 
 
@@ -354,6 +400,7 @@ export default function OrderList() {
       const params = new URLSearchParams({
         status: statusFilter,
         source: sourceFilter,
+        vat: vatFilter,
         search: searchTerm,
         page: String(page),
         limit: '20',
@@ -370,7 +417,7 @@ export default function OrderList() {
     } finally {
       setLoading(false);
     }
-  }, [statusFilter, sourceFilter, searchTerm, page]);
+  }, [statusFilter, sourceFilter, vatFilter, searchTerm, page]);
 
   useEffect(() => {
     fetchOrders();
@@ -403,8 +450,9 @@ export default function OrderList() {
       if (selectedOrder?.id === orderId) {
         setSelectedOrder(prev => prev ? { ...prev, status: newStatus } : null);
       }
+      showToast('Cập nhật trạng thái đơn hàng thành công!', 'success');
     } catch (err) {
-      alert((err as Error).message);
+      showToast((err as Error).message, 'error');
     } finally {
       setUpdatingId(null);
     }
@@ -425,8 +473,9 @@ export default function OrderList() {
       if (selectedOrder?.id === orderId) {
         setSelectedOrder(prev => prev ? { ...prev, payment_status: newPayStatus } : null);
       }
+      showToast('Cập nhật thanh toán thành công!', 'success');
     } catch (err) {
-      alert((err as Error).message);
+      showToast((err as Error).message, 'error');
     } finally {
       setUpdatingId(null);
     }
@@ -459,24 +508,30 @@ export default function OrderList() {
           tracking_number: trackingNumberInput || null 
         } : null);
       }
-      alert('Cập nhật thông tin vận chuyển thành công!');
+      showToast('Cập nhật thông tin vận chuyển thành công!', 'success');
     } catch (err) {
-      alert((err as Error).message);
+      showToast((err as Error).message, 'error');
     } finally {
       setUpdatingId(null);
     }
   };
 
-  const handleDelete = async (orderId: string) => {
-    if (!confirm('Bạn có chắc chắn muốn xóa đơn hàng này?')) return;
-    try {
-      const res = await fetch(`/api/orders/${orderId}`, { method: 'DELETE' });
-      if (!res.ok) throw new Error('Xóa thất bại');
-      setOrders(prev => prev.filter(o => o.id !== orderId));
-      if (selectedOrder?.id === orderId) setSelectedOrder(null);
-    } catch (err) {
-      alert((err as Error).message);
-    }
+  const handleDelete = (orderId: string) => {
+    showConfirm(
+      'Xác nhận xóa đơn hàng',
+      'Bạn có chắc chắn muốn xóa vĩnh viễn đơn hàng này không? Hành động này không thể hoàn tác.',
+      async () => {
+        try {
+          const res = await fetch(`/api/orders/${orderId}`, { method: 'DELETE' });
+          if (!res.ok) throw new Error('Xóa thất bại');
+          showToast('Đã xóa đơn hàng thành công!', 'success');
+          setOrders(prev => prev.filter(o => o.id !== orderId));
+          if (selectedOrder?.id === orderId) setSelectedOrder(null);
+        } catch (err) {
+          showToast((err as Error).message, 'error');
+        }
+      }
+    );
   };
 
   return (
@@ -712,6 +767,22 @@ export default function OrderList() {
                         className="w-full h-10 px-3 rounded-xl border border-card-border bg-background text-slate-900 text-sm font-bold focus:outline-none focus:border-purple-650"
                       />
                     </div>
+
+                    <div className="flex items-center justify-between p-3 rounded-xl border border-card-border bg-slate-50 mt-4">
+                      <div>
+                        <span className="block text-xs font-bold text-slate-700">Áp dụng thuế VAT (8%)</span>
+                        <span className="block text-[10px] text-slate-500 font-semibold">Tự động tính thuế GTGT cho báo giá</span>
+                      </div>
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={createFormData.apply_vat}
+                          onChange={e => setCreateFormData(prev => ({ ...prev, apply_vat: e.target.checked }))}
+                          className="sr-only peer"
+                        />
+                        <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-350 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-purple-650"></div>
+                      </label>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -776,13 +847,13 @@ export default function OrderList() {
                       </span>
                     </div>
                     <div className="flex justify-between text-xs text-slate-600">
-                      <span>VAT (8%):</span>
+                      <span>VAT ({createFormData.apply_vat ? '8%' : '0%'}):</span>
                       <span className="font-semibold text-slate-900 tabular-nums">
                         {formatCurrency(
                           Math.round(
                             (createFormData.product_type === 'cuon'
                               ? createFormData.rate_excl_vat * createFormData.meters
-                              : createFormData.rate_excl_vat * createFormData.quantity) * 0.08
+                              : createFormData.rate_excl_vat * createFormData.quantity) * (createFormData.apply_vat ? 0.08 : 0)
                           )
                         )}
                       </span>
@@ -794,13 +865,13 @@ export default function OrderList() {
                       </span>
                     </div>
                     <div className="flex justify-between text-sm font-black border-t border-dashed border-slate-200 pt-2 text-purple-650">
-                      <span>Tổng thanh toán (có VAT):</span>
+                      <span>Tổng thanh toán ({createFormData.apply_vat ? 'có VAT' : 'không VAT'}):</span>
                       <span className="tabular-nums">
                         {formatCurrency(
                           Math.round(
                             (createFormData.product_type === 'cuon'
                               ? createFormData.rate_excl_vat * createFormData.meters
-                              : createFormData.rate_excl_vat * createFormData.quantity) * 1.08
+                              : createFormData.rate_excl_vat * createFormData.quantity) * (createFormData.apply_vat ? 1.08 : 1.0)
                           ) + createFormData.shipping_fee
                         )}
                       </span>
@@ -866,6 +937,15 @@ export default function OrderList() {
             <option value="tiktok" className="bg-card-bg text-slate-900">🎵 Tiktok</option>
             <option value="admin" className="bg-card-bg text-slate-900">👤 Admin tạo (Chưa phân loại)</option>
             <option value="other" className="bg-card-bg text-slate-900">❓ Khác</option>
+          </select>
+          <select
+            value={vatFilter}
+            onChange={e => { setVatFilter(e.target.value); setPage(1); }}
+            className="h-10 px-3 rounded-xl border border-card-border bg-background text-slate-900 text-sm font-semibold focus:outline-none focus:border-[var(--accent)]"
+          >
+            <option value="all" className="bg-card-bg text-slate-900">Mọi thuế suất (VAT)</option>
+            <option value="yes" className="bg-card-bg text-slate-900">🧾 Đơn có thuế VAT</option>
+            <option value="no" className="bg-card-bg text-slate-900">💸 Đơn không thuế VAT</option>
           </select>
           <button
             onClick={handleSearchSubmit}
@@ -1395,6 +1475,54 @@ export default function OrderList() {
           </div>
         </div>
       </div>
+
+      {/* Toast component */}
+      {toast.show && (
+        <div className="fixed bottom-5 right-5 z-50 animate-bounce-short">
+          <div className={`flex items-center gap-3 px-4 py-3.5 rounded-xl shadow-xl text-white font-bold text-sm ${
+            toast.type === 'success' ? 'bg-[#10b981]' : 
+            toast.type === 'error' ? 'bg-[#ef4444]' : 
+            toast.type === 'warning' ? 'bg-[#f59e0b]' : 'bg-[#3b82f6]'
+          }`}>
+            <span>{toast.type === 'success' ? '✅' : toast.type === 'error' ? '❌' : toast.type === 'warning' ? '⚠️' : 'ℹ️'}</span>
+            <span>{toast.message}</span>
+            <button onClick={() => setToast(prev => ({ ...prev, show: false }))} className="ml-2 font-black hover:opacity-85 text-white/70">✕</button>
+          </div>
+        </div>
+      )}
+
+      {/* Confirm Modal component */}
+      {confirmModal.show && (
+        <div className="fixed inset-0 z-55 flex items-center justify-center bg-black/55 p-4">
+          <div className="bg-white rounded-2xl border border-card-border p-6 max-w-sm w-full shadow-2xl text-slate-900 space-y-4 animate-scale-up">
+            <h3 className="font-extrabold text-base text-slate-800 flex items-center gap-2">
+              ⚠️ {confirmModal.title}
+            </h3>
+            <p className="text-xs text-slate-600 font-semibold leading-relaxed">
+              {confirmModal.message}
+            </p>
+            <div className="flex gap-3 justify-end pt-2">
+              <button
+                type="button"
+                onClick={() => setConfirmModal(prev => ({ ...prev, show: false }))}
+                className="px-4 py-2 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-600 font-bold text-xs cursor-pointer"
+              >
+                Hủy bỏ
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setConfirmModal(prev => ({ ...prev, show: false }));
+                  confirmModal.onConfirm();
+                }}
+                className="px-4 py-2 rounded-xl bg-[#7c3aed] hover:bg-[#6d28d9] text-white font-bold text-xs cursor-pointer"
+              >
+                Xác nhận
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       </div>
   );
 }

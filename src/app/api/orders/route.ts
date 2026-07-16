@@ -46,6 +46,7 @@ export async function GET(req: NextRequest) {
     const status = searchParams.get('status');
     const search = searchParams.get('search');
     const source = searchParams.get('source') || 'all';
+    const vat = searchParams.get('vat') || 'all'; // all, yes, no
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '20');
     const offset = (page - 1) * limit;
@@ -109,6 +110,7 @@ export async function GET(req: NextRequest) {
       tracking_number: o.tracking_number || null,
       converted_length: Number(o.converted_length) || 0,
       source: 'website',
+      has_vat: o.request_vat || false,
       created_at: o.created_at
     }));
 
@@ -183,6 +185,7 @@ export async function GET(req: NextRequest) {
         shipping_carrier: shippingCarrier,
         tracking_number: trackingNumber,
         source: orderSource,
+        has_vat: Array.isArray(o.tags) && o.tags.includes('VAT 8%'),
         created_at: o.created_at
       };
     });
@@ -202,6 +205,12 @@ export async function GET(req: NextRequest) {
     // Lọc theo nguồn đơn (source)
     if (source && source !== 'all') {
       allOrders = allOrders.filter((o: any) => o.source === source);
+    }
+
+    // Lọc theo VAT (vat)
+    if (vat && vat !== 'all') {
+      const needVat = vat === 'yes';
+      allOrders = allOrders.filter((o: any) => o.has_vat === needVat);
     }
 
     // 6. Sắp xếp theo ngày tạo giảm dần
