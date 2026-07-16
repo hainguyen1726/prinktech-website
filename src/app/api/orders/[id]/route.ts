@@ -56,6 +56,19 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       .eq('id', id)
       .select()
       .single();
+
+    // Nếu lỗi do cột timestamp chưa tồn tại, retry không có timestamp
+    if (res.error && (res.error.message.includes('column') || res.error.code === '42703')) {
+      delete updates.confirmed_at;
+      delete updates.shipped_at;
+      delete updates.delivered_at;
+      res = await supabase
+        .from('retail_orders')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single();
+    }
   } else {
     const updates: Record<string, unknown> = {};
     if (status) updates.status = status;
@@ -115,10 +128,24 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       .eq('id', id)
       .select()
       .single();
+
+    // Nếu lỗi do cột timestamp chưa tồn tại, retry không có timestamp
+    if (res.error && (res.error.message.includes('column') || res.error.code === '42703')) {
+      delete updates.confirmed_at;
+      delete updates.shipped_at;
+      delete updates.delivered_at;
+      res = await supabase
+        .from('orders')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single();
+    }
   }
 
   if (res.error) return NextResponse.json({ error: res.error.message }, { status: 500 });
   return NextResponse.json({ data: res.data });
+
 }
 
 // DELETE /api/orders/[id]

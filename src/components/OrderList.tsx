@@ -443,7 +443,10 @@ export default function OrderList() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus }),
       });
-      if (!res.ok) throw new Error('Cập nhật thất bại');
+      if (!res.ok) {
+        const errJson = await res.json().catch(() => ({}));
+        throw new Error(errJson?.error || `Cập nhật thất bại (${res.status})`);
+      }
       
       // Update state
       setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: newStatus } : o));
@@ -466,7 +469,10 @@ export default function OrderList() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ payment_status: newPayStatus }),
       });
-      if (!res.ok) throw new Error('Cập nhật thất bại');
+      if (!res.ok) {
+        const errJson = await res.json().catch(() => ({}));
+        throw new Error(errJson?.error || `Cập nhật thất bại (${res.status})`);
+      }
       
       // Update state
       setOrders(prev => prev.map(o => o.id === orderId ? { ...o, payment_status: newPayStatus } : o));
