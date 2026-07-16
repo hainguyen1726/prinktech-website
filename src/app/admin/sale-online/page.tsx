@@ -1,18 +1,18 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
+import Link from 'next/link';
 import {
   TrendingUp, TrendingDown, Minus,
   DollarSign, ShoppingCart, BarChart2, Percent,
-  Truck, Megaphone, Package, Globe,
-  Plus, Pencil, Trash2, X, Check, ChevronDown,
-  RefreshCw, AlertCircle
+  Package, Plus, Trash2, X, Check,
+  RefreshCw, AlertCircle, ExternalLink, Info
 } from 'lucide-react';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface KPI { value: number; prev: number; pct: number | null; }
-interface ChartPoint { date: string; revenue: number; expense: number; }
-interface ChannelBreakdown { channel: string; value: number; }
+interface ChartPoint { date: string; revenue: number; expense: number; orders: number; }
+interface ChannelBreakdown { channel: string; value: number; orders?: number; }
 interface CategoryBreakdown { category: string; value: number; }
 interface SummaryData {
   period: { from: string; to: string };
@@ -231,71 +231,7 @@ function DonutChart({ data, total, colors }: { data: { label: string; value: num
   );
 }
 
-// Revenue form
-function RevenueForm({ onSave, onCancel, today }: { onSave: (d: Partial<Revenue>) => void; onCancel: () => void; today: string }) {
-  const [form, setForm] = useState({ date: today, channel: 'website', amount_excl_vat: '', vat_amount: '', shipping_fee_collected: '', has_vat: false, has_shipping: false, order_count: '1', order_ref: '', note: '' });
-  const set = (k: string, v: unknown) => setForm(p => ({ ...p, [k]: v }));
 
-  return (
-    <div className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800/50 rounded-2xl p-5 space-y-4">
-      <h4 className="font-bold text-emerald-700 dark:text-emerald-300 text-sm flex items-center gap-2"><TrendingUp size={15} /> Nhập doanh thu mới</h4>
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-        <div>
-          <label className="text-xs font-bold text-slate-600 dark:text-slate-400 mb-1 block">Ngày *</label>
-          <input type="date" value={form.date} onChange={e => set('date', e.target.value)} className="w-full text-sm border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 bg-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500" />
-        </div>
-        <div>
-          <label className="text-xs font-bold text-slate-600 dark:text-slate-400 mb-1 block">Kênh bán *</label>
-          <select value={form.channel} onChange={e => set('channel', e.target.value)} className="w-full text-sm border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 bg-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500">
-            {CHANNELS.filter(c => c.value !== 'all').map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
-          </select>
-        </div>
-        <div>
-          <label className="text-xs font-bold text-slate-600 dark:text-slate-400 mb-1 block">Số đơn</label>
-          <input type="number" min={1} value={form.order_count} onChange={e => set('order_count', e.target.value)} className="w-full text-sm border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 bg-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500" />
-        </div>
-        <div>
-          <label className="text-xs font-bold text-slate-600 dark:text-slate-400 mb-1 block">Tiền hàng (chưa VAT) *</label>
-          <input type="number" min={0} value={form.amount_excl_vat} onChange={e => set('amount_excl_vat', e.target.value)} placeholder="0" className="w-full text-sm border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 bg-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500" />
-        </div>
-        <div>
-          <label className="text-xs font-bold text-slate-600 dark:text-slate-400 mb-1 block">Tiền VAT (nếu có)</label>
-          <input type="number" min={0} value={form.vat_amount} onChange={e => set('vat_amount', e.target.value)} placeholder="0" className="w-full text-sm border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 bg-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500" />
-        </div>
-        <div>
-          <label className="text-xs font-bold text-slate-600 dark:text-slate-400 mb-1 block">Phí ship thu khách</label>
-          <input type="number" min={0} value={form.shipping_fee_collected} onChange={e => set('shipping_fee_collected', e.target.value)} placeholder="0" className="w-full text-sm border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 bg-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500" />
-        </div>
-      </div>
-      <div className="flex gap-4">
-        <label className="flex items-center gap-2 text-xs font-semibold text-slate-600 dark:text-slate-300 cursor-pointer">
-          <input type="checkbox" checked={form.has_vat} onChange={e => set('has_vat', e.target.checked)} className="rounded accent-emerald-500" />
-          Đơn có VAT
-        </label>
-        <label className="flex items-center gap-2 text-xs font-semibold text-slate-600 dark:text-slate-300 cursor-pointer">
-          <input type="checkbox" checked={form.has_shipping} onChange={e => set('has_shipping', e.target.checked)} className="rounded accent-emerald-500" />
-          Có phí ship
-        </label>
-      </div>
-      <div className="grid grid-cols-2 gap-3">
-        <div>
-          <label className="text-xs font-bold text-slate-600 dark:text-slate-400 mb-1 block">Mã đơn (tham chiếu)</label>
-          <input value={form.order_ref} onChange={e => set('order_ref', e.target.value)} placeholder="VD: SP-20260716-001" className="w-full text-sm border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 bg-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500" />
-        </div>
-        <div>
-          <label className="text-xs font-bold text-slate-600 dark:text-slate-400 mb-1 block">Ghi chú</label>
-          <input value={form.note} onChange={e => set('note', e.target.value)} className="w-full text-sm border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 bg-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500" />
-        </div>
-      </div>
-      <div className="flex gap-2 justify-end">
-        <button onClick={onCancel} className="px-4 py-2 text-xs font-bold text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition">Hủy</button>
-        <button onClick={() => onSave({ date: form.date, channel: form.channel, amount_excl_vat: Number(form.amount_excl_vat) || 0, vat_amount: Number(form.vat_amount) || 0, shipping_fee_collected: Number(form.shipping_fee_collected) || 0, has_vat: form.has_vat, has_shipping: form.has_shipping, order_count: Number(form.order_count) || 1, order_ref: form.order_ref, note: form.note })} className="px-5 py-2 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition flex items-center gap-2">
-          <Check size={13} /> Lưu doanh thu
-        </button>
-      </div>
-    </div>
-  );
-}
 
 // Expense form
 function ExpenseForm({ onSave, onCancel, today }: { onSave: (d: Partial<Expense>) => void; onCancel: () => void; today: string }) {
@@ -619,55 +555,24 @@ export default function SaleOnlinePage() {
           {/* Data Entry Tab */}
           {activeTab === 'entry' && (
             <div className="space-y-6">
-              {/* Revenue form section */}
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider">Doanh thu</h4>
-                  {!showRevForm && (
-                    <button onClick={() => setShowRevForm(true)} className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition">
-                      <Plus size={12} /> Thêm doanh thu
-                    </button>
-                  )}
-                </div>
-                {showRevForm && <RevenueForm onSave={saveRevenue} onCancel={() => setShowRevForm(false)} today={today} />}
-                {/* Revenue history */}
-                <div className="overflow-x-auto mt-3">
-                  <table className="w-full text-xs">
-                    <thead>
-                      <tr className="border-b border-slate-200 dark:border-slate-700">
-                        {['Ngày', 'Kênh', 'Tiền hàng', 'VAT', 'Ship', 'VAT?', 'Đơn', 'Ghi chú', ''].map(h => (
-                          <th key={h} className="py-2 px-2 text-left font-bold text-slate-500 uppercase tracking-wider whitespace-nowrap">{h}</th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {revenues.slice(0, 30).map(r => (
-                        <tr key={r.id} className="border-b border-slate-100 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-800/30">
-                          <td className="py-2 px-2 font-semibold whitespace-nowrap">{r.date}</td>
-                          <td className="py-2 px-2" style={{ color: channelColor(r.channel) }}><b>{channelLabel(r.channel)}</b></td>
-                          <td className="py-2 px-2 font-bold">{fmt(Number(r.amount_excl_vat))}đ</td>
-                          <td className="py-2 px-2 text-emerald-600">{Number(r.vat_amount) > 0 ? fmt(Number(r.vat_amount)) + 'đ' : '—'}</td>
-                          <td className="py-2 px-2 text-blue-600">{Number(r.shipping_fee_collected) > 0 ? fmt(Number(r.shipping_fee_collected)) + 'đ' : '—'}</td>
-                          <td className="py-2 px-2">{r.has_vat ? '✅' : '—'}</td>
-                          <td className="py-2 px-2 text-center">{r.order_count}</td>
-                          <td className="py-2 px-2 text-slate-400 max-w-[100px] truncate">{r.note || '—'}</td>
-                          <td className="py-2 px-2">
-                            <button onClick={() => { if (confirm('Xóa doanh thu này?')) deleteRevenue(r.id); }} disabled={deleting === r.id} className="p-1 text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded transition">
-                              {deleting === r.id ? <RefreshCw size={11} className="animate-spin" /> : <Trash2 size={11} />}
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                      {revenues.length === 0 && <tr><td colSpan={9} className="py-6 text-center text-slate-400">Chưa có doanh thu nào</td></tr>}
-                    </tbody>
-                  </table>
+              {/* Info panel */}
+              <div className="flex gap-3 p-4 rounded-xl bg-sky-50 dark:bg-sky-950/20 border border-sky-200 dark:border-sky-850 text-xs text-sky-850 dark:text-sky-300">
+                <Info size={16} className="shrink-0 mt-0.5" />
+                <div className="space-y-1">
+                  <p className="font-bold">Hệ thống Doanh thu tự động</p>
+                  <p>Doanh thu của mảng Sale Online được đồng bộ tự động 100% từ danh sách đơn hàng bán lẻ và đơn hàng B2B (các đơn có tag prinktech hoặc nguồn cụ thể).</p>
+                  <div className="pt-1.5">
+                    <Link href="/admin/don-hang" className="font-bold inline-flex items-center gap-1 text-sky-600 dark:text-sky-400 hover:underline">
+                      Đi đến trang Quản lý đơn hàng để thêm/sửa đơn hàng <ExternalLink size={12} />
+                    </Link>
+                  </div>
                 </div>
               </div>
 
               {/* Expense form section */}
               <div>
                 <div className="flex items-center justify-between mb-3">
-                  <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider">Chi phí</h4>
+                  <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider">Chi phí phát sinh (nhập thủ công)</h4>
                   {!showExpForm && (
                     <button onClick={() => setShowExpForm(true)} className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold bg-red-600 hover:bg-red-700 text-white rounded-lg transition">
                       <Plus size={12} /> Thêm chi phí
@@ -686,12 +591,12 @@ export default function SaleOnlinePage() {
                       </tr>
                     </thead>
                     <tbody>
-                      {expenses.slice(0, 30).map(e => (
+                      {expenses.slice(0, 35).map(e => (
                         <tr key={e.id} className="border-b border-slate-100 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-800/30">
                           <td className="py-2 px-2 font-semibold whitespace-nowrap">{e.date}</td>
                           <td className="py-2 px-2" style={{ color: catColor(e.category) }}><b>{catLabel(e.category)}</b></td>
                           <td className="py-2 px-2" style={{ color: channelColor(e.channel) }}>{channelLabel(e.channel)}</td>
-                          <td className="py-2 px-2 font-bold text-red-600">{fmt(Number(e.amount))}đ</td>
+                          <td className="py-2 px-2 font-bold text-red-600">{fmtFull(Number(e.amount))}</td>
                           <td className="py-2 px-2 text-slate-600 dark:text-slate-300 max-w-[120px] truncate">{e.description || '—'}</td>
                           <td className="py-2 px-2 text-slate-400 max-w-[80px] truncate">{e.note || '—'}</td>
                           <td className="py-2 px-2">
@@ -701,7 +606,7 @@ export default function SaleOnlinePage() {
                           </td>
                         </tr>
                       ))}
-                      {expenses.length === 0 && <tr><td colSpan={7} className="py-6 text-center text-slate-400">Chưa có chi phí nào</td></tr>}
+                      {expenses.length === 0 && <tr><td colSpan={7} className="py-6 text-center text-slate-400">Chưa có chi phí nào được nhập</td></tr>}
                     </tbody>
                   </table>
                 </div>
