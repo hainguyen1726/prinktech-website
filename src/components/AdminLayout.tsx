@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { 
   ShoppingBag, Users, FileText, PenTool, BarChart, 
-  Layers, Calculator, PhoneCall, Video, Globe, LogOut, Sun, Moon
+  Layers, Calculator, PhoneCall, Video, Globe, LogOut, Sun, Moon, TrendingUp
 } from 'lucide-react';
 
 function AdminLayoutContent({ children }: { children: React.ReactNode }) {
@@ -167,6 +167,7 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
           <div className="glass-card p-3 lg:p-4 flex flex-row lg:flex-col overflow-x-auto lg:overflow-x-visible gap-2 lg:gap-1.5 bg-white/40 dark:bg-[#0f172a]/20 border border-slate-200 dark:border-slate-800/80 rounded-xl scrollbar-none whitespace-nowrap">
             {renderSidebarItem("Quản lý Đơn hàng", <ShoppingBag size={16} className="text-emerald-500" />, "/admin/don-hang")}
             {renderSidebarItem("Quản lý Khách hàng", <Users size={16} className="text-purple-500" />, "/admin/khach-hang")}
+            {renderSidebarItem("Sale Online", <TrendingUp size={16} className="text-rose-500" />, "/admin/sale-online")}
             
             <span className="hidden lg:block h-px bg-slate-200 dark:bg-slate-800 my-2"></span>
 
