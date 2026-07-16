@@ -28,6 +28,9 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  // PDFKit phải là external để __dirname trong pdfkit trỏ đúng vào node_modules/pdfkit/data/
+  // Nếu bị webpack bundle, nó sẽ tìm Helvetica.afm ở thư mục .next/server/... → ENOENT
+  serverExternalPackages: ['pdfkit'],
   /* config options here */
   async redirects() {
     return [
