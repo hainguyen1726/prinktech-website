@@ -163,7 +163,7 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
       <div className="flex-1 flex flex-col lg:flex-row w-full max-w-full p-4 lg:p-6 gap-6 z-10 pb-20 lg:pb-6">
         
         {/* Sidebar Nav */}
-        <aside className="w-full lg:w-60 shrink-0 lg:sticky lg:top-24">
+        <aside className="w-full lg:w-60 shrink-0 lg:sticky lg:top-[92px] lg:self-start">
           <div className="glass-card p-3 lg:p-4 flex flex-row lg:flex-col overflow-x-auto lg:overflow-x-visible lg:max-h-[calc(100vh-120px)] lg:overflow-y-auto scrollbar-none gap-2 lg:gap-1.5 bg-white/40 dark:bg-[#0f172a]/20 border border-slate-200 dark:border-slate-800/80 rounded-xl whitespace-nowrap">
             {renderSidebarItem("Quản lý Đơn hàng", <ShoppingBag size={16} className="text-emerald-500" />, "/admin/don-hang")}
             {renderSidebarItem("Quản lý Khách hàng", <Users size={16} className="text-purple-500" />, "/admin/khach-hang")}
