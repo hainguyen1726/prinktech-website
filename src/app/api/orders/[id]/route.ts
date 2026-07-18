@@ -206,26 +206,54 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
 
   const { id } = await params;
 
-  // Lấy mã đơn hàng để ghi log
-  const { data: order } = await supabase
+  // 1. Thử tìm và xóa trong retail_orders trước
+  const { data: retailOrder } = await supabase
     .from('retail_orders')
     .select('order_number')
     .eq('id', id)
     .maybeSingle();
 
-  const orderNum = order?.order_number || id;
+  if (retailOrder) {
+    const { error } = await supabase.from('retail_orders').delete().eq('id', id);
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-  const { error } = await supabase.from('retail_orders').delete().eq('id', id);
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    await logActivity({
+      userId: auth.user?.id || 'admin',
+      userName: auth.user?.name || 'Website Admin',
+      action: 'delete_order',
+      targetType: 'customer_order',
+      targetId: id,
+      description: `Xóa đơn hàng bán lẻ mã ${retailOrder.order_number} khỏi hệ thống.`
+    });
 
-  await logActivity({
-    userId: auth.user?.id || 'admin',
-    userName: auth.user?.name || 'Website Admin',
-    action: 'delete_order',
-    targetType: 'customer_order',
-    targetId: id,
-    description: `Xóa đơn hàng bán lẻ mã ${orderNum} khỏi hệ thống.`
-  });
+    return NextResponse.json({ success: true });
+  }
 
-  return NextResponse.json({ success: true });
+  // 2. Nếu không thấy ở retail_orders, tìm và xóa ở orders (đơn admin)
+  const { data: partnerOrder } = await supabase
+    .from('orders')
+    .select('order_code')
+    .eq('id', id)
+    .maybeSingle();
+
+  if (partnerOrder) {
+    // Xóa logs của orders trước để tránh lỗi foreign key constraint
+    await supabase.from('order_logs').delete().eq('order_id', id);
+
+    const { error } = await supabase.from('orders').delete().eq('id', id);
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+    await logActivity({
+      userId: auth.user?.id || 'admin',
+      userName: auth.user?.name || 'Website Admin',
+      action: 'delete_order',
+      targetType: 'partner_order',
+      targetId: id,
+      description: `Xóa đơn hàng đối tác mã ${partnerOrder.order_code} khỏi hệ thống.`
+    });
+
+    return NextResponse.json({ success: true });
+  }
+
+  return NextResponse.json({ error: 'Không tìm thấy đơn hàng để xóa' }, { status: 404 });
 }
