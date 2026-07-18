@@ -227,7 +227,7 @@ export default function OrderList() {
     size_label: 'Khổ 60cm',
     quantity: 200,
     meters: 1.0,
-    rate_excl_vat: 134259,
+    rate_excl_vat: 160000,
     shipping_fee: 30000,
     design_link: '',
     note: '',
@@ -321,7 +321,7 @@ export default function OrderList() {
     
     let priceInclVat = 0;
     if (type === 'cuon') {
-      priceInclVat = 145000;
+      priceInclVat = 172800;
     } else {
       priceInclVat = getUnitPrice(prod!, defaultQty);
     }
@@ -356,7 +356,7 @@ export default function OrderList() {
 
     let priceInclVat = 0;
     if (type === 'cuon') {
-      priceInclVat = 145000;
+      priceInclVat = 172800;
     } else {
       priceInclVat = getUnitPrice(prod, qty);
     }
@@ -488,7 +488,7 @@ export default function OrderList() {
           size_label: 'Khổ 60cm',
           quantity: 200,
           meters: 1.0,
-          rate_excl_vat: 134259,
+          rate_excl_vat: 160000,
           shipping_fee: 30000,
           design_link: '',
           note: '',
