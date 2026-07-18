@@ -135,12 +135,6 @@ export default function CustomerList() {
   const [totalCount, setTotalCount] = useState(0);
   const totalPages = Math.ceil(totalCount / 20);
 
-  // States cho tính năng lọc trùng & gộp khách hàng
-  const [showDuplicates, setShowDuplicates] = useState(false);
-  const [duplicateGroups, setDuplicateGroups] = useState<{ phone: string; customers: Customer[] }[]>([]);
-  const [merging, setMerging] = useState<string | null>(null);
-
-
   // Helper cho phân trang thu gọn thông minh
   const getPageNumbers = (currentPage: number, totalPages: number): (number | string)[] => {
     const pages: (number | string)[] = [];
@@ -309,61 +303,19 @@ export default function CustomerList() {
         page: String(page),
         limit: '20',
       });
-      if (showDuplicates) {
-        params.set('filter_duplicates', 'true');
-      }
       
       const res = await fetch(`/api/customers?${params.toString()}`);
       if (!res.ok) throw new Error('Không thể tải danh sách khách hàng');
       const data = await res.json();
       
-      if (data.isDuplicateView) {
-        setDuplicateGroups(data.data || []);
-        setCustomers([]);
-        setTotalCount(0);
-      } else {
-        setCustomers(data.data || []);
-        setTotalCount(data.total || 0);
-        setDuplicateGroups([]);
-      }
+      setCustomers(data.data || []);
+      setTotalCount(data.total || 0);
     } catch (err) {
       setError((err as Error).message);
     } finally {
       setLoading(false);
     }
-  }, [searchTerm, page, showDuplicates]);
-
-  const handleMerge = async (phone: string | null, mergeAll = false) => {
-    if (mergeAll) {
-      if (!confirm('Bạn có chắc chắn muốn gộp TẤT CẢ khách hàng trùng lặp trên hệ thống? Quá trình này sẽ chuyển toàn bộ đơn hàng về tài khoản chính và xóa tài khoản thừa.')) {
-        return;
-      }
-      setMerging('all');
-    } else {
-      if (!confirm(`Bạn có chắc chắn muốn gộp các tài khoản trùng lặp của số điện thoại ${phone}?`)) {
-        return;
-      }
-      setMerging(phone);
-    }
-
-    try {
-      const res = await fetch('/api/customers/merge', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone, merge_all: mergeAll }),
-      });
-
-      const result = await res.json();
-      if (!res.ok) throw new Error(result.error || 'Gộp khách hàng thất bại');
-
-      alert(result.message || 'Gộp khách hàng thành công!');
-      fetchCustomers();
-    } catch (err: any) {
-      alert(err.message || 'Lỗi hệ thống');
-    } finally {
-      setMerging(null);
-    }
-  };
+  }, [searchTerm, page]);
 
   useEffect(() => {
     fetchCustomers();
@@ -863,29 +815,6 @@ export default function CustomerList() {
             >
               Tìm kiếm
             </button>
-            <button
-              onClick={() => {
-                setShowDuplicates(prev => !prev);
-                setPage(1);
-              }}
-              className={`h-10 px-4 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer flex-1 sm:flex-initial text-center whitespace-nowrap border ${
-                showDuplicates
-                  ? 'bg-amber-500/10 border-amber-500 text-amber-700 font-black'
-                  : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
-              }`}
-            >
-              👥 {showDuplicates ? 'Tắt Lọc Trùng' : 'Lọc trùng SĐT'}
-            </button>
-            
-            {showDuplicates && duplicateGroups.length > 0 && (
-              <button
-                disabled={merging !== null}
-                onClick={() => handleMerge(null, true)}
-                className="h-10 px-4 rounded-xl bg-red-650 hover:bg-red-750 text-white font-bold text-xs sm:text-sm transition-all cursor-pointer flex-1 sm:flex-initial text-center whitespace-nowrap disabled:opacity-50"
-              >
-                {merging === 'all' ? 'Đang gộp...' : '💥 Gộp tất cả trùng'}
-              </button>
-            )}
           </div>
         </div>
 
@@ -902,129 +831,14 @@ export default function CustomerList() {
           </div>
         )}
 
-        {!loading && ((!showDuplicates && customers.length === 0) || (showDuplicates && duplicateGroups.length === 0)) && (
+        {!loading && customers.length === 0 && (
           <div className="text-center py-20 border border-dashed border-slate-200 rounded-2xl bg-white text-slate-400 font-bold">
-            {showDuplicates ? 'Không phát hiện khách hàng trùng lặp nào!' : 'Chưa có dữ liệu khách hàng.'}
-          </div>
-        )}
-
-        {/* 0. DUPLICATE GROUPS VIEW */}
-        {!loading && showDuplicates && duplicateGroups.length > 0 && (
-          <div className="space-y-6">
-            {duplicateGroups.map((group, index) => (
-              <div 
-                key={group.phone}
-                className="bg-white border border-amber-200 rounded-2xl shadow-xs overflow-hidden"
-              >
-                {/* Group Header */}
-                <div className="bg-amber-500/5 px-4 py-3 sm:px-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-amber-200">
-                  <div className="flex items-center gap-2">
-                    <span className="w-7 h-7 rounded-full bg-amber-700 text-white flex items-center justify-center font-bold text-xs shrink-0">
-                      {index + 1}
-                    </span>
-                    <div>
-                      <h3 className="font-extrabold text-slate-900 text-sm sm:text-base flex items-center gap-1.5">
-                        Nhóm trùng: <span className="font-mono text-amber-800">{group.phone}</span>
-                      </h3>
-                      <p className="text-[11px] text-slate-500 font-medium">
-                        Phát hiện <span className="font-bold text-amber-700">{group.customers.length}</span> tài khoản sử dụng số điện thoại này.
-                      </p>
-                    </div>
-                  </div>
-                  <button
-                    disabled={merging !== null}
-                    onClick={() => handleMerge(group.phone, false)}
-                    className="w-full sm:w-auto px-4 py-2 rounded-xl bg-amber-700 hover:bg-amber-800 text-white font-bold text-xs shadow-xs transition-all cursor-pointer flex items-center justify-center gap-1.5 disabled:opacity-50"
-                  >
-                    {merging === group.phone ? (
-                      <>
-                        <RefreshCw className="animate-spin" size={14} />
-                        Đang gộp...
-                      </>
-                    ) : (
-                      '🤝 Gộp nhóm này'
-                    )}
-                  </button>
-                </div>
-
-                {/* Group Customers List (Table) */}
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left border-collapse text-xs">
-                    <thead>
-                      <tr className="border-b border-slate-200 bg-slate-50/50 text-slate-500 font-bold uppercase tracking-wider text-[10px]">
-                        <th className="py-2.5 px-4 w-28">Mã KH</th>
-                        <th className="py-2.5 px-4">Tên Khách Hàng</th>
-                        <th className="py-2.5 px-4">Địa Chỉ</th>
-                        <th className="py-2.5 px-4">Email</th>
-                        <th className="py-2.5 px-4 text-center">Số Đơn</th>
-                        <th className="py-2.5 px-4 text-right">Tổng Tích Lũy</th>
-                        <th className="py-2.5 px-4 text-center">Ngày tạo</th>
-                        <th className="py-2.5 px-4 text-center">Đánh giá</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100">
-                      {group.customers.map((c) => {
-                        const hasOrders = c.total_orders > 0;
-                        return (
-                          <tr key={c.id} className={`hover:bg-slate-50/50 transition-colors ${hasOrders ? 'bg-emerald-50/20' : ''}`}>
-                            <td className="py-3 px-4 font-mono font-bold text-slate-600">
-                              <span className="px-1.5 py-0.5 rounded bg-slate-100 border border-slate-200 text-[10px]">
-                                {c.customer_code}
-                              </span>
-                            </td>
-                            <td className="py-3 px-4">
-                              <div className="flex items-center gap-2">
-                                <div className="w-6 h-6 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center font-extrabold text-[10px]">
-                                  {c.name ? c.name[0].toUpperCase() : 'K'}
-                                </div>
-                                <span className="font-bold text-slate-800">{c.name}</span>
-                              </div>
-                            </td>
-                            <td className="py-3 px-4 text-slate-500 truncate max-w-[200px]" title={c.address || ''}>
-                              {c.address || '—'}
-                            </td>
-                            <td className="py-3 px-4 text-slate-500 font-medium">
-                              {c.email || '—'}
-                            </td>
-                            <td className="py-3 px-4 text-center">
-                              <span className={`px-2 py-0.5 rounded-full font-bold text-[10px] ${
-                                hasOrders 
-                                  ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' 
-                                  : 'bg-slate-100 text-slate-400 border border-slate-200'
-                              }`}>
-                                {c.total_orders} đơn
-                              </span>
-                            </td>
-                            <td className={`py-3 px-4 text-right font-bold text-sm ${hasOrders ? 'text-slate-900' : 'text-slate-400'}`}>
-                              {formatCurrency(c.total_spent)}
-                            </td>
-                            <td className="py-3 px-4 text-center text-slate-400 text-[10px]">
-                              {formatDate(c.created_at)}
-                            </td>
-                            <td className="py-3 px-4 text-center">
-                              {hasOrders ? (
-                                <span className="px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 font-extrabold text-[9px] uppercase tracking-wide">
-                                  Giữ lại (Có đơn)
-                                </span>
-                              ) : (
-                                <span className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-400 font-bold text-[9px] uppercase tracking-wide">
-                                  Xóa (0 đơn)
-                                </span>
-                              )}
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            ))}
+            Chưa có dữ liệu khách hàng.
           </div>
         )}
 
         {/* 1. MOBILE RESPONSIVE CARD VIEW (block md:hidden) */}
-        {!loading && !showDuplicates && customers.length > 0 && (
+        {!loading && customers.length > 0 && (
           <div className="block md:hidden space-y-4">
             {customers.map(customer => {
               const isExpanded = expandedCustomers.has(customer.id);
@@ -1183,7 +997,7 @@ export default function CustomerList() {
         )}
 
         {/* 2. TABLE VIEW FOR DESKTOP (hidden md:block) */}
-        {!loading && !showDuplicates && customers.length > 0 && (
+        {!loading && customers.length > 0 && (
           <div className="hidden md:block rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
@@ -1396,7 +1210,7 @@ export default function CustomerList() {
         )}
 
         {/* Phân trang */}
-        {!loading && !showDuplicates && totalCount > 20 && (
+        {!loading && totalCount > 20 && (
           <div className="flex flex-col sm:flex-row justify-between items-center mt-6 pt-4 border-t border-slate-200 text-xs text-slate-500 font-medium gap-3">
             <span>Hiển thị {(page - 1) * 20 + 1} - {Math.min(page * 20, totalCount)} trong tổng số {totalCount} khách hàng</span>
             <div className="flex items-center gap-1">

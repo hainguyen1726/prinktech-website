@@ -113,6 +113,28 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     const { id } = await params;
     const body = await req.json();
 
+    const { phone } = body;
+    if (phone) {
+      const phoneTrimmed = phone.trim();
+      const { data: existing, error: cErr } = await supabaseAdmin
+        .from('partners')
+        .select('id, name')
+        .eq('phone', phoneTrimmed)
+        .eq('partner_type', 'standard')
+        .neq('id', id)
+        .maybeSingle();
+
+      if (cErr) {
+        return NextResponse.json({ error: cErr.message }, { status: 500 });
+      }
+
+      if (existing) {
+        return NextResponse.json({
+          error: `Số điện thoại ${phoneTrimmed} đã được sử dụng bởi khách hàng "${existing.name}"! Không thể cập nhật trùng.`
+        }, { status: 409 });
+      }
+    }
+
     const { data, error } = await supabaseAdmin
       .from('partners')
       .update(body)
