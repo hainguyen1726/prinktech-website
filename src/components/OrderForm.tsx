@@ -366,7 +366,7 @@ export default function OrderForm() {
             <div style="display:flex;gap:8px;margin-bottom:6px"><span style="color:#64748b;width:80px;flex-shrink:0;font-size:11px">Ngân hàng:</span><span style="font-weight:700;color:#1e293b;font-size:11px">Vietinbank</span></div>
             <div style="display:flex;gap:8px;margin-bottom:6px"><span style="color:#64748b;width:80px;flex-shrink:0;font-size:11px">Số TK:</span><span style="font-weight:900;color:#ec4899;font-size:14px;letter-spacing:0.06em">110602191866</span></div>
             <div style="display:flex;gap:8px;margin-bottom:12px"><span style="color:#64748b;width:80px;flex-shrink:0;font-size:11px">Chủ TK:</span><span style="font-weight:700;color:#1e293b;text-transform:uppercase;font-size:11px">CÔNG TY TNHH GMKT VIỆT NAM</span></div>
-            <p style="font-size:10px;color:#64748b;border-top:1px solid #e2e8f0;padding-top:10px;line-height:1.7">✅ Miễn phí vận chuyển cho đơn từ 150.000 ₫<br/>⚡ Hoàn thành trong 24h sau khi chốt file<br/>💬 Xác nhận qua Zalo (Ưu tiên): <strong>0822.968.412</strong></p>
+            <p style="font-size:10px;color:#64748b;border-top:1px solid #e2e8f0;padding-top:10px;line-height:1.7">✅ Miễn phí vận chuyển cho đơn từ ${formatCurrency(FREE_SHIP_THRESHOLD)}<br/>⚡ Hoàn thành trong 24h sau khi chốt file<br/>💬 Xác nhận qua Zalo (Ưu tiên): <strong>0822.968.412</strong></p>
           </div>
           <div style="width:260px">
             <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #e2e8f0;font-size:12px"><span style="color:#64748b">Tạm tính (${items.length} sp):</span><span style="font-weight:600;color:#1e293b">${fmt(subtotal)}</span></div>
@@ -460,7 +460,7 @@ export default function OrderForm() {
                 <div className="flex gap-2"><span className="text-slate-500 w-24 shrink-0">Chủ TK:</span><span className="font-bold text-slate-700 uppercase text-[11px]">CÔNG TY TNHH GMKT VIỆT NAM</span></div>
               </div>
               <p className="text-[11px] text-slate-500 mt-3 pt-3 border-t border-slate-200 leading-relaxed">
-                ✅ Miễn phí vận chuyển cho đơn từ 150.000 ₫<br/>
+                ✅ Miễn phí vận chuyển cho đơn từ {formatCurrency(FREE_SHIP_THRESHOLD)}<br/>
                 ⚡ Hoàn thành trong 24h sau khi chốt file<br/>
                 💬 Xác nhận qua Zalo (Ưu tiên): <strong className="text-slate-700">0822.968.412</strong>
               </p>

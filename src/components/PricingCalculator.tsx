@@ -232,7 +232,7 @@ export default function PricingCalculator() {
               <span style="font-weight:700;color:#1e293b;text-transform:uppercase;font-size:11px">CÔNG TY TNHH GMKT VIỆT NAM</span>
             </div>
             <p style="font-size:10px;color:#64748b;border-top:1px solid #e2e8f0;padding-top:10px;line-height:1.6">
-              ✅ Miễn phí vận chuyển toàn quốc cho đơn từ 150.000 ₫<br/>
+              ✅ Miễn phí vận chuyển toàn quốc cho đơn từ {formatCurrency(FREE_SHIP_THRESHOLD)}<br/>
               📋 Giá chưa bao gồm VAT 8%. Hóa đơn VAT xuất theo yêu cầu.<br/>
               🎨 File thiết kế: AI, PDF, CDR, EPS. Khổ ghép 58cm (film 60cm).<br/>
               ⚡ Cam kết hoàn thành trong 24h từ khi chốt file thiết kế.

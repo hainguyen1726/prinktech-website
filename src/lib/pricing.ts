@@ -40,14 +40,13 @@ export const PRODUCTS: Product[] = [
     icon: '🧵',
     description: 'Khách tự ghép file, xưởng in theo mét dài khổ rộng 60cm',
     tiers: [
-      { min: 0, max: null, price: 145000, label: 'Đồng giá 145.000đ/m' },
+      { min: 0,    max: 2,    price: 290000, label: 'Dưới 2 mét' },
+      { min: 2,    max: 5,    price: 250000, label: 'Từ 2 – 5 mét' },
+      { min: 5,    max: 15,   price: 220000, label: 'Từ 5 – 15 mét' },
+      { min: 15,   max: 50,   price: 190000, label: 'Từ 15 – 50 mét' },
+      { min: 50,   max: null, price: 145000, label: 'Từ 50 mét trở lên' },
     ],
     note: 'Ghép file vào khổ 58cm (film 60cm). Khoảng cách bế tối thiểu 5mm.',
-    promotion: {
-      startDate: '2026-07-10',
-      endDate: '2027-07-31',
-      message: '🎉 KHUYẾN MẠI ĐẶC BIỆT (10/07/2026 - 31/07/2027): Đồng giá 145.000đ/m cho mọi số lượng!',
-    },
   },
   {
     type: 'a4',
@@ -134,7 +133,7 @@ export const PRODUCTS: Product[] = [
   },
 ];
 
-export const FREE_SHIP_THRESHOLD = 150000;
+export const FREE_SHIP_THRESHOLD = 300000;
 export const SHIPPING_FEE_STANDARD = 35000;
 
 export function getUnitPrice(product: Product, quantity: number): number {

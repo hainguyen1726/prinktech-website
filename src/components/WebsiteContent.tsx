@@ -537,7 +537,7 @@ export default function WebsiteContent({
                 </div>
                 <h3 className="font-bold text-lg text-[var(--foreground)]">Xuất Báo Giá Chuyên Nghiệp</h3>
                 <p className="text-xs text-[var(--text-muted)]/80 leading-relaxed">
-                  Hỗ trợ xuất báo giá dưới dạng PDF chuẩn A4, hiển thị chính xác bảng giá bậc thang của xưởng kèm chính sách miễn phí vận chuyển cho đơn hàng từ 150.000 ₫.
+                  Hỗ trợ xuất báo giá dưới dạng PDF chuẩn A4, hiển thị chính xác bảng giá bậc thang của xưởng kèm chính sách miễn phí vận chuyển cho đơn hàng từ 300.000 ₫.
                 </p>
                 <Link href="/bao-gia" className="pt-2 flex items-center gap-2 text-xs text-[var(--accent)] font-bold hover:underline">
                   <span>Trải nghiệm ngay</span>
