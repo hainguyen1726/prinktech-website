@@ -64,10 +64,35 @@ export async function POST(req: NextRequest) {
     const customerPhone = customer.phone || '0000000000';
     const customerAddress = customer.address || 'Chưa cập nhật địa chỉ';
 
-    // 2. Sinh mã đơn hàng mới: ORD-YYYYMMDD-XXXX
+    // 2. Sinh mã đơn hàng mới: ORD-YYYYMMDD-XXXX (Đảm bảo tuyệt đối không bao giờ trùng lặp)
     const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
-    const randNum = Math.floor(Math.random() * 9000) + 1000;
-    const orderCode = `ORD-${dateStr}-${randNum}`;
+    let orderCode = '';
+    let isUnique = false;
+    let attempts = 0;
+    
+    while (!isUnique && attempts < 20) {
+      attempts++;
+      const randNum = Math.floor(Math.random() * 9000) + 1000;
+      const testCode = `ORD-${dateStr}-${randNum}`;
+      
+      const { data: existing } = await supabaseAdmin
+        .from('orders')
+        .select('id')
+        .eq('order_code', testCode)
+        .maybeSingle();
+        
+      if (!existing) {
+        orderCode = testCode;
+        isUnique = true;
+      }
+    }
+    
+    if (!orderCode) {
+      const now = new Date();
+      const ms = now.getMilliseconds().toString().padStart(3, '0');
+      const seconds = now.getSeconds().toString().padStart(2, '0');
+      orderCode = `ORD-${dateStr}-${seconds}${ms}`;
+    }
 
     // 3. Tạo thư mục tạm để sinh báo giá cục bộ
     const tempDir = path.join(process.cwd(), 'public', 'temp_bao_gia', orderCode);
