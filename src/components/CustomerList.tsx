@@ -173,6 +173,85 @@ export default function CustomerList() {
   const [activeOrderTabs, setActiveOrderTabs] = useState<Record<string, 'details' | 'items' | 'links' | 'history'>>({});
   const [savingOrder, setSavingOrder] = useState<Record<string, boolean>>({});
 
+  // States quản lý chỉnh sửa khách hàng
+  const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
+  const [editForm, setEditForm] = useState({
+    name: '',
+    phone: '',
+    address: '',
+    email: '',
+    notes: '',
+  });
+  const [updatingCustomer, setUpdatingCustomer] = useState(false);
+
+  const handleStartEdit = (customer: Customer) => {
+    setEditingCustomer(customer);
+    setEditForm({
+      name: customer.name || '',
+      phone: customer.phone || '',
+      address: customer.address || '',
+      email: customer.email || '',
+      notes: customer.notes || '',
+    });
+  };
+
+  const handleEditSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingCustomer) return;
+    if (!editForm.name.trim()) {
+      alert('Tên khách hàng không được để trống');
+      return;
+    }
+    if (!editForm.phone.trim()) {
+      alert('Số điện thoại không được để trống');
+      return;
+    }
+
+    setUpdatingCustomer(true);
+    try {
+      const res = await fetch(`/api/customers/${editingCustomer.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: editForm.name.trim(),
+          phone: editForm.phone.trim(),
+          address: editForm.address.trim(),
+          email: editForm.email.trim(),
+          notes: editForm.notes.trim(),
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'Cập nhật thông tin khách hàng thất bại');
+      }
+
+      alert('Cập nhật thông tin khách hàng thành công!');
+      
+      // Cập nhật state local
+      setCustomers(prev =>
+        prev.map(c =>
+          c.id === editingCustomer.id
+            ? {
+                ...c,
+                name: editForm.name.trim(),
+                phone: editForm.phone.trim(),
+                address: editForm.address.trim(),
+                email: editForm.email.trim(),
+                notes: editForm.notes.trim(),
+              }
+            : c
+        )
+      );
+      
+      setEditingCustomer(null);
+    } catch (err: any) {
+      alert(err.message || 'Lỗi hệ thống');
+    } finally {
+      setUpdatingCustomer(false);
+    }
+  };
+
   useEffect(() => {
     const savedTheme = localStorage.getItem('prinktech-theme') || 'elegant';
     const finalTheme = savedTheme === 'creative' ? 'elegant' : savedTheme;
@@ -893,8 +972,19 @@ export default function CustomerList() {
                       </div>
                     </div>
 
-                    <div className="mt-3 flex items-center justify-center gap-1 text-[11px] font-bold text-amber-800 border-t border-slate-100 pt-2.5">
-                      {isExpanded ? 'Đóng thông tin ▲' : 'Xem danh sách đơn hàng ▼'}
+                    <div className="mt-3 flex items-center justify-between border-t border-slate-100 pt-2.5">
+                      <button
+                        onClick={e => {
+                          e.stopPropagation();
+                          handleStartEdit(customer);
+                        }}
+                        className="flex items-center gap-1 px-3 py-1 rounded bg-slate-100 text-slate-700 font-bold text-[10px] cursor-pointer hover:bg-slate-200"
+                      >
+                        <Edit2 size={10} /> Sửa thông tin
+                      </button>
+                      <div className="text-[11px] font-bold text-amber-800 flex items-center gap-1">
+                        {isExpanded ? 'Đóng thông tin ▲' : 'Xem đơn hàng ▼'}
+                      </div>
                     </div>
                   </div>
 
@@ -1083,7 +1173,17 @@ export default function CustomerList() {
                             </div>
 
                             {/* Col 8: Actions */}
-                            <div className="w-28 text-right">
+                            <div className="w-28 text-right flex items-center justify-end gap-1.5">
+                              <button
+                                onClick={e => {
+                                  e.stopPropagation();
+                                  handleStartEdit(customer);
+                                }}
+                                className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-all cursor-pointer"
+                                title="Sửa thông tin khách hàng"
+                              >
+                                <Edit2 size={13} />
+                              </button>
                               <button
                                 onClick={e => {
                                   e.stopPropagation();
@@ -1244,6 +1344,97 @@ export default function CustomerList() {
               >
                 <ChevronRight size={16} />
               </button>
+            </div>
+          </div>
+        )}
+
+        {/* Modal chỉnh sửa khách hàng */}
+        {editingCustomer && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 animate-fade-in">
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-xl max-w-md w-full overflow-hidden animate-scale-in">
+              <div className="bg-slate-50 px-6 py-4 border-b border-slate-150 flex items-center justify-between">
+                <h3 className="font-bold text-slate-900 text-sm flex items-center gap-2">
+                  <User size={16} className="text-amber-700" /> Sửa thông tin khách hàng
+                </h3>
+                <button
+                  onClick={() => setEditingCustomer(null)}
+                  className="text-slate-400 hover:text-slate-600 transition cursor-pointer"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              <form onSubmit={handleEditSubmit} className="p-6 space-y-4 text-xs font-semibold">
+                <div>
+                  <label className="block text-slate-500 mb-1.5">Tên khách hàng *</label>
+                  <input
+                    type="text"
+                    required
+                    value={editForm.name}
+                    onChange={e => setEditForm(prev => ({ ...prev, name: e.target.value }))}
+                    className="w-full h-10 px-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 text-sm font-medium focus:outline-none focus:border-amber-600"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-slate-500 mb-1.5">Số điện thoại *</label>
+                  <input
+                    type="text"
+                    required
+                    value={editForm.phone}
+                    onChange={e => setEditForm(prev => ({ ...prev, phone: e.target.value }))}
+                    className="w-full h-10 px-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 text-sm font-medium focus:outline-none focus:border-amber-600"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-slate-500 mb-1.5">Địa chỉ</label>
+                  <input
+                    type="text"
+                    value={editForm.address}
+                    onChange={e => setEditForm(prev => ({ ...prev, address: e.target.value }))}
+                    className="w-full h-10 px-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 text-sm font-medium focus:outline-none focus:border-amber-600"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-slate-500 mb-1.5">Email</label>
+                  <input
+                    type="email"
+                    value={editForm.email}
+                    onChange={e => setEditForm(prev => ({ ...prev, email: e.target.value }))}
+                    className="w-full h-10 px-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 text-sm font-medium focus:outline-none focus:border-amber-600"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-slate-500 mb-1.5">Ghi chú khách hàng</label>
+                  <textarea
+                    rows={3}
+                    value={editForm.notes}
+                    onChange={e => setEditForm(prev => ({ ...prev, notes: e.target.value }))}
+                    className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 text-sm font-medium focus:outline-none focus:border-amber-600 resize-none"
+                  />
+                </div>
+
+                <div className="flex gap-3 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setEditingCustomer(null)}
+                    className="flex-1 h-10 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50 font-bold transition cursor-pointer"
+                  >
+                    Hủy
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={updatingCustomer}
+                    className="flex-1 h-10 rounded-xl bg-amber-700 hover:bg-amber-800 text-white font-bold transition cursor-pointer flex items-center justify-center gap-1.5 disabled:opacity-50"
+                  >
+                    {updatingCustomer ? <RefreshCw className="animate-spin" size={14} /> : <Check size={14} />}
+                    Lưu thay đổi
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         )}
