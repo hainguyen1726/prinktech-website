@@ -13,6 +13,20 @@ import {
 } from '@/lib/pricing';
 import AdminGuard from '@/components/AdminGuard';
 
+const getCleanNote = (note: string | null): string => {
+  if (!note) return '';
+  return note
+    .split('\n')
+    .filter(line => 
+      !line.trim().startsWith('- Excel Báo giá:') &&
+      !line.trim().startsWith('- PDF Báo giá:') &&
+      !line.trim().startsWith('- File thiết kế khách gửi:') &&
+      !line.trim().startsWith('- Dữ liệu sản phẩm JSON:')
+    )
+    .join('\n')
+    .trim();
+};
+
 const renderFormattedNote = (note: string | null) => {
   if (!note) return null;
   const urlRegex = /(https?:\/\/[^\s]+)/g;
@@ -220,6 +234,30 @@ export default function OrderList() {
     order_source: 'website',
     apply_vat: true,
   });
+  const [adminDesigns, setAdminDesigns] = useState<any[]>([]);
+
+  const handleAdminFileChange = (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const base64 = event.target?.result as string;
+      const base64Body = base64.split(',')[1];
+      setAdminDesigns(prev => {
+        const list = [...prev];
+        list[index] = {
+          ...list[index],
+          fileName: file.name,
+          fileType: file.type,
+          fileData: base64Body,
+          name: list[index].name || file.name.split('.')[0]
+        };
+        return list;
+      });
+    };
+    reader.readAsDataURL(file);
+  };
+
   const [customersList, setCustomersList] = useState<any[]>([]);
   const [submittingForm, setSubmittingForm] = useState(false);
 
@@ -387,6 +425,32 @@ export default function OrderList() {
     const executeCreateOrder = async (cid: string) => {
       setSubmittingForm(true);
       try {
+        const items = adminDesigns.map(d => {
+          const hasM = createFormData.product_type === 'cuon';
+          const qty = parseInt(d.quantity) || createFormData.quantity;
+          const met = hasM ? (parseFloat(d.meters) || createFormData.meters) : undefined;
+          const rate = parseInt(d.rate_excl_vat) || createFormData.rate_excl_vat;
+          const sub = met ? met * rate : qty * rate;
+          
+          return {
+            product_type: createFormData.product_type,
+            product_label: d.name || createFormData.product_label,
+            size_label: d.size_label || createFormData.size_label,
+            quantity: qty,
+            meters: met,
+            rate_excl_vat: rate,
+            subtotal: sub,
+            note: d.note || null,
+            designs: [{
+              name: d.name,
+              url: d.url || null,
+              fileData: d.fileData || null,
+              fileName: d.fileName || null,
+              fileType: d.fileType || null
+            }]
+          };
+        });
+
         const res = await fetch('/api/customer-orders/create-flow', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -403,6 +467,7 @@ export default function OrderList() {
             design_link: createFormData.design_link,
             order_source: createFormData.order_source,
             apply_vat: createFormData.apply_vat,
+            items: items.length > 0 ? items : undefined,
           }),
         });
 
@@ -414,6 +479,7 @@ export default function OrderList() {
         showToast(`Tạo đơn hàng thành công! Mã đơn: ${result.order_code}`, 'success');
         
         setShowCreateForm(false);
+        setAdminDesigns([]);
         setNewCustomer({ name: '', phone: '', address: '', email: '' });
         setSelectedCustomerId('');
         setCreateFormData({
@@ -894,15 +960,131 @@ export default function OrderList() {
                   </h3>
                   
                   <div className="space-y-3">
-                    <div className="space-y-1">
-                      <label className="block text-xs font-bold text-slate-600">Link file thiết kế (Google Drive)</label>
-                      <input
-                        type="text"
-                        placeholder="Nhập đường dẫn Google Drive của file thiết kế"
-                        value={createFormData.design_link}
-                        onChange={e => setCreateFormData(prev => ({ ...prev, design_link: e.target.value }))}
-                        className="w-full h-10 px-3 rounded-xl border border-card-border bg-background text-slate-900 text-xs focus:outline-none focus:border-purple-650 font-medium"
-                      />
+                    {/* Quản lý nhiều mẫu thiết kế */}
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <label className="block text-xs font-bold text-slate-600">Mẫu thiết kế (Có thể thêm nhiều mẫu)</label>
+                        <button
+                          type="button"
+                          onClick={() => setAdminDesigns([...adminDesigns, { name: '', quantity: createFormData.quantity, meters: createFormData.product_type === 'cuon' ? createFormData.meters : undefined, rate_excl_vat: createFormData.rate_excl_vat, url: '' }])}
+                          className="text-[11px] text-purple-600 hover:underline font-bold"
+                        >
+                          + Thêm mẫu
+                        </button>
+                      </div>
+
+                      {adminDesigns.length === 0 ? (
+                        <div className="space-y-1">
+                          <label className="block text-xs font-semibold text-slate-500">Link thư mục Drive / file thiết kế chung (tùy chọn)</label>
+                          <input
+                            type="text"
+                            placeholder="Nhập đường dẫn Google Drive file thiết kế chung"
+                            value={createFormData.design_link}
+                            onChange={e => setCreateFormData(prev => ({ ...prev, design_link: e.target.value }))}
+                            className="w-full h-10 px-3 rounded-xl border border-card-border bg-background text-slate-900 text-xs focus:outline-none focus:border-purple-650 font-medium"
+                          />
+                        </div>
+                      ) : (
+                        <div className="space-y-3 bg-slate-50 p-3 rounded-2xl border border-card-border max-h-[300px] overflow-y-auto">
+                          {adminDesigns.map((d, index) => (
+                            <div key={index} className="space-y-2 p-2.5 bg-background rounded-xl border border-card-border shadow-sm">
+                              <div className="flex justify-between items-center">
+                                <span className="text-[11px] font-bold text-slate-500">Mẫu #{index + 1}</span>
+                                <button
+                                  type="button"
+                                  onClick={() => setAdminDesigns(prev => prev.filter((_, i) => i !== index))}
+                                  className="text-red-500 hover:text-red-700 text-xs font-bold"
+                                >
+                                  Xóa
+                                </button>
+                              </div>
+                              
+                              <div className="grid grid-cols-2 gap-2">
+                                <input
+                                  type="text"
+                                  placeholder="Tên mẫu"
+                                  value={d.name}
+                                  onChange={e => setAdminDesigns(prev => {
+                                    const list = [...prev];
+                                    list[index].name = e.target.value;
+                                    return list;
+                                  })}
+                                  className="h-8 px-2.5 rounded-lg border border-card-border bg-background text-slate-900 text-xs font-medium focus:outline-none focus:border-purple-600"
+                                />
+                                {createFormData.product_type === 'cuon' ? (
+                                  <input
+                                    type="number"
+                                    placeholder="Mét dài"
+                                    value={d.meters || ''}
+                                    onChange={e => setAdminDesigns(prev => {
+                                      const list = [...prev];
+                                      list[index].meters = parseFloat(e.target.value) || 0;
+                                      list[index].quantity = Math.ceil(list[index].meters * 200); // Gợi ý số lượng cái
+                                      return list;
+                                    })}
+                                    className="h-8 px-2.5 rounded-lg border border-card-border bg-background text-slate-900 text-xs focus:outline-none focus:border-purple-600 font-bold"
+                                  />
+                                ) : (
+                                  <input
+                                    type="number"
+                                    placeholder="Số lượng cái"
+                                    value={d.quantity || ''}
+                                    onChange={e => setAdminDesigns(prev => {
+                                      const list = [...prev];
+                                      list[index].quantity = parseInt(e.target.value) || 0;
+                                      return list;
+                                    })}
+                                    className="h-8 px-2.5 rounded-lg border border-card-border bg-background text-slate-900 text-xs focus:outline-none focus:border-purple-600 font-bold"
+                                  />
+                                )}
+                              </div>
+
+                              <div className="flex gap-2 items-center">
+                                {d.fileData ? (
+                                  <div className="flex-1 text-[11px] text-emerald-600 font-bold truncate flex items-center gap-1">
+                                    <span className="truncate">📁 {d.fileName}</span>
+                                    <button
+                                      type="button"
+                                      onClick={() => setAdminDesigns(prev => {
+                                        const list = [...prev];
+                                        delete list[index].fileData;
+                                        delete list[index].fileName;
+                                        return list;
+                                      })}
+                                      className="text-red-500 hover:underline font-normal text-[10px] shrink-0"
+                                    >
+                                      Xoá
+                                    </button>
+                                  </div>
+                                ) : (
+                                  <input
+                                    type="text"
+                                    placeholder="Dán link Drive..."
+                                    value={d.url || ''}
+                                    onChange={e => setAdminDesigns(prev => {
+                                      const list = [...prev];
+                                      list[index].url = e.target.value;
+                                      return list;
+                                    })}
+                                    className="flex-1 h-8 px-2.5 rounded-lg border border-card-border bg-background text-slate-900 text-xs focus:outline-none focus:border-purple-600"
+                                  />
+                                )}
+                                
+                                {!d.url && !d.fileData && (
+                                  <label className="h-8 px-2.5 rounded-lg bg-purple-50 hover:bg-purple-100 text-purple-600 text-[11px] font-bold transition flex items-center justify-center cursor-pointer shrink-0 border border-purple-200">
+                                    Tải lên file
+                                    <input
+                                      type="file"
+                                      className="hidden"
+                                      onChange={e => handleAdminFileChange(index, e)}
+                                    />
+                                  </label>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
 
                     <div className="space-y-1">
@@ -1362,7 +1544,7 @@ export default function OrderList() {
                     {selectedOrder.customer_note && (
                       <div className="text-xs text-amber-900 bg-amber-50 rounded-xl p-3 border border-amber-200/80 mt-3 shadow-sm">
                         <div className="font-bold text-amber-800 mb-1 flex items-center gap-1">💬 Ghi chú của khách:</div>
-                        <div className="font-medium">{renderFormattedNote(selectedOrder.customer_note)}</div>
+                        <div className="font-medium">{renderFormattedNote(getCleanNote(selectedOrder.customer_note))}</div>
                       </div>
                     )}
                   </div>
@@ -1395,15 +1577,34 @@ export default function OrderList() {
                               🖼 Xem ảnh mẫu
                             </a>
                           )}
-                          {item.design_url && (
-                            <a
-                              href={item.design_url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-block px-2.5 py-0.5 rounded bg-blue-500/10 hover:bg-blue-500/20 text-blue-500 font-semibold transition border border-blue-550/20"
-                            >
-                              📁 Tải file thiết kế
-                            </a>
+                          {((item as any).designs) && ((item as any).designs).length > 0 ? (
+                            <div className="w-full mt-1.5 space-y-1 border-t border-card-border pt-1.5">
+                              <p className="text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">Mẫu thiết kế riêng:</p>
+                              {((item as any).designs).map((d: any, idx: number) => (
+                                <div key={idx} className="flex items-center justify-between text-xs py-0.5">
+                                  <span className="text-text-dark font-medium">• {d.name}</span>
+                                  <a
+                                    href={d.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-blue-500 hover:text-blue-700 font-bold flex items-center gap-0.5"
+                                  >
+                                    📁 Tải file
+                                  </a>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            item.design_url && item.design_url !== selectedOrder.design_url && (
+                              <a
+                                href={item.design_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-block px-2.5 py-0.5 rounded bg-blue-500/10 hover:bg-blue-500/20 text-blue-500 font-semibold transition border border-blue-550/20"
+                              >
+                                📁 Tải file thiết kế
+                              </a>
+                            )
                           )}
                         </div>
                       </div>
@@ -1411,17 +1612,17 @@ export default function OrderList() {
                   </div>
                 </div>
 
-                {/* Design File (Global) */}
+                {/* Design File (Global) -> Đổi thành Thư mục Google Drive đơn hàng */}
                 {selectedOrder.design_url && (
                   <div className="border-b border-card-border pb-4">
-                    <h3 className="text-xs font-bold text-text-muted uppercase tracking-wider mb-2">File thiết kế chung</h3>
+                    <h3 className="text-xs font-bold text-text-muted uppercase tracking-wider mb-2">Thư mục lưu trữ đơn hàng</h3>
                     <a
                       href={selectedOrder.design_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="w-full h-9 rounded-xl border border-card-border bg-block-bg hover:bg-block-bg/80 transition flex items-center justify-center text-xs text-blue-500 font-bold"
+                      className="w-full h-9 rounded-xl border border-card-border bg-block-bg hover:bg-block-bg/80 transition flex items-center justify-center text-xs text-blue-600 font-bold"
                     >
-                      📁 Mở link file thiết kế
+                      📁 Mở thư mục đơn hàng trên Google Drive
                     </a>
                   </div>
                 )}

@@ -3,19 +3,32 @@ import PDFDocument from 'pdfkit';
 import fs from 'fs';
 import path from 'path';
 
-export interface QuoteData {
-  orderCode: string;
-  customerName: string;
-  customerPhone: string;
-  customerAddress: string;
+export interface QuoteItem {
   productName: string;
   size: string;
   quantity: number;
   meters?: number;
   rateExclVat: number;
+  note?: string;
+}
+
+export interface QuoteData {
+  orderCode: string;
+  customerName: string;
+  customerPhone: string;
+  customerAddress: string;
+  // Fallback cho tương thích ngược
+  productName?: string;
+  size?: string;
+  quantity?: number;
+  meters?: number;
+  rateExclVat?: number;
+  
   shippingFee: number;
   note?: string;
   vatRate?: number;
+  
+  items?: QuoteItem[];
 }
 
 export async function generateExcelQuote(data: QuoteData, templatePath: string, outputPath: string) {
@@ -39,70 +52,70 @@ export async function generateExcelQuote(data: QuoteData, templatePath: string, 
   worksheet.getCell('A6').value = ` Khách hàng: ${data.customerName}`;
   worksheet.getCell('A7').value = ` Địa chỉ giao hàng: ${data.customerAddress}`;
 
-  const useMeters = data.meters !== undefined && data.meters !== null && data.meters > 0;
+  // Chuẩn hóa mảng items
+  const items: QuoteItem[] = data.items && data.items.length > 0 ? data.items : [{
+    productName: data.productName || '',
+    size: data.size || '',
+    quantity: data.quantity || 0,
+    meters: data.meters,
+    rateExclVat: data.rateExclVat || 0,
+    note: data.note
+  }];
 
-  if (useMeters) {
-    // In theo cuộn
-    worksheet.getCell('D6').value = ` Quy cách: Cuộn khổ 60cm | ${data.meters!.toFixed(2)} mét dài phân bổ bế bọc màng định hình`;
-    
-    // Điền sản phẩm dòng 10
-    worksheet.getCell('B10').value = data.productName;
-    worksheet.getCell('C10').value = data.size;
-    worksheet.getCell('D10').value = data.quantity;
-    worksheet.getCell('E10').value = data.meters;
-    worksheet.getCell('F10').value = data.rateExclVat;
-    
-    // Điền công thức
-    worksheet.getCell('G10').value = { formula: 'E10*F10' }; // Thành tiền trước VAT
-    worksheet.getCell('H10').value = { formula: 'G10/D10' }; // Đơn giá cái trước VAT
-    
-    // Công thức tính tổng dòng 11
-    worksheet.getCell('D11').value = { formula: 'SUM(D10:D10)' };
-    worksheet.getCell('E11').value = { formula: 'SUM(E10:E10)' };
-    worksheet.getCell('G11').value = { formula: 'SUM(G10:G10)' };
-    worksheet.getCell('H11').value = { formula: 'G11/D11' };
-    
-    // Khối VAT dòng 13-17
-    const vRate = data.vatRate !== undefined ? data.vatRate : 0.08;
-    worksheet.getCell('H13').value = { formula: 'G11' };
-    worksheet.getCell('H14').value = { formula: `H13*${vRate}` };
-    worksheet.getCell('H15').value = { formula: 'H13+H14' };
-    worksheet.getCell('H16').value = data.shippingFee;
-    worksheet.getCell('H17').value = { formula: 'H15+H16' };
-  } else {
-    // Bán theo cái/tờ
+  const count = items.length;
+  if (count > 1) {
+    // Nhân bản dòng 10 làm khuôn mẫu cho các sản phẩm tiếp theo
+    worksheet.duplicateRow(10, count - 1, true);
+  }
+
+  const anyRoll = items.some(item => item.meters !== undefined && item.meters !== null && item.meters > 0);
+  if (!anyRoll) {
     // Ẩn cột E
     worksheet.getColumn(5).hidden = true;
     worksheet.getColumn(5).width = 0;
-    
     worksheet.getCell('D6').value = ` Quy cách: Tem UV DTF bọc màng định hình bế sẵn`;
-    
-    // Điền sản phẩm dòng 10 (E10 lúc này là F10 cũ)
-    worksheet.getCell('B10').value = data.productName;
-    worksheet.getCell('C10').value = data.size;
-    worksheet.getCell('D10').value = data.quantity;
-    worksheet.getCell('E10').value = 1; // số mét dài giả định để tránh lỗi công thức
-    worksheet.getCell('F10').value = data.rateExclVat; // đơn giá cái/tờ
-    
-    // Điền công thức
-    worksheet.getCell('G10').value = { formula: 'D10*F10' }; // Thành tiền trước VAT = Qty * Rate
-    worksheet.getCell('H10').value = { formula: 'G10/D10' }; // Đơn giá cái trước VAT
-    
-    // Công thức tính tổng dòng 11
-    worksheet.getCell('D11').value = { formula: 'SUM(D10:D10)' };
-    worksheet.getCell('G11').value = { formula: 'SUM(G10:G10)' };
-    worksheet.getCell('H11').value = { formula: 'G11/D11' };
-    
-    const vRate = data.vatRate !== undefined ? data.vatRate : 0.08;
-    worksheet.getCell('H13').value = { formula: 'G11' };
-    worksheet.getCell('H14').value = { formula: `H13*${vRate}` };
-    worksheet.getCell('H15').value = { formula: 'H13+H14' };
-    worksheet.getCell('H16').value = data.shippingFee;
-    worksheet.getCell('H17').value = { formula: 'H15+H16' };
+  } else {
+    worksheet.getCell('D6').value = ` Quy cách: Cuộn khổ 60cm phân bổ bế bọc màng định hình`;
   }
 
+  // Duyệt qua từng item để điền thông tin và công thức
+  items.forEach((item, index) => {
+    const rNum = 10 + index;
+    worksheet.getCell(`B${rNum}`).value = item.productName;
+    worksheet.getCell(`C${rNum}`).value = item.size;
+    worksheet.getCell(`D${rNum}`).value = item.quantity;
+    
+    const hasM = item.meters !== undefined && item.meters !== null && item.meters > 0;
+    if (hasM) {
+      worksheet.getCell(`E${rNum}`).value = item.meters;
+      worksheet.getCell(`F${rNum}`).value = item.rateExclVat;
+      worksheet.getCell(`G${rNum}`).value = { formula: `E${rNum}*F${rNum}` };
+    } else {
+      worksheet.getCell(`E${rNum}`).value = 1;
+      worksheet.getCell(`F${rNum}`).value = item.rateExclVat;
+      worksheet.getCell(`G${rNum}`).value = { formula: `D${rNum}*F${rNum}` };
+    }
+    worksheet.getCell(`H${rNum}`).value = { formula: `G${rNum}/D${rNum}` };
+  });
+
+  // Dòng Cộng/Tổng nằm ở (10 + count)
+  const sumRow = 10 + count;
+  worksheet.getCell(`D${sumRow}`).value = { formula: `SUM(D10:D${sumRow - 1})` };
+  worksheet.getCell(`E${sumRow}`).value = { formula: `SUM(E10:E${sumRow - 1})` };
+  worksheet.getCell(`G${sumRow}`).value = { formula: `SUM(G10:G${sumRow - 1})` };
+  worksheet.getCell(`H${sumRow}`).value = { formula: `G${sumRow}/D${sumRow}` };
+
+  // Khối VAT (nằm từ dòng sumRow + 2)
+  const vatStartRow = sumRow + 2;
+  const vRate = data.vatRate !== undefined ? data.vatRate : 0.08;
+  worksheet.getCell(`H${vatStartRow}`).value = { formula: `G${sumRow}` };
+  worksheet.getCell(`H${vatStartRow + 1}`).value = { formula: `H${vatStartRow}*${vRate}` };
+  worksheet.getCell(`H${vatStartRow + 2}`).value = { formula: `H${vatStartRow}+H${vatStartRow + 1}` };
+  worksheet.getCell(`H${vatStartRow + 3}`).value = data.shippingFee;
+  worksheet.getCell(`H${vatStartRow + 4}`).value = { formula: `H${vatStartRow + 2}+H${vatStartRow + 3}` };
+
   // Điều khoản thanh toán
-  worksheet.getCell('C24').value = `Giao COD về địa chỉ: ${data.customerAddress}. Phí ship ${data.shippingFee.toLocaleString('vi-VN')}đ.`;
+  worksheet.getCell(`C${vatStartRow + 11}`).value = `Giao COD về địa chỉ: ${data.customerAddress}. Phí ship ${data.shippingFee.toLocaleString('vi-VN')}đ.`;
 
   // Lưu file Excel
   await workbook.xlsx.writeFile(outputPath);
@@ -163,14 +176,12 @@ export function generatePdfQuote(data: QuoteData, outputPath: string): Promise<v
         .text(`📞 ${data.customerPhone}`, 35, clientTop + 29)
         .text(`📍 ${data.customerAddress}`, 35, clientTop + 41);
 
-      // 3. Bảng sản phẩm (Table)
+      // 3. Bảng sản phẩm (Table Header)
       const tableTop = 185;
       const headerHeight = 22;
 
       // Vẽ nền Header bảng
-      // Phần bên trái (STT đến CK) màu xám nhạt
       doc.rect(35, tableTop, 445, headerHeight).fill('#f1f5f9');
-      // Phần Thành tiền màu hồng đậm
       doc.rect(480, tableTop, 80, headerHeight).fill(cAccent);
 
       // Điền chữ Header bảng
@@ -187,41 +198,58 @@ export function generatePdfQuote(data: QuoteData, outputPath: string): Promise<v
       doc.fillColor('#ffffff');
       doc.text("Thành tiền", 480, tableTop + 6, { width: 75, align: 'right' });
 
-      // Tính tiền và format
-      const useMeters = data.meters !== undefined && data.meters !== null && data.meters > 0;
-      const amountExclVat = useMeters 
-        ? data.meters! * data.rateExclVat 
-        : data.quantity * data.rateExclVat;
+      // Chuẩn hóa mảng items
+      const items: QuoteItem[] = data.items && data.items.length > 0 ? data.items : [{
+        productName: data.productName || '',
+        size: data.size || '',
+        quantity: data.quantity || 0,
+        meters: data.meters,
+        rateExclVat: data.rateExclVat || 0,
+        note: data.note
+      }];
+
+      const fmt = (num: number) => Math.round(num).toLocaleString('vi-VN') + ' đ';
+
+      // Vẽ các dòng sản phẩm động
+      let currentY = tableTop + headerHeight + 5;
+      let index = 1;
+      let amountExclVat = 0;
+      let totalQty = 0;
+
+      for (const item of items) {
+        // Vẽ đường kẻ dưới dòng
+        doc.moveTo(35, currentY + 18).lineTo(560, currentY + 18).strokeColor('#f1f5f9').lineWidth(0.5).stroke();
+
+        doc.font(fRegular).fontSize(8.5).fillColor(cTextDark);
+        doc.text(String(index++), 35, currentY + 4, { width: 22, align: 'center' });
+        doc.text(item.productName, 62, currentY + 4, { width: 118 });
+        doc.text(item.size, 185, currentY + 4, { width: 70 });
+        doc.text(new Date().toLocaleDateString('vi-VN'), 260, currentY + 4, { width: 70, align: 'center' });
+        
+        const hasM = item.meters !== undefined && item.meters !== null && item.meters > 0;
+        const qtyStr = hasM ? `${item.meters!.toFixed(1)} m` : `${item.quantity} cái`;
+        doc.text(qtyStr, 335, currentY + 4, { width: 50, align: 'center' });
+        doc.text(fmt(item.rateExclVat), 390, currentY + 4, { width: 60, align: 'right' });
+        
+        doc.font(fBold).fillColor(cAccent).text("—", 455, currentY + 4, { width: 25, align: 'center' });
+        
+        const lineAmount = hasM ? item.meters! * item.rateExclVat : item.quantity * item.rateExclVat;
+        amountExclVat += lineAmount;
+        totalQty += item.quantity;
+        
+        doc.font(fBold).fillColor(cTextDark);
+        doc.text(fmt(lineAmount), 480, currentY + 4, { width: 75, align: 'right' });
+        
+        currentY += 22;
+      }
+
       const vRate = data.vatRate !== undefined ? data.vatRate : 0.08;
       const vatAmount = amountExclVat * vRate;
       const amountInclVat = amountExclVat + vatAmount;
       const totalAmount = amountInclVat + data.shippingFee;
 
-      const fmt = (num: number) => Math.round(num).toLocaleString('vi-VN') + ' đ';
-
-      // Dữ liệu dòng 1
-      const rowY = tableTop + headerHeight + 5;
-      doc.font(fRegular).fontSize(8.5).fillColor(cTextDark);
-      
-      // Vẽ đường kẻ dưới dòng 1
-      doc.moveTo(35, rowY + 18).lineTo(560, rowY + 18).strokeColor('#f1f5f9').lineWidth(0.5).stroke();
-
-      doc.text("1", 35, rowY + 4, { width: 22, align: 'center' });
-      doc.text(data.productName, 62, rowY + 4, { width: 118 });
-      doc.text(data.size, 185, rowY + 4, { width: 70 });
-      doc.text(new Date().toLocaleDateString('vi-VN'), 260, rowY + 4, { width: 70, align: 'center' });
-      
-      const qtyStr = useMeters ? `${data.meters!.toFixed(1)} m` : `${data.quantity} cái`;
-      doc.text(qtyStr, 335, rowY + 4, { width: 50, align: 'center' });
-      doc.text(fmt(data.rateExclVat), 390, rowY + 4, { width: 60, align: 'right' });
-      
-      doc.font(fBold).fillColor(cAccent).text("—", 455, rowY + 4, { width: 25, align: 'center' });
-      
-      doc.font(fBold).fillColor(cTextDark);
-      doc.text(fmt(amountExclVat), 480, rowY + 4, { width: 75, align: 'right' });
-
-      // 4. Khung Thông tin thanh toán (bên dưới bên trái)
-      const bottomY = rowY + 40;
+      // 4. Khung Thông tin thanh toán (tính toạ độ động theo currentY)
+      const bottomY = currentY + 15;
       
       // Vẽ nền hồng nhạt bo góc cho ô Thanh toán
       doc.roundedRect(35, bottomY, 270, 95, 6).fillColor('#fff1f2').fill();
@@ -265,7 +293,10 @@ export function generatePdfQuote(data: QuoteData, outputPath: string): Promise<v
         sumY += 16;
       };
 
-      const qtyDisplay = useMeters ? `${data.meters!.toFixed(1)} m` : `${data.quantity} cái`;
+      const anyMeters = items.some(item => item.meters !== undefined && item.meters !== null && item.meters > 0);
+      const totalMeters = items.reduce((s, i) => s + (i.meters || 0), 0);
+      const qtyDisplay = anyMeters ? `${totalMeters.toFixed(1)} m` : `${totalQty} cái`;
+      
       drawSumRow("Tổng số lượng in:", qtyDisplay);
       drawSumRow("Tạm tính:", fmt(amountExclVat));
       drawSumRow(`VAT (${vRate * 100}%):`, fmt(vatAmount));

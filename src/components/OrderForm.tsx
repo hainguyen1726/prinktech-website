@@ -17,7 +17,6 @@ import {
 } from '@/lib/pricing';
 
 /* ─── Types ─────────────────────────────────────────────── */
-type CartItem = OrderItem & { id: string };
 
 type CustomerForm = {
   name: string;
@@ -37,12 +36,25 @@ type CustomerForm = {
 /* ─── Helpers ────────────────────────────────────────────── */
 function uid() { return Math.random().toString(36).slice(2, 9); }
 
+interface DesignFile {
+  name: string;
+  url?: string;
+  fileData?: string; // base64
+  fileName?: string;
+  fileType?: string;
+}
+
+type CartItem = OrderItem & {
+  id: string;
+  designs?: DesignFile[];
+};
+
 /* ─── Item Add Form ──────────────────────────────────────── */
 function AddItemForm({ onAdd }: { onAdd: (item: CartItem) => void }) {
   const [product, setProduct] = useState<Product>(PRODUCTS[0]);
   const [qty, setQty] = useState('1');
   const [imageUrl, setImageUrl] = useState('');
-  const [designUrl, setDesignUrl] = useState('');
+  const [designs, setDesigns] = useState<DesignFile[]>([]);
   const [note, setNote] = useState('');
   const [open, setOpen] = useState(false);
 
@@ -51,8 +63,31 @@ function AddItemForm({ onAdd }: { onAdd: (item: CartItem) => void }) {
   const subtotal = unitPrice * qtyNum;
   const tier = getActiveTier(product, qtyNum);
 
+  const handleFileChange = (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const base64 = event.target?.result as string;
+      const base64Body = base64.split(',')[1];
+      setDesigns(prev => {
+        const list = [...prev];
+        list[index] = {
+          ...list[index],
+          fileName: file.name,
+          fileType: file.type,
+          fileData: base64Body,
+          name: list[index].name || file.name.split('.')[0]
+        };
+        return list;
+      });
+    };
+    reader.readAsDataURL(file);
+  };
+
   const handleAdd = () => {
     if (qtyNum <= 0 || unitPrice === 0) return;
+    const validDesigns = designs.filter(d => d.name.trim() !== '');
     onAdd({
       id: uid(),
       product_type: product.type,
@@ -63,12 +98,13 @@ function AddItemForm({ onAdd }: { onAdd: (item: CartItem) => void }) {
       unit_price: unitPrice,
       subtotal,
       image_url: imageUrl.trim() || null,
-      design_url: designUrl.trim() || null,
+      design_url: validDesigns[0]?.url || null,
+      designs: validDesigns,
       note: note.trim() || null,
     });
     setQty('1');
     setImageUrl('');
-    setDesignUrl('');
+    setDesigns([]);
     setNote('');
     setOpen(false);
   };
@@ -141,18 +177,89 @@ function AddItemForm({ onAdd }: { onAdd: (item: CartItem) => void }) {
             />
           </div>
 
-          {/* Design URL */}
-          <div>
-            <label className="block text-xs font-semibold text-text-muted mb-1.5">
-              Link file thiết kế (AI, PDF, CDR…) <span className="text-text-muted/70 font-normal">(tùy chọn)</span>
-            </label>
-            <input
-              type="url"
-              value={designUrl}
-              onChange={e => setDesignUrl(e.target.value)}
-              placeholder="https://drive.google.com/..."
-              className="w-full h-9 px-3 rounded-xl border border-card-border bg-background text-foreground text-sm placeholder-text-muted/40 focus:outline-none focus:border-[var(--accent)]"
-            />
+          {/* Các mẫu thiết kế (Hỗ trợ nhiều mẫu) */}
+          <div className="space-y-2">
+            <div className="flex justify-between items-center">
+              <label className="block text-xs font-semibold text-text-muted">Các mẫu thiết kế sản phẩm này</label>
+              <button
+                type="button"
+                onClick={() => setDesigns([...designs, { name: '' }])}
+                className="text-xs text-[var(--accent)] hover:underline font-bold"
+              >
+                + Thêm mẫu
+              </button>
+            </div>
+            
+            {designs.length === 0 && (
+              <p className="text-[11px] text-text-muted/60 italic">Chưa có mẫu nào. Bấm "+ Thêm mẫu" để upload file hoặc dán link.</p>
+            )}
+
+            <div className="space-y-2 mt-1">
+              {designs.map((d, index) => (
+                <div key={index} className="flex gap-2 items-center bg-background/50 p-2 rounded-xl border border-card-border">
+                  <input
+                    type="text"
+                    placeholder="Tên mẫu"
+                    value={d.name}
+                    onChange={e => setDesigns(prev => {
+                      const list = [...prev];
+                      list[index].name = e.target.value;
+                      return list;
+                    })}
+                    className="w-1/3 h-8 px-2.5 rounded-lg border border-card-border bg-background text-foreground text-xs font-medium focus:outline-none"
+                  />
+                  {d.fileData ? (
+                    <div className="flex-1 text-xs text-emerald-600 font-bold truncate flex items-center gap-1">
+                      <span className="truncate">📁 {d.fileName}</span>
+                      <button
+                        type="button"
+                        onClick={() => setDesigns(prev => {
+                          const list = [...prev];
+                          delete list[index].fileData;
+                          delete list[index].fileName;
+                          return list;
+                        })}
+                        className="text-rose-500 hover:underline font-normal text-[10px] shrink-0"
+                      >
+                        Xoá
+                      </button>
+                    </div>
+                  ) : (
+                    <input
+                      type="text"
+                      placeholder="Dán link Drive..."
+                      value={d.url || ''}
+                      onChange={e => setDesigns(prev => {
+                        const list = [...prev];
+                        list[index].url = e.target.value;
+                        return list;
+                      })}
+                      className="flex-1 h-8 px-2.5 rounded-lg border border-card-border bg-background text-foreground text-xs focus:outline-none"
+                    />
+                  )}
+                  
+                  {/* File input ẩn */}
+                  {!d.url && !d.fileData && (
+                    <label className="h-8 px-2.5 rounded-lg bg-[var(--accent)]/10 hover:bg-[var(--accent)]/20 text-[var(--accent)] text-[11px] font-bold transition flex items-center justify-center cursor-pointer shrink-0">
+                      Tải lên
+                      <input
+                        type="file"
+                        className="hidden"
+                        onChange={e => handleFileChange(index, e)}
+                      />
+                    </label>
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={() => setDesigns(prev => prev.filter((_, i) => i !== index))}
+                    className="text-rose-500 hover:text-rose-700 p-1 shrink-0"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </div>
+              ))}
+            </div>
           </div>
 
           {/* Note */}
@@ -714,10 +821,26 @@ export default function OrderForm() {
                             🖼 Xem ảnh mẫu
                           </a>
                         )}
-                        {item.design_url && (
-                          <a href={item.design_url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-500 hover:underline mt-1.5 font-semibold flex items-center gap-1">
-                            📁 Xem file thiết kế
-                          </a>
+                        {item.designs && item.designs.length > 0 ? (
+                          <div className="mt-1.5 space-y-1">
+                            {item.designs.map((d: any, idx: number) => (
+                              <div key={idx} className="flex items-center gap-1.5 text-[11px] text-text-muted">
+                                <span className="font-semibold">• {d.name}</span>
+                                {d.url && (
+                                  <a href={d.url} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline font-bold">
+                                    [Xem link]
+                                  </a>
+                                )}
+                                {d.fileData && <span className="text-emerald-600 font-bold">[File sẵn sàng tải lên]</span>}
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          item.design_url && (
+                            <a href={item.design_url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-500 hover:underline mt-1.5 font-semibold flex items-center gap-1">
+                              📁 Xem file thiết kế
+                            </a>
+                          )
                         )}
                       </div>
                       <div className="shrink-0 flex flex-col items-end justify-between h-full min-h-[60px]">

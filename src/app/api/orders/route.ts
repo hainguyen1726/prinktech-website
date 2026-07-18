@@ -144,24 +144,36 @@ export async function GET(req: NextRequest) {
       const pdfMatch = o.note?.match(/- PDF Báo giá:\s*(https?:\/\/[^\s\n]+)/);
       const carrierMatch = o.note?.match(/- Đơn vị vận chuyển:\s*([^\n\r]+)/);
       const trackingMatch = o.note?.match(/- Mã vận đơn:\s*([^\n\r]+)/);
+      const jsonMatch = o.note?.match(/- Dữ liệu sản phẩm JSON:\s*([^\n\r]+)/);
       
       const excelUrl = excelMatch ? excelMatch[1] : null;
       const pdfUrl = pdfMatch ? pdfMatch[1] : null;
       const shippingCarrier = carrierMatch ? carrierMatch[1].trim() : null;
       const trackingNumber = trackingMatch ? trackingMatch[1].trim() : null;
 
-      const items = [
-        {
-          product_label: o.sticker_type === 'dtf_roll' ? 'In tem UV DTF cuộn' : 'In tem UV DTF cái/tờ',
-          quantity: o.quantity_expected || 0,
-          unit: o.sticker_type === 'dtf_roll' ? 'mét' : 'cái/tờ',
-          unit_price: o.unit_price || 0,
-          subtotal: o.total_amount || 0,
-          image_url: o.preview_image,
-          design_url: o.design_link,
-          note: null
+      let items = [];
+      if (jsonMatch) {
+        try {
+          items = JSON.parse(jsonMatch[1]);
+        } catch (e) {
+          console.error('Error parsing items JSON:', e);
         }
-      ];
+      }
+
+      if (!items || items.length === 0) {
+        items = [
+          {
+            product_label: o.sticker_type === 'dtf_roll' ? 'In tem UV DTF cuộn' : 'In tem UV DTF cái/tờ',
+            quantity: o.quantity_expected || 0,
+            unit: o.sticker_type === 'dtf_roll' ? 'mét' : 'cái/tờ',
+            unit_price: o.unit_price || 0,
+            subtotal: o.total_amount || 0,
+            image_url: o.preview_image,
+            design_url: o.design_link,
+            note: null
+          }
+        ];
+      }
 
       const itemSubtotal = Number(o.total_amount) || 0;
       const shippingFee = Number(o.shipping_cost) || 0;

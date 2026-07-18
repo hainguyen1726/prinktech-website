@@ -12,6 +12,32 @@ const REDIRECT_URI = "http://localhost";
 const REFRESH_TOKEN = process.env.GOOGLE_REFRESH_TOKEN || "";
 const PARENT_DRIVE_FOLDER_ID = "1HKqBw0DKnmQvcXzyjo9cgtrFl15Ehj24";
 
+import { Readable } from 'stream';
+
+async function uploadFileFromBase64(drive: any, folderId: string, fileName: string, base64Data: string, mimeType?: string) {
+  const buffer = Buffer.from(base64Data, 'base64');
+  const stream = new Readable();
+  stream.push(buffer);
+  stream.push(null);
+  
+  const uploadFile = await drive.files.create({
+    requestBody: {
+      name: fileName,
+      parents: [folderId],
+    },
+    media: {
+      mimeType: mimeType || 'application/octet-stream',
+      body: stream,
+    },
+    fields: 'id, webViewLink',
+  });
+  
+  return {
+    id: uploadFile.data.id,
+    link: uploadFile.data.webViewLink || '',
+  };
+}
+
 export async function POST(req: NextRequest) {
   try {
     const auth = await verifyAdminOrStaff(req);
@@ -33,20 +59,12 @@ export async function POST(req: NextRequest) {
       design_link, // Link thiết kế ban đầu
       order_source, // Nguồn đơn hàng (website, fb, shopee, tiktok, other)
       apply_vat, // Toggle áp dụng VAT (mặc định là true)
+      items, // Mảng items mới gửi lên từ Admin Form
     } = body;
 
     // Validate bắt buộc
     if (!customer_id) {
       return NextResponse.json({ error: 'Thiếu thông tin khách hàng (customer_id)' }, { status: 400 });
-    }
-    if (!product_type) {
-      return NextResponse.json({ error: 'Thiếu loại sản phẩm' }, { status: 400 });
-    }
-    if (!quantity || quantity <= 0) {
-      return NextResponse.json({ error: 'Số lượng phải lớn hơn 0' }, { status: 400 });
-    }
-    if (rate_excl_vat === undefined || rate_excl_vat < 0) {
-      return NextResponse.json({ error: 'Đơn giá không hợp lệ' }, { status: 400 });
     }
 
     // 1. Lấy thông tin khách hàng từ DB
@@ -63,6 +81,31 @@ export async function POST(req: NextRequest) {
     const customerName = customer.name;
     const customerPhone = customer.phone || '0000000000';
     const customerAddress = customer.address || 'Chưa cập nhật địa chỉ';
+
+    // Chuẩn hóa mảng items
+    let itemsList = items;
+    if (!itemsList || itemsList.length === 0) {
+      if (!product_type) {
+        return NextResponse.json({ error: 'Thiếu loại sản phẩm' }, { status: 400 });
+      }
+      if (!quantity || quantity <= 0) {
+        return NextResponse.json({ error: 'Số lượng phải lớn hơn 0' }, { status: 400 });
+      }
+      if (rate_excl_vat === undefined || rate_excl_vat < 0) {
+        return NextResponse.json({ error: 'Đơn giá không hợp lệ' }, { status: 400 });
+      }
+      itemsList = [{
+        product_type,
+        product_label: product_label || 'In tem UV DTF',
+        size_label: size_label || 'Tùy chọn',
+        quantity: Number(quantity),
+        meters: meters ? Number(meters) : undefined,
+        rate_excl_vat: Number(rate_excl_vat),
+        subtotal: meters ? Number(meters) * Number(rate_excl_vat) : Number(quantity) * Number(rate_excl_vat),
+        note: note || null,
+        design_url: design_link || null
+      }];
+    }
 
     // 2. Sinh mã đơn hàng mới: ORD-YYYYMMDD-XXXX (Đảm bảo tuyệt đối không bao giờ trùng lặp)
     const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
@@ -105,20 +148,142 @@ export async function POST(req: NextRequest) {
     const pdfPath = path.join(tempDir, `2. Bao_gia_in_tem_UV_DTF_${nameSlug}_V2.pdf`);
     const templateExcelPath = path.join(process.cwd(), '.agents', 'skills', 'antigravity-prinktech-quote', 'resources', 'template_bao_gia.xlsx');
 
-    // 4. Sinh file Excel & PDF báo giá
+    // 5. Kết nối Google Drive & đồng bộ
+    console.log('Connecting to Google Drive...');
+    const oAuth2Client = new google.auth.OAuth2(CLIENT_ID, CLIENT_SECRET, REDIRECT_URI);
+    oAuth2Client.setCredentials({ refresh_token: REFRESH_TOKEN });
+    const drive = google.drive({ version: 'v3', auth: oAuth2Client });
+
+    // A. Tìm hoặc tạo Folder của khách hàng: dạng "<Số thứ tự>. <Tên khách>_<SĐT>" (ví dụ "4. GP House_0845011975")
+    const listRes = await drive.files.list({
+      q: `'${PARENT_DRIVE_FOLDER_ID}' in parents and mimeType = 'application/vnd.google-apps.folder' and trashed = false`,
+      fields: 'files(id, name, webViewLink)',
+    });
+    const folders = listRes.data.files || [];
+    const cleanCustName = customerName.toLowerCase().trim();
+    const cleanPhone = customerPhone.toLowerCase().trim();
+    
+    let driveFolderId = null;
+    let driveFolderLink = null;
+    
+    const existingFolder = folders.find((f: any) => {
+      const withoutSeq = f.name.replace(/^\d+\.\s*/, '');
+      const parts = withoutSeq.split('_');
+      const folderCustName = parts[0]?.toLowerCase().trim();
+      const folderPhone = parts[1]?.toLowerCase().trim();
+      return folderCustName === cleanCustName || (folderPhone && folderPhone === cleanPhone);
+    });
+
+    if (existingFolder) {
+      driveFolderId = existingFolder.id;
+      driveFolderLink = existingFolder.webViewLink;
+      console.log('Found existing customer Google Drive folder:', driveFolderId);
+    } else {
+      const nextSeq = folders.length + 1;
+      const newFolderName = `${nextSeq}. ${customerName}_${customerPhone}`;
+      console.log('Creating new customer Google Drive folder:', newFolderName);
+      const createFolder = await drive.files.create({
+        requestBody: {
+          name: newFolderName,
+          mimeType: 'application/vnd.google-apps.folder',
+          parents: [PARENT_DRIVE_FOLDER_ID],
+        },
+        fields: 'id, webViewLink',
+      });
+      driveFolderId = createFolder.data.id;
+      driveFolderLink = createFolder.data.webViewLink;
+      
+      // Share public link
+      try {
+        await drive.permissions.create({
+          fileId: driveFolderId!,
+          requestBody: { role: 'reader', type: 'anyone' },
+        });
+      } catch (e) {
+        console.error("Lỗi share folder khách hàng:", e);
+      }
+    }
+
+    // B. Tạo Folder Đơn hàng con bên trong folder khách hàng: dạng "<Số thứ tự đơn>. <Mã Order_ngày đặt>"
+    const listOrdersRes = await drive.files.list({
+      q: `'${driveFolderId}' in parents and mimeType = 'application/vnd.google-apps.folder' and trashed = false`,
+      fields: 'files(id, name)',
+    });
+    const orderFolders = listOrdersRes.data.files || [];
+    const nextOrderSeq = orderFolders.length + 1;
+    
+    const now = new Date();
+    const day = now.getDate().toString().padStart(2, '0');
+    const month = (now.getMonth() + 1).toString().padStart(2, '0');
+    const year = now.getFullYear();
+    const dayStr = `${day}${month}${year}`; // e.g. "18072026"
+    const orderFolderName = `${nextOrderSeq}. ${orderCode}_${dayStr}`;
+    
+    console.log('Creating order subfolder:', orderFolderName);
+    const createOrderSubfolder = await drive.files.create({
+      requestBody: {
+        name: orderFolderName,
+        mimeType: 'application/vnd.google-apps.folder',
+        parents: [driveFolderId!],
+      },
+      fields: 'id, webViewLink',
+    });
+    const orderFolderId = createOrderSubfolder.data.id;
+    const orderFolderLink = createOrderSubfolder.data.webViewLink;
+    
+    try {
+      await drive.permissions.create({
+        fileId: orderFolderId!,
+        requestBody: { role: 'reader', type: 'anyone' },
+      });
+    } catch (e) {
+      console.error("Lỗi share folder đơn hàng:", e);
+    }
+
+    // C. Upload file thiết kế (Base64) của từng mẫu vào Folder đơn hàng con mới này
+    for (let i = 0; i < itemsList.length; i++) {
+      const item = itemsList[i];
+      if (item.designs && item.designs.length > 0) {
+        for (let d = 0; d < item.designs.length; d++) {
+          const design = item.designs[d];
+          if (design.fileData) {
+            console.log(`Uploading design file: ${design.name} (${design.fileName})`);
+            const ext = path.extname(design.fileName || '');
+            const driveFileName = `${design.name}${ext}`;
+            const uploadRes = await uploadFileFromBase64(
+              drive,
+              orderFolderId!,
+              driveFileName,
+              design.fileData,
+              design.fileType
+            );
+            design.url = uploadRes.link;
+            delete design.fileData; // Xóa Base64 để nhẹ bộ nhớ DB
+          }
+        }
+        item.design_url = item.designs[0]?.url || item.design_url;
+      }
+    }
+
+    // D. Chuẩn bị QuoteData cho generator
+    const quoteItems = itemsList.map((item: any) => ({
+      productName: item.product_label || 'In tem UV DTF',
+      size: item.size_label || 'Tùy chọn',
+      quantity: Number(item.quantity),
+      meters: item.meters ? Number(item.meters) : undefined,
+      rateExclVat: Number(item.rate_excl_vat),
+      note: item.note || undefined
+    }));
+
     const quoteData = {
       orderCode,
       customerName,
       customerPhone,
       customerAddress,
-      productName: product_label || 'In tem UV DTF',
-      size: size_label || 'Tùy chọn',
-      quantity: Number(quantity),
-      meters: meters ? Number(meters) : undefined,
-      rateExclVat: Number(rate_excl_vat),
       shippingFee: Number(shipping_fee || 0),
       note: note || '',
       vatRate: apply_vat !== false ? 0.08 : 0,
+      items: quoteItems
     };
 
     console.log('Generating Excel quote...', excelPath);
@@ -127,49 +292,7 @@ export async function POST(req: NextRequest) {
     console.log('Generating PDF quote...', pdfPath);
     await generatePdfQuote(quoteData, pdfPath);
 
-    // 5. Kết nối Google Drive & đồng bộ
-    console.log('Connecting to Google Drive...');
-    const oAuth2Client = new google.auth.OAuth2(CLIENT_ID, CLIENT_SECRET, REDIRECT_URI);
-    oAuth2Client.setCredentials({ refresh_token: REFRESH_TOKEN });
-    const drive = google.drive({ version: 'v3', auth: oAuth2Client });
-
-    // Tên thư mục con trên Drive: "Tên Khách Hàng - SĐT"
-    const driveFolderName = `${customerName} - ${customerPhone}`;
-    let driveFolderId = null;
-    let driveFolderLink = null;
-
-    // Tìm thư mục cũ trùng tên trong thư mục cha
-    const searchFolder = await drive.files.list({
-      q: `'${PARENT_DRIVE_FOLDER_ID}' in parents and name = '${driveFolderName}' and mimeType = 'application/vnd.google-apps.folder' and trashed = false`,
-      fields: 'files(id, name, webViewLink)',
-    });
-
-    if (searchFolder.data.files && searchFolder.data.files.length > 0) {
-      driveFolderId = searchFolder.data.files[0].id;
-      driveFolderLink = searchFolder.data.files[0].webViewLink;
-      console.log('Found existing Google Drive folder:', driveFolderId);
-    } else {
-      console.log('Creating new Google Drive folder...');
-      const createFolder = await drive.files.create({
-        requestBody: {
-          name: driveFolderName,
-          mimeType: 'application/vnd.google-apps.folder',
-          parents: [PARENT_DRIVE_FOLDER_ID],
-        },
-        fields: 'id, webViewLink',
-      });
-      driveFolderId = createFolder.data.id;
-      driveFolderLink = createFolder.data.webViewLink;
-      console.log('Created Google Drive folder:', driveFolderId);
-
-      // Cấp quyền đọc public
-      await drive.permissions.create({
-        fileId: driveFolderId!,
-        requestBody: { role: 'reader', type: 'anyone' },
-      });
-    }
-
-    // Upload 2 file báo giá lên thư mục Drive
+    // Upload 2 file báo giá lên thư mục Drive đơn hàng mới
     const uploadedLinks: Record<string, string> = {};
     const filesToUpload = [
       { name: path.basename(excelPath), path: excelPath, mime: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' },
@@ -177,26 +300,13 @@ export async function POST(req: NextRequest) {
     ];
 
     for (const f of filesToUpload) {
-      // Check file trùng
-      const searchFile = await drive.files.list({
-        q: `'${driveFolderId}' in parents and name = '${f.name}' and trashed = false`,
-        fields: 'files(id, webViewLink)',
+      console.log(`Uploading file ${f.name} to Google Drive order folder...`);
+      const uploadFile = await drive.files.create({
+        requestBody: { name: f.name, parents: [orderFolderId!] },
+        media: { mimeType: f.mime, body: fs.createReadStream(f.path) },
+        fields: 'id, webViewLink',
       });
-
-      let link = '';
-      if (searchFile.data.files && searchFile.data.files.length > 0) {
-        link = searchFile.data.files[0].webViewLink || '';
-        console.log(`File already exists on Google Drive: ${f.name}`);
-      } else {
-        console.log(`Uploading file ${f.name} to Google Drive...`);
-        const uploadFile = await drive.files.create({
-          requestBody: { name: f.name, parents: [driveFolderId!] },
-          media: { mimeType: f.mime, body: fs.createReadStream(f.path) },
-          fields: 'id, webViewLink',
-        });
-        link = uploadFile.data.webViewLink || '';
-      }
-      uploadedLinks[f.name] = link;
+      uploadedLinks[f.name] = uploadFile.data.webViewLink || '';
     }
 
     // 6. Xóa các file tạm cục bộ để giải phóng bộ nhớ
@@ -208,12 +318,6 @@ export async function POST(req: NextRequest) {
       console.error('Error cleaning up temp files:', cleanupErr);
     }
 
-    // 7. Tạo đơn hàng (Order) trong Supabase
-    // Đơn giá đã bao gồm VAT (8% hoặc 0%)
-    const amountExclVat = meters ? Number(meters) * Number(rate_excl_vat) : Number(quantity) * Number(rate_excl_vat);
-    const subtotalAfterVat = amountExclVat * (apply_vat !== false ? 1.08 : 1.0);
-    const unitPriceInclVat = Math.round(subtotalAfterVat / (meters ? Number(meters) : Number(quantity)));
-
     const excelFile = filesToUpload[0].name;
     const pdfFile = filesToUpload[1].name;
     const excelLink = uploadedLinks[excelFile] || 'N/A';
@@ -221,20 +325,30 @@ export async function POST(req: NextRequest) {
 
     const orderNote = `${note || ''}\n` +
       `- Excel Báo giá: ${excelLink}\n` +
-      `- PDF Báo giá: ${pdfLink}` +
+      `- PDF Báo giá: ${pdfLink}\n` +
+      `- Dữ liệu sản phẩm JSON: ${JSON.stringify(itemsList)}` +
       (design_link ? `\n- File thiết kế khách gửi: ${design_link}` : '');
 
-    const costAmount = meters ? Math.round(Number(meters) * 150000) : 0;
+    // Đơn giá trung bình hoặc lấy của item đầu tiên
+    const totalSubtotal = itemsList.reduce((s: number, i: any) => s + (i.subtotal || 0), 0);
+    const subtotalAfterVat = totalSubtotal * (apply_vat !== false ? 1.08 : 1.0);
+    
+    const anyMeters = itemsList.some((i: any) => i.meters && i.meters > 0);
+    const totalQty = itemsList.reduce((s: number, i: any) => s + (i.quantity || 0), 0);
+    const totalMeters = itemsList.reduce((s: number, i: any) => s + (i.meters || 0), 0);
+    
+    const unitPriceInclVat = Math.round(subtotalAfterVat / (anyMeters ? totalMeters : totalQty));
+    const costAmount = anyMeters ? Math.round(totalMeters * 150000) : 0;
 
     const newOrder = {
       order_code: orderCode,
       partner_id: customer_id,
-      sticker_type: product_type === 'cuon' ? 'dtf_roll' : 'uv_dtf_noi',
-      design_link: driveFolderLink, // Link thư mục Google Drive
+      sticker_type: anyMeters ? 'dtf_roll' : 'uv_dtf_noi',
+      design_link: orderFolderLink, // Link thư mục Google Drive đơn hàng con
       preview_image: null,
       layout_image: null,
-      quantity_expected: Number(quantity),
-      quantity_actual: meters ? Number(meters) : Number(quantity),
+      quantity_expected: totalQty,
+      quantity_actual: anyMeters ? totalMeters : totalQty,
       unit_price: unitPriceInclVat,
       shipping_cost: Number(shipping_fee || 0),
       discount_amount: 0,
@@ -263,7 +377,7 @@ export async function POST(req: NextRequest) {
       action: 'create',
       changes: {
         order_code: orderCode,
-        vat_rate: '8%',
+        vat_rate: apply_vat !== false ? '8%' : '0%',
         shipping_fee: Number(shipping_fee || 0),
         total_with_vat_and_ship: subtotalAfterVat + Number(shipping_fee || 0),
       },
@@ -274,7 +388,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       success: true,
       order_code: orderCode,
-      drive_folder: driveFolderLink,
+      drive_folder: orderFolderLink,
       excel_link: excelLink,
       pdf_link: pdfLink,
     });
