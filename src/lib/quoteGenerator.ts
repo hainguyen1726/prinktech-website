@@ -123,40 +123,46 @@ export function generatePdfQuote(data: QuoteData, outputPath: string): Promise<v
       const fRegular = hasFonts ? fontPath : 'Helvetica';
       const fBold = hasFonts ? fontBoldPath : 'Helvetica-Bold';
 
-      // 1. Header (Logo & Thông tin xưởng)
+      // 1. Header (Logo & Thông tin xưởng GMKT Việt Nam)
       const logoPath = path.join(process.cwd(), 'logo_prinktech.png');
       if (fs.existsSync(logoPath)) {
         doc.image(logoPath, 40, 35, { width: 65 });
       }
 
-      doc.font(fBold).fontSize(14).fillColor('#0f172a').text("XƯỞNG IN PRINK TECH", 115, 38);
-      doc.font(fRegular).fontSize(8.5).fillColor('#475569')
-        .text("Địa chỉ: 94 Phan Đình Phùng, Phú Phong, Tây Sơn, Bình Định\nHotline/Zalo: 0768 598 540\nEmail: contact@prinktech.vn  ·  Website: prinktech.netslive.com", 115, 54);
+      doc.font(fBold).fontSize(13).fillColor('#6d28d9').text("CÔNG TY TNHH GMKT VIỆT NAM", 115, 36);
+      doc.font(fBold).fontSize(9.5).fillColor('#1e293b').text("XƯỞNG IN NỔI 3D PRINK TECH", 115, 51);
+      doc.font(fRegular).fontSize(8).fillColor('#475569')
+        .text("Địa chỉ xưởng: 94 Phan Đình Phùng, Phú Phong, Tây Sơn, Bình Định\nHotline/Zalo hỗ trợ: 0822.968.412  ·  Email: gmkt2303@gmail.com  ·  Website: prinktech.netslive.com", 115, 64);
 
-      // Đường kẻ trang trí
-      doc.moveTo(40, 95).lineTo(555, 95).strokeColor('#e2e8f0').lineWidth(0.8).stroke();
+      // Đường kẻ trang trí màu tím nhạt
+      doc.moveTo(40, 95).lineTo(555, 95).strokeColor('#ddd6fe').lineWidth(0.8).stroke();
 
       // 2. Tiêu đề báo giá
-      doc.font(fBold).fontSize(16).fillColor('#b45309').text("BÁO GIÁ IN TEM UV DTF 3D NỔI", 40, 115, { align: 'center' });
+      doc.font(fBold).fontSize(16).fillColor('#6d28d9').text("BÁO GIÁ IN TEM UV DTF 3D NỔI", 40, 115, { align: 'center' });
       doc.font(fRegular).fontSize(9.5).fillColor('#475569')
         .text(`Đơn hàng: ${data.orderCode}`, 40, 135, { align: 'center' })
         .text(`Ngày báo giá: ${new Date().toLocaleDateString('vi-VN')}`, 40, 149, { align: 'center' });
 
       // 3. Thông tin khách hàng
-      doc.font(fBold).fontSize(10.5).fillColor('#0f172a').text("Thông tin khách hàng:", 40, 175);
+      doc.font(fBold).fontSize(10.5).fillColor('#6d28d9').text("Thông tin khách hàng nhận báo giá:", 40, 175);
+      
+      // Vẽ khung viền nhạt bao quanh thông tin khách hàng
+      doc.roundedRect(40, 187, 515, 54, 6).fillColor('#fbfbfe').fill();
+      doc.roundedRect(40, 187, 515, 54, 6).strokeColor('#e2e8f0').lineWidth(0.5).stroke();
+
       doc.font(fRegular).fontSize(9.5).fillColor('#334155');
-      doc.text(`Khách hàng:`, 50, 195).font(fBold).text(data.customerName, 125, 195);
-      doc.font(fRegular).text(`Số điện thoại:`, 50, 210).font(fBold).text(data.customerPhone, 125, 210);
-      doc.font(fRegular).text(`Địa chỉ giao hàng:`, 50, 225).text(data.customerAddress, 125, 225, { width: 420 });
+      doc.text(`Khách hàng:`, 52, 194).font(fBold).text(data.customerName, 130, 194);
+      doc.font(fRegular).text(`Số điện thoại:`, 52, 209).font(fBold).text(data.customerPhone, 130, 209);
+      doc.font(fRegular).text(`Địa chỉ giao hàng:`, 52, 224).text(data.customerAddress, 130, 224, { width: 410 });
 
       // 4. Bảng sản phẩm
       const tableTop = 265;
       doc.font(fBold).fontSize(9).fillColor('#ffffff');
       
-      // Vẽ Header bảng
-      doc.rect(40, tableTop, 515, 20).fill('#1e293b');
+      // Vẽ Header bảng màu tím
+      doc.rect(40, tableTop, 515, 20).fill('#6d28d9');
       doc.text("STT", 45, tableTop + 6, { width: 25, align: 'center' });
-      doc.text("Tên sản phẩm", 75, tableTop + 6, { width: 175 });
+      doc.text("Tên sản phẩm (Mẫu tem)", 75, tableTop + 6, { width: 175 });
       doc.text("Quy cách / Cỡ", 255, tableTop + 6, { width: 85 });
       doc.text("Số lượng", 345, tableTop + 6, { width: 50, align: 'center' });
       
@@ -185,7 +191,7 @@ export function generatePdfQuote(data: QuoteData, outputPath: string): Promise<v
       const rowY = tableTop + 25;
       
       // Vẽ dòng kẻ ngang dưới header
-      doc.moveTo(40, rowY + 20).lineTo(555, rowY + 20).strokeColor('#e2e8f0').lineWidth(0.5).stroke();
+      doc.moveTo(40, rowY + 20).lineTo(555, rowY + 20).strokeColor('#ddd6fe').lineWidth(0.5).stroke();
 
       doc.text("1", 45, rowY + 5, { width: 25, align: 'center' });
       doc.text(data.productName, 75, rowY + 5, { width: 175 });
@@ -202,11 +208,10 @@ export function generatePdfQuote(data: QuoteData, outputPath: string): Promise<v
 
       // 5. Phần Tổng tiền (nằm lệch phải)
       const summaryTop = rowY + 50;
-      doc.font(fRegular).fontSize(9.5).fillColor('#334155');
       
       let sumY = summaryTop;
       const drawSumRow = (label: string, valStr: string, isBold = false) => {
-        doc.font(isBold ? fBold : fRegular).fillColor(isBold ? '#b45309' : '#334155');
+        doc.font(isBold ? fBold : fRegular).fillColor(isBold ? '#6d28d9' : '#334155');
         doc.text(label, 320, sumY, { width: 140, align: 'right' });
         doc.text(valStr, 470, sumY, { width: 80, align: 'right' });
         sumY += 18;
@@ -217,41 +222,46 @@ export function generatePdfQuote(data: QuoteData, outputPath: string): Promise<v
       drawSumRow("Tiền hàng đã gồm VAT:", fmt(amountInclVat));
       drawSumRow("Phí vận chuyển (Ship):", fmt(data.shippingFee));
       
-      // Đường kẻ ngăn cách tổng cộng
-      doc.moveTo(350, sumY + 2).lineTo(555, sumY + 2).strokeColor('#cbd5e1').lineWidth(0.8).stroke();
+      // Đường kẻ ngăn cách tổng cộng màu tím
+      doc.moveTo(350, sumY + 2).lineTo(555, sumY + 2).strokeColor('#c084fc').lineWidth(0.8).stroke();
       sumY += 8;
       
       drawSumRow("TỔNG THANH TOÁN:", fmt(totalAmount), true);
 
       // 6. Điều khoản và thông tin thanh toán (ở dưới cùng bên trái)
       const termTop = summaryTop;
-      doc.font(fBold).fontSize(10).fillColor('#0f172a').text("Thông tin thanh toán & Giao nhận:", 40, termTop);
-      doc.font(fRegular).fontSize(8.5).fillColor('#475569');
+      doc.font(fBold).fontSize(10).fillColor('#6d28d9').text("Thông tin thanh toán & Giao nhận:", 40, termTop);
+      
+      // Vẽ khung viền nhạt màu tím
+      doc.roundedRect(40, termTop + 14, 270, 110, 6).fillColor('#f5f3ff').fill();
+      doc.roundedRect(40, termTop + 14, 270, 110, 6).strokeColor('#ddd6fe').lineWidth(0.5).stroke();
+
+      doc.font(fRegular).fontSize(8.2).fillColor('#475569');
       
       const termText = 
-        `1. Phương thức giao hàng: Giao COD tận nơi.\n` +
-        `2. Phí vận chuyển: ${data.shippingFee.toLocaleString('vi-VN')} đ (đã tính vào tổng cộng).\n` +
-        `3. Địa điểm nhận hàng: ${data.customerAddress}\n` +
-        `4. Thông tin tài khoản ngân hàng của xưởng:\n` +
-        `   · Ngân hàng: Techcombank (TCB)\n` +
-        `   · Số tài khoản: 19036574384013\n` +
-        `   · Chủ tài khoản: Nguyễn Hoàng Hải\n` +
-        `   · Cú pháp chuyển khoản: ${data.orderCode}`;
+        `1. Phương thức giao hàng: Giao hàng tận nơi (COD).\n` +
+        `2. Phí vận chuyển: ${data.shippingFee > 0 ? (data.shippingFee.toLocaleString('vi-VN') + ' đ') : 'Miễn phí vận chuyển'}.\n` +
+        `3. Địa điểm giao nhận: ${data.customerAddress}\n` +
+        `4. Thông tin tài khoản ngân hàng thanh toán:\n` +
+        `   · Ngân hàng: Vietinbank (Ngân hàng Công Thương Việt Nam)\n` +
+        `   · Số tài khoản: 110602191866\n` +
+        `   · Chủ tài khoản: CÔNG TY TNHH GMKT VIỆT NAM\n` +
+        `   · Nội dung chuyển khoản: Thanh toan ${data.orderCode}`;
       
-      doc.text(termText, 40, termTop + 18, { width: 270, lineGap: 3 });
+      doc.text(termText, 46, termTop + 20, { width: 258, lineGap: 3 });
 
       // 7. Chữ ký 2 bên
       const signTop = sumY + 40;
-      doc.font(fBold).fontSize(10).fillColor('#0f172a');
+      doc.font(fBold).fontSize(10).fillColor('#1e293b');
       doc.text("ĐẠI DIỆN KHÁCH HÀNG", 80, signTop, { align: 'center', width: 150 });
-      doc.text("NGƯỜI BÁO GIÁ", 380, signTop, { align: 'center', width: 150 });
+      doc.text("NGƯỜI LẬP BÁO GIÁ", 380, signTop, { align: 'center', width: 150 });
       
       doc.font(fRegular).fontSize(8.5).fillColor('#64748b');
       doc.text("(Ký, ghi rõ họ tên)", 80, signTop + 13, { align: 'center', width: 150 });
-      doc.text("(Ký, đóng dấu nếu có)", 380, signTop + 13, { align: 'center', width: 150 });
+      doc.text("(Ký tên, đóng dấu)", 380, signTop + 13, { align: 'center', width: 150 });
 
-      doc.font(fBold).fontSize(9.5).fillColor('#475569');
-      doc.text("Nguyễn Hoàng Hải", 380, signTop + 75, { align: 'center', width: 150 });
+      doc.font(fBold).fontSize(9.5).fillColor('#6d28d9');
+      doc.text("Đại Diện GMKT Việt Nam", 380, signTop + 75, { align: 'center', width: 150 });
 
       doc.end();
 

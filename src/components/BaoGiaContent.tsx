@@ -223,19 +223,35 @@ export default function BaoGiaContent() {
                 </tr>
 
                 {/* In theo mét dài */}
-                <tr className="bg-[var(--accent-glow)]/40 hover:bg-[var(--accent-glow)]/60 transition-colors">
-                  <td className="px-4 md:px-6 py-4 font-bold text-foreground border border-card-border align-middle">
+                <tr className="bg-[var(--accent-glow)]/20 hover:bg-[var(--accent-glow)]/40 transition-colors">
+                  <td rowSpan={5} className="px-4 md:px-6 py-4 font-bold text-foreground border border-card-border align-middle">
                     In theo mét dài (Khổ 60cm)
                     <span className="block text-[10px] font-normal text-text-muted mt-0.5">Film cuộn in tràn khổ bế mẫu tự do</span>
                   </td>
-                  <td className="px-3 py-4 text-center text-text-muted font-semibold border border-card-border align-middle">
+                  <td rowSpan={5} className="px-3 py-4 text-center text-text-muted font-semibold border border-card-border align-middle">
                     mét
                   </td>
-                  <td className="px-4 md:px-6 py-4 border border-card-border align-middle">Mọi số lượng</td>
-                  <td className="px-4 md:px-6 py-4 font-black text-[var(--accent)] border border-card-border align-middle tabular-nums text-right">145.000</td>
-                  <td className="px-4 md:px-6 py-4 text-xs text-amber-600 dark:text-amber-400 text-right font-bold border border-card-border align-middle">
-                    Khuyến mại từ 10/07/2026 đến 31/07/2027
+                  <td className="px-4 md:px-6 py-3 border border-card-border">Dưới 2m</td>
+                  <td className="px-4 md:px-6 py-3 font-semibold text-foreground border border-card-border tabular-nums text-right">290.000</td>
+                  <td rowSpan={5} className="px-4 md:px-6 py-4 text-xs text-text-muted text-right font-medium border border-card-border align-middle">
+                    Khổ in ghép tối đa 58cm. Hỗ trợ bế demi an toàn 5mm.
                   </td>
+                </tr>
+                <tr className="bg-[var(--accent-glow)]/20 hover:bg-[var(--accent-glow)]/40 transition-colors">
+                  <td className="px-4 md:px-6 py-3 border border-card-border">Từ 2 – 5m</td>
+                  <td className="px-4 md:px-6 py-3 font-semibold text-foreground border border-card-border tabular-nums text-right">250.000</td>
+                </tr>
+                <tr className="bg-[var(--accent-glow)]/20 hover:bg-[var(--accent-glow)]/40 transition-colors">
+                  <td className="px-4 md:px-6 py-3 border border-card-border">Từ 5 – 15m</td>
+                  <td className="px-4 md:px-6 py-3 font-semibold text-foreground border border-card-border tabular-nums text-right">220.000</td>
+                </tr>
+                <tr className="bg-[var(--accent-glow)]/20 hover:bg-[var(--accent-glow)]/40 transition-colors">
+                  <td className="px-4 md:px-6 py-3 border border-card-border">Từ 15 – 50m</td>
+                  <td className="px-4 md:px-6 py-3 font-semibold text-foreground border border-card-border tabular-nums text-right">190.000</td>
+                </tr>
+                <tr className="bg-[var(--accent-glow)]/20 hover:bg-[var(--accent-glow)]/60 transition-colors">
+                  <td className="px-4 md:px-6 py-3 border border-card-border font-bold text-[var(--accent)]">Từ 50m trở lên</td>
+                  <td className="px-4 md:px-6 py-3 font-black text-[var(--accent)] border border-card-border tabular-nums text-right">145.000</td>
                 </tr>
               </tbody>
             </table>

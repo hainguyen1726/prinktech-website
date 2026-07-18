@@ -1625,6 +1625,17 @@ export default function OrderList() {
                   </div>
                 </div>
 
+                {/* Nút Chốt Đơn & Chuyển Xưởng In nhanh */}
+                {selectedOrder.status === 'pending' && (
+                  <button
+                    onClick={() => handleStatusChange(selectedOrder.id, 'processing')}
+                    disabled={updatingId === selectedOrder.id}
+                    className="w-full h-11 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white text-xs font-black shadow-lg transition flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+                  >
+                    🚀 Chốt Đơn & Chuyển Xưởng In
+                  </button>
+                )}
+
                 {/* Order actions (Status Update) */}
                 <div className="space-y-3">
                   <div>

@@ -213,7 +213,7 @@ export async function POST(req: NextRequest) {
       unit_price: unitPriceInclVat,
       shipping_cost: Number(shipping_fee || 0),
       discount_amount: 0,
-      status: 'processing', // Trạng thái mặc định là đang xử lý
+      status: 'pending', // Trạng thái mặc định là báo giá (Chờ xác nhận)
       payment_status: 'unpaid',
       note: orderNote,
       created_at: new Date().toISOString(),
