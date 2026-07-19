@@ -25,6 +25,25 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
   return NextResponse.json({ data });
 }
 
+function mapRetailToLegacyStatus(status: string): string {
+  switch (status) {
+    case 'pending':
+      return 'pending_file';
+    case 'confirmed':
+      return 'pending_print';
+    case 'printing':
+      return 'printing';
+    case 'shipped':
+      return 'delivering';
+    case 'delivered':
+      return 'completed';
+    case 'cancelled':
+      return 'cancelled';
+    default:
+      return status;
+  }
+}
+
 // PATCH /api/orders/[id] — cập nhật trạng thái & thông tin vận chuyển
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const auth = await verifyAdminOrStaff(req);
@@ -58,14 +77,40 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   }
 
   let res;
+  const changes: Record<string, { from: any; to: any }> = {};
 
   if (isRetail) {
     const updates: Record<string, unknown> = {};
-    if (status) updates.status = status;
-    if (payment_status) updates.payment_status = payment_status;
-    if (shipping_carrier !== undefined) updates.shipping_carrier = shipping_carrier;
-    if (tracking_number !== undefined) updates.tracking_number = tracking_number;
-    if (cost_amount !== undefined) updates.cost_amount = Number(cost_amount) || 0;
+    if (status) {
+      updates.status = status;
+      if (oldOrder.status !== status) {
+        changes.status = { from: oldOrder.status, to: status };
+      }
+    }
+    if (payment_status) {
+      updates.payment_status = payment_status;
+      if (oldOrder.payment_status !== payment_status) {
+        changes.payment_status = { from: oldOrder.payment_status, to: payment_status };
+      }
+    }
+    if (shipping_carrier !== undefined) {
+      updates.shipping_carrier = shipping_carrier;
+      if (oldOrder.shipping_carrier !== shipping_carrier) {
+        changes.shipping_carrier = { from: oldOrder.shipping_carrier, to: shipping_carrier };
+      }
+    }
+    if (tracking_number !== undefined) {
+      updates.tracking_number = tracking_number;
+      if (oldOrder.tracking_number !== tracking_number) {
+        changes.tracking_number = { from: oldOrder.tracking_number, to: tracking_number };
+      }
+    }
+    if (cost_amount !== undefined) {
+      updates.cost_amount = Number(cost_amount) || 0;
+      if (Number(oldOrder.cost_amount) !== Number(cost_amount)) {
+        changes.cost_amount = { from: oldOrder.cost_amount, to: Number(cost_amount) || 0 };
+      }
+    }
 
     // Tự động set timestamp khi thay đổi trạng thái
     if (status === 'confirmed') updates.confirmed_at = new Date().toISOString();
@@ -93,14 +138,32 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     }
   } else {
     const updates: Record<string, unknown> = {};
-    if (status) updates.status = status;
-    if (payment_status) updates.payment_status = payment_status;
-    if (cost_amount !== undefined) updates.cost_amount = Number(cost_amount) || 0;
+    let dbStatus = '';
+    if (status) {
+      dbStatus = mapRetailToLegacyStatus(status);
+      updates.status = dbStatus;
+      if (oldOrder.status !== dbStatus) {
+        changes.status = { from: oldOrder.status, to: dbStatus };
+      }
+    }
+    if (payment_status) {
+      updates.payment_status = payment_status;
+      if (oldOrder.payment_status !== payment_status) {
+        changes.payment_status = { from: oldOrder.payment_status, to: payment_status };
+      }
+    }
+    if (cost_amount !== undefined) {
+      updates.cost_amount = Number(cost_amount) || 0;
+      if (Number(oldOrder.cost_amount) !== Number(cost_amount)) {
+        changes.cost_amount = { from: oldOrder.cost_amount, to: Number(cost_amount) || 0 };
+      }
+    }
 
     // Tự động set timestamp khi thay đổi trạng thái
-    if (status === 'confirmed') updates.confirmed_at = new Date().toISOString();
-    if (status === 'shipped')   updates.shipped_at = new Date().toISOString();
-    if (status === 'delivered') updates.delivered_at = new Date().toISOString();
+    const activeStatus = dbStatus || oldOrder.status;
+    if (activeStatus === 'pending_print') updates.confirmed_at = new Date().toISOString();
+    if (activeStatus === 'delivering' || activeStatus === 'pending_delivery') updates.shipped_at = new Date().toISOString();
+    if (activeStatus === 'completed') updates.delivered_at = new Date().toISOString();
 
     // Xử lý cập nhật note cho shipping_carrier & tracking_number
     if (shipping_carrier !== undefined || tracking_number !== undefined) {
@@ -119,6 +182,9 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
         } else {
           note = note.replace(carrierRegex, '').trim();
         }
+        if (oldOrder.shipping_carrier !== shipping_carrier) {
+          changes.shipping_carrier = { from: oldOrder.shipping_carrier, to: shipping_carrier };
+        }
       }
       
       if (tracking_number !== undefined) {
@@ -133,6 +199,9 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
           }
         } else {
           note = note.replace(trackingRegex, '').trim();
+        }
+        if (oldOrder.tracking_number !== tracking_number) {
+          changes.tracking_number = { from: oldOrder.tracking_number, to: tracking_number };
         }
       }
       
@@ -161,6 +230,17 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   }
 
   if (res.error) return NextResponse.json({ error: res.error.message }, { status: 500 });
+
+  // GHI LOG VÀO ORDER_LOGS (Để hiển thị ở Timeline)
+  if (Object.keys(changes).length > 0) {
+    await supabase.from('order_logs').insert({
+      order_id: id,
+      action: 'edit_order',
+      changes,
+      changed_by: auth.user?.id || null,
+      changed_by_name: auth.user?.name || 'Website Admin'
+    });
+  }
 
   // GHI LOG ACTIVITY HOẠT ĐỘNG
   const updatedOrder = res.data;

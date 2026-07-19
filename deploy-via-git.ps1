@@ -79,6 +79,9 @@ Pop-Location
 # ============================================
 Step "2️⃣  KÍCH HOẠT DEPLOY TRÊN VPS"
 
+Write-Host "📤 Đồng bộ script deploy lên VPS..." -ForegroundColor Cyan
+scp "$APP_DIR\deploy-vps-git.sh" "${VPS_USER}@${VPS_IP}:$REMOTE_SCRIPT"
+
 Write-Host "🚀 Đang gửi lệnh thực thi deploy qua SSH..." -ForegroundColor Cyan
 ssh -o ServerAliveInterval=60 -o ServerAliveCountMax=5 "${VPS_USER}@${VPS_IP}" "bash $REMOTE_SCRIPT"
 

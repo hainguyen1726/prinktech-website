@@ -59,22 +59,9 @@ git pull origin master
 success "Cập nhật mã nguồn thành công."
 
 # ============================================
-# 2. XÓA CONTAINER CŨ
+# 2. CÀI ĐẶT THƯ VIỆN & BUILD NEXT.JS
 # ============================================
-step "2️⃣  DỌN CONTAINER CŨ"
-
-if docker ps -a | grep -q "$CONTAINER_NAME"; then
-    info "Đang xóa container Docker cũ: $CONTAINER_NAME..."
-    docker rm -f "$CONTAINER_NAME" 2>/dev/null || true
-    success "Container cũ đã xóa."
-else
-    info "Không tìm thấy container cũ đang chạy."
-fi
-
-# ============================================
-# 3. CÀI ĐẶT THƯ VIỆN & BUILD NEXT.JS
-# ============================================
-step "3️⃣  CÀI ĐẶT & BUILD NEXT.JS (DOCKER)"
+step "2️⃣  CÀI ĐẶT & BUILD NEXT.JS"
 
 info "Đang cài đặt node_modules..."
 npm install --include=dev --no-audit --no-fund --legacy-peer-deps
@@ -95,12 +82,12 @@ fi
 success "Build Next.js thành công (Build ID: $(cat .next/BUILD_ID))."
 
 # ============================================
-# 4. KHỞI CHẠY CONTAINER
+# 3. RESTART CONTAINER (ZERO-DOWNTIME)
 # ============================================
-step "4️⃣  KHỞI CHẠY DOCKER CONTAINER"
+step "3️⃣  KHỞI CHẠY CONTAINER (ZERO-DOWNTIME)"
 
-info "Chạy docker compose..."
-docker compose up -d
+info "Đang khởi động lại container bằng docker compose..."
+docker compose up -d --force-recreate
 
 sleep 3
 
@@ -109,11 +96,10 @@ if docker ps | grep -q "$CONTAINER_NAME"; then
 else
     error "Container docker compose không thể khởi chạy!"
 fi
-
 # ============================================
-# 5. TỰ ĐỘNG CẬP NHẬT REVERSE PROXY CADDY
+# 4. TỰ ĐỘNG CẬP NHẬT REVERSE PROXY CADDY
 # ============================================
-step "5️⃣  CẤU HÌNH DOMAIN TRÊN CADDY"
+step "4️⃣  CẤU HÌNH DOMAIN TRÊN CADDY"
 
 CADDYFILE_PATHS=(
     "/home/n8n/Caddyfile"

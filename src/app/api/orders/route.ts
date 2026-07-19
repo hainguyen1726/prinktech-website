@@ -123,6 +123,7 @@ export async function GET(req: NextRequest) {
       shipping_carrier: o.shipping_carrier || null,
       tracking_number: o.tracking_number || null,
       converted_length: Number(o.converted_length) || 0,
+      cost_amount: Number(o.cost_amount) || 0,
       source: 'website',
       has_vat: o.request_vat || false,
       created_at: o.created_at
@@ -212,7 +213,9 @@ export async function GET(req: NextRequest) {
         tracking_number: trackingNumber,
         source: orderSource,
         has_vat: Array.isArray(o.tags) && o.tags.includes('VAT 8%'),
-        created_at: o.created_at
+        created_at: o.created_at,
+        converted_length: Number(o.quantity_actual) || 0,
+        cost_amount: Number(o.cost_amount) || 0
       };
     });
 

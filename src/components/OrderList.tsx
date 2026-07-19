@@ -177,6 +177,7 @@ export default function OrderList() {
   const [shippingCarrierInput, setShippingCarrierInput] = useState('');
   const [trackingNumberInput, setTrackingNumberInput] = useState('');
   const [costAmountInput, setCostAmountInput] = useState<number>(0);
+  const [costUnitPriceInput, setCostUnitPriceInput] = useState<number>(150000);
 
   const [orderHistory, setOrderHistory] = useState<any[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
@@ -185,11 +186,13 @@ export default function OrderList() {
     if (selectedOrder) {
       setShippingCarrierInput(selectedOrder.shipping_carrier || '');
       setTrackingNumberInput(selectedOrder.tracking_number || '');
-      setCostAmountInput(
-        selectedOrder.cost_amount !== undefined && selectedOrder.cost_amount !== null
-          ? Number(selectedOrder.cost_amount)
-          : Math.round((selectedOrder.converted_length || 0) * 150000)
-      );
+      
+      const len = selectedOrder.converted_length || 0;
+      const initialCost = selectedOrder.cost_amount !== undefined && selectedOrder.cost_amount !== null
+        ? Number(selectedOrder.cost_amount)
+        : Math.round(len * 150000);
+      setCostAmountInput(initialCost);
+      setCostUnitPriceInput(len > 0 ? Math.round(initialCost / len) : 150000);
       
       const fetchHistory = async () => {
         setLoadingHistory(true);
@@ -1707,12 +1710,6 @@ export default function OrderList() {
                           {formatCurrency(selectedOrder.shipping_fee)}
                         </span>
                       </div>
-                      <div className="flex justify-between text-text-muted">
-                        <span>Phí đóng gói định mức:</span>
-                        <span className="font-bold text-foreground font-mono">
-                          {formatCurrency(5000)}
-                        </span>
-                      </div>
                       <div className="flex justify-between text-xs font-bold pt-1.5 border-t border-emerald-250 dark:border-emerald-800 text-emerald-700 dark:text-emerald-400">
                         <span>Lợi nhuận ròng thực tế:</span>
                         <span className="font-mono">
@@ -1720,8 +1717,7 @@ export default function OrderList() {
                             selectedOrder.total - 
                             (selectedOrder.cost_amount !== undefined && Number(selectedOrder.cost_amount) > 0
                               ? Number(selectedOrder.cost_amount)
-                              : Math.round((selectedOrder.converted_length || 0) * 150000)) - 
-                            5000
+                              : Math.round((selectedOrder.converted_length || 0) * 150000))
                           )}
                         </span>
                       </div>
@@ -1801,19 +1797,57 @@ export default function OrderList() {
                       )}
                     </div>
 
-                    <div>
-                      <label className="block text-[10px] font-bold text-text-muted uppercase mb-1">Giá vốn xưởng (Cost)</label>
-                      <div className="relative">
-                        <input
-                          type="number"
-                          value={costAmountInput}
-                          onChange={e => setCostAmountInput(Number(e.target.value) || 0)}
-                          placeholder="Mặc định: Số mét * 150k"
-                          className="w-full h-9 pl-3 pr-8 rounded-lg border border-card-border bg-background text-foreground text-xs font-semibold focus:outline-none focus:border-[var(--accent)]"
-                        />
-                        <span className="absolute right-3 inset-y-0 flex items-center text-[10px] text-text-muted font-bold pointer-events-none">đ</span>
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center text-xs">
+                        <span className="text-text-muted font-semibold">Số mét in thực tế:</span>
+                        <span className="font-bold text-slate-800 dark:text-slate-200 font-mono">
+                          {selectedOrder.converted_length !== undefined && selectedOrder.converted_length !== null
+                            ? `${selectedOrder.converted_length} m`
+                            : '0 m'}
+                        </span>
                       </div>
-                      <p className="text-[9px] text-text-muted font-semibold mt-1">Mặc định tự động tính theo số mét thực tế của xưởng in × 150.000đ/m.</p>
+                      
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-[10px] font-bold text-text-muted uppercase mb-1">Đơn giá Cost (/m)</label>
+                          <div className="relative">
+                            <input
+                              type="number"
+                              value={costUnitPriceInput}
+                              onChange={e => {
+                                const val = Number(e.target.value) || 0;
+                                setCostUnitPriceInput(val);
+                                setCostAmountInput(Math.round(val * (selectedOrder.converted_length || 0)));
+                              }}
+                              placeholder="150,000"
+                              className="w-full h-9 pl-2 pr-6 rounded-lg border border-card-border bg-background text-foreground text-xs font-semibold focus:outline-none focus:border-[var(--accent)]"
+                            />
+                            <span className="absolute right-2 inset-y-0 flex items-center text-[9px] text-text-muted font-bold pointer-events-none">đ</span>
+                          </div>
+                        </div>
+                        
+                        <div>
+                          <label className="block text-[10px] font-bold text-text-muted uppercase mb-1">Tổng giá vốn (Cost)</label>
+                          <div className="relative">
+                            <input
+                              type="number"
+                              value={costAmountInput}
+                              onChange={e => {
+                                const val = Number(e.target.value) || 0;
+                                setCostAmountInput(val);
+                                const len = selectedOrder.converted_length || 0;
+                                if (len > 0) {
+                                  setCostUnitPriceInput(Math.round(val / len));
+                                }
+                              }}
+                              placeholder="Tự động tính"
+                              className="w-full h-9 pl-2 pr-6 rounded-lg border border-card-border bg-background text-foreground text-xs font-semibold focus:outline-none focus:border-[var(--accent)]"
+                            />
+                            <span className="absolute right-2 inset-y-0 flex items-center text-[9px] text-text-muted font-bold pointer-events-none">đ</span>
+                          </div>
+                        </div>
+                      </div>
+                      <p className="text-[9px] text-text-muted font-semibold">Nhập đơn giá, hệ thống sẽ tự động nhân với số mét in thực tế của xưởng.</p>
                     </div>
 
                     <button
