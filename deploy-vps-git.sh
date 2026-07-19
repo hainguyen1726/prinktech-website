@@ -44,17 +44,11 @@ function error() { echo -e "${RED}❌ $1${NC}"; exit 1; }
 step "1️⃣  CẬP NHẬT MÃ NGUỒN TỪ GITHUB"
 
 cd "$APP_DIR"
-info "Đang pull code mới nhất từ nhánh master..."
+info "Đang fetch code mới nhất từ GitHub..."
+git fetch origin master
 
-# Kiểm tra xem có thay đổi chưa commit trên VPS không (đề phòng Hermes Agent sửa chưa commit)
-if [ -n "$(git status --porcelain)" ]; then
-    info "Phát hiện có thay đổi chưa commit trên VPS. Đang tự động commit để tránh xung đột..."
-    git add .
-    git commit -m "chore: auto commit local changes on VPS before pull" || true
-fi
-
-# Pull code
-git pull origin master
+info "Đang reset cứng mã nguồn VPS về origin/master..."
+git reset --hard origin/master
 
 success "Cập nhật mã nguồn thành công."
 
