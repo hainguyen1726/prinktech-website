@@ -2,6 +2,7 @@
  * 🛠️ SCRIPT KIỂM TRA & TỰ ĐỘNG SỬA LỖI (LINT, TYPE CHECK & BUILD)
  * Chạy được trên cả Local (Windows) và VPS (Linux)
  */
+// Updated zero-downtime deploy workflow
 
 const { execSync } = require('child_process');
 const path = require('path');
