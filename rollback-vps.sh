@@ -138,7 +138,8 @@ if [ -n "$FOUND_CADDYFILE" ]; then
         sed -i 's/reverse_proxy prinktech-website-green:3000/reverse_proxy prinktech-website-blue:3000/g' "$FOUND_CADDYFILE"
     fi
     
-    docker exec n8n-caddy-1 caddy reload --config /etc/caddy/Caddyfile 2>/dev/null || true
+    docker exec -i n8n-caddy-1 sh -c 'cat > /etc/caddy/Caddyfile' < "$FOUND_CADDYFILE"
+    docker exec n8n-caddy-1 caddy reload --config /etc/caddy/Caddyfile
     success "Caddy reload thành công!"
 fi
 

@@ -171,7 +171,8 @@ if [ -n "$FOUND_CADDYFILE" ]; then
     # Reload Caddy container
     if docker ps | grep -q "n8n-caddy-1"; then
         info "Reloading Caddy container (n8n-caddy-1)..."
-        docker exec n8n-caddy-1 caddy reload --config /etc/caddy/Caddyfile 2>/dev/null || true
+        docker exec -i n8n-caddy-1 sh -c 'cat > /etc/caddy/Caddyfile' < "$FOUND_CADDYFILE"
+        docker exec n8n-caddy-1 caddy reload --config /etc/caddy/Caddyfile
         success "Caddy reload thành công! Cổng traffic mới: $TARGET_PORT."
     else
         warning "Không tìm thấy container n8n-caddy-1 để reload. Vui lòng reload caddy thủ công."
