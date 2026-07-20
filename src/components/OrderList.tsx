@@ -83,6 +83,43 @@ export default function OrderList() {
   const [totalOrders, setTotalOrders] = useState(0);
   const totalPages = Math.ceil(totalOrders / 20);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [selectedOrderIds, setSelectedOrderIds] = useState<Set<string>>(new Set());
+
+  const toggleSelectOrder = (id: string) => {
+    setSelectedOrderIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
+  const toggleSelectAllOnPage = () => {
+    const pageOrderIds = orders.map(o => o.id);
+    const allSelected = pageOrderIds.every(id => selectedOrderIds.has(id));
+    setSelectedOrderIds(prev => {
+      const next = new Set(prev);
+      if (allSelected) {
+        pageOrderIds.forEach(id => next.delete(id));
+      } else {
+        pageOrderIds.forEach(id => next.add(id));
+      }
+      return next;
+    });
+  };
+
+  useEffect(() => {
+    setSelectedOrderIds(new Set());
+  }, [orders]);
+
+  const selectedOrdersForStats = orders.filter(o => selectedOrderIds.has(o.id));
+  const totalMeters = selectedOrdersForStats.reduce((sum, o) => sum + (o.converted_length || 0), 0);
+  const totalSubtotal = selectedOrdersForStats.reduce((sum, o) => sum + (o.subtotal || 0), 0);
+  const totalShippingFee = selectedOrdersForStats.reduce((sum, o) => sum + (o.shipping_fee || 0), 0);
+  const totalPackagingFee = selectedOrdersForStats.reduce((sum, o) => sum + (o.packaging_fee || 0), 0);
 
   // Helper tính khoảng thời gian theo preset
   const calculateDateRange = (preset: string, fromVal: string, toVal: string) => {
@@ -1326,20 +1363,51 @@ export default function OrderList() {
               <>
                 {/* Mobile list view */}
                 <div className="block md:hidden space-y-3">
+                  <div className="flex items-center justify-between px-2 pb-1 text-xs">
+                    <label className="flex items-center gap-2 font-bold text-slate-700 dark:text-slate-300 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={orders.length > 0 && orders.every(o => selectedOrderIds.has(o.id))}
+                        onChange={toggleSelectAllOnPage}
+                        className="w-4 h-4 rounded border-slate-300 text-purple-650 accent-purple-650 cursor-pointer"
+                      />
+                      Chọn tất cả trên trang
+                    </label>
+                    {selectedOrderIds.size > 0 && (
+                      <button
+                        onClick={() => setSelectedOrderIds(new Set())}
+                        className="text-purple-650 dark:text-purple-400 font-extrabold hover:underline cursor-pointer"
+                      >
+                        Bỏ chọn tất cả ({selectedOrderIds.size})
+                      </button>
+                    )}
+                  </div>
+
                   {orders.map((order) => {
                     const status = ORDER_STATUS_LABELS[order.status] || { label: order.status, color: '' };
                     const isSelected = selectedOrder?.id === order.id;
+                    const isChecked = selectedOrderIds.has(order.id);
                     return (
                       <div
                         key={order.id}
                         onClick={() => setSelectedOrder(order)}
-                        className={`p-4 rounded-xl border transition-all cursor-pointer ${
+                        className={`p-4 rounded-xl border transition-all cursor-pointer relative ${
                           isSelected
                             ? 'bg-[var(--accent-glow)] border-[var(--accent)] font-semibold'
                             : 'bg-white border-card-border hover:bg-slate-50'
                         }`}
                       >
-                        <div className="flex justify-between items-start">
+                        <div className="flex gap-3 items-start">
+                          <div className="pt-1" onClick={(e) => e.stopPropagation()}>
+                            <input
+                              type="checkbox"
+                              checked={isChecked}
+                              onChange={() => toggleSelectOrder(order.id)}
+                              className="w-4.5 h-4.5 rounded border-slate-300 text-purple-650 focus:ring-purple-550 cursor-pointer accent-purple-650"
+                            />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex justify-between items-start">
                           <div>
                             <span className="font-mono font-bold text-xs text-[var(--accent)]">{order.order_number}</span>
                             <div className="mt-1">
@@ -1373,7 +1441,9 @@ export default function OrderList() {
                             <div className="font-extrabold text-slate-900 text-sm mt-2">{formatCurrency(order.total)}</div>
                           </div>
                         </div>
-                        <div className="flex justify-between items-center mt-3 pt-2 border-t border-card-border/50 text-[10px] text-text-muted">
+                        </div>
+                        </div>
+                        <div className="flex justify-between items-center mt-3 pt-2 border-t border-card-border/50 text-[10px] text-text-muted pl-7.5">
                           <span>{new Date(order.created_at).toLocaleDateString('vi-VN')}</span>
                           <button
                             onClick={(e) => {
@@ -1395,6 +1465,14 @@ export default function OrderList() {
                   <table className="w-full text-sm text-left">
                     <thead>
                       <tr className="border-b border-card-border text-xs uppercase tracking-wider text-text-muted">
+                        <th className="pb-3 pr-2 font-bold w-10 text-center">
+                          <input
+                            type="checkbox"
+                            checked={orders.length > 0 && orders.every(o => selectedOrderIds.has(o.id))}
+                            onChange={toggleSelectAllOnPage}
+                            className="w-4.5 h-4.5 rounded border-slate-300 text-purple-650 accent-purple-650 cursor-pointer"
+                          />
+                        </th>
                         <th className="pb-3 pr-2 font-bold">Mã đơn</th>
                         <th className="pb-3 font-bold">Khách hàng</th>
                         <th className="pb-3 text-right font-bold">Tổng tiền</th>
@@ -1405,6 +1483,7 @@ export default function OrderList() {
                     <tbody>
                       {orders.map((order, i) => {
                         const status = ORDER_STATUS_LABELS[order.status] || { label: order.status, color: '' };
+                        const isChecked = selectedOrderIds.has(order.id);
                         return (
                           <tr
                             key={order.id}
@@ -1412,6 +1491,14 @@ export default function OrderList() {
                             className={`border-b border-card-border/40 last:border-0 hover:bg-block-bg transition-colors cursor-pointer
                               ${selectedOrder?.id === order.id ? 'bg-[var(--accent-glow)] font-semibold' : i % 2 === 1 ? 'bg-block-bg/20' : ''}`}
                           >
+                            <td className="py-3.5 pr-2 text-center" onClick={(e) => e.stopPropagation()}>
+                              <input
+                                type="checkbox"
+                                checked={isChecked}
+                                onChange={() => toggleSelectOrder(order.id)}
+                                className="w-4.5 h-4.5 rounded border-slate-300 text-purple-650 focus:ring-purple-550 cursor-pointer accent-purple-650"
+                              />
+                            </td>
                             <td className="py-3.5 pr-2 font-mono font-bold">
                               <span className="text-[var(--accent)]">{order.order_number}</span>
                               <div className="mt-1">
@@ -1997,6 +2084,47 @@ export default function OrderList() {
               </button>
             </div>
           </div>
+        </div>
+      )}
+      {/* Floating Summary Bar */}
+      {selectedOrderIds.size > 0 && (
+        <div className="fixed bottom-6 left-4 right-4 md:left-[280px] z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border border-slate-200 dark:border-slate-800 shadow-2xl rounded-2xl p-4 md:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 animate-in slide-in-from-bottom duration-300">
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+            <div className="flex items-center gap-2">
+              <span className="h-2.5 w-2.5 rounded-full bg-purple-550 animate-pulse" />
+              <span className="text-sm font-bold text-slate-800 dark:text-slate-200">
+                Đang chọn: <strong className="text-purple-650 dark:text-purple-400 font-extrabold">{selectedOrderIds.size}</strong> đơn hàng
+              </span>
+            </div>
+            
+            <div className="h-4 w-px bg-slate-200 dark:bg-slate-800 hidden md:block" />
+
+            <div className="grid grid-cols-2 sm:flex sm:items-center gap-x-5 gap-y-1.5 text-xs md:text-sm">
+              <div className="flex items-center gap-1.5">
+                <span className="text-slate-500 dark:text-slate-400 font-medium">Tổng số m:</span>
+                <span className="font-extrabold text-slate-900 dark:text-white font-mono">{totalMeters.toLocaleString('vi-VN')} m</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="text-slate-500 dark:text-slate-400 font-medium">Tiền in:</span>
+                <span className="font-extrabold text-emerald-600 dark:text-emerald-450 font-mono">{formatCurrency(totalSubtotal)}</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="text-slate-500 dark:text-slate-400 font-medium">Tiền ship:</span>
+                <span className="font-extrabold text-blue-600 dark:text-blue-450 font-mono">{formatCurrency(totalShippingFee)}</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="text-slate-500 dark:text-slate-400 font-medium">Đóng gói:</span>
+                <span className="font-extrabold text-orange-600 dark:text-orange-450 font-mono">{formatCurrency(totalPackagingFee)}</span>
+              </div>
+            </div>
+          </div>
+
+          <button
+            onClick={() => setSelectedOrderIds(new Set())}
+            className="px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs rounded-xl shadow-sm transition-all cursor-pointer self-end md:self-auto text-center"
+          >
+            Hủy chọn
+          </button>
         </div>
       )}
       </div>
