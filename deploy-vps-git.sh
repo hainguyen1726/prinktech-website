@@ -1,11 +1,10 @@
 #!/bin/bash
-# 🚀 SYSTEM DEPLOYMENT SCRIPT VIA GIT FOR PRINK TECH WEBSITE
+# 🚀 SYSTEM DEPLOYMENT SCRIPT VIA GIT FOR PRINK TECH WEBSITE (ZERO-DOWNTIME BLUE-GREEN)
 # Chạy trực tiếp trên VPS: bash /srv/website-prinktech/deploy-vps-git.sh
 
 set -e
 
 APP_DIR="/srv/website-prinktech"
-CONTAINER_NAME="prinktech-website"
 LOCKFILE="/tmp/prinktech-deploy.lock"
 
 # Prevent concurrent deployments
@@ -19,7 +18,6 @@ fi
 echo $$ > "$LOCKFILE"
 trap 'rm -f "$LOCKFILE"' EXIT
 
-
 # Colors
 GREEN='\033[0;32m'
 BLUE='\033[0;34m'
@@ -30,6 +28,7 @@ NC='\033[0m'
 
 function info() { echo -e "${CYAN}ℹ️  $1${NC}"; }
 function success() { echo -e "${GREEN}✅ $1${NC}"; }
+function warning() { echo -e "${YELLOW}⚠️  $1${NC}"; }
 function step() { 
     echo ""
     echo -e "${BLUE}════════════════════════════════════${NC}"
@@ -53,47 +52,71 @@ git reset --hard origin/master
 success "Cập nhật mã nguồn thành công."
 
 # ============================================
-# 2. CÀI ĐẶT THƯ VIỆN & BUILD NEXT.JS
+# 2. XÁC ĐỊNH TRẠNG THÁI BLUE-GREEN HIỆN TẠI
 # ============================================
-step "2️⃣  CÀI ĐẶT & BUILD NEXT.JS"
+step "2️⃣  XÁC ĐỊNH TARGET DEPLOYMENT (BLUE-GREEN)"
 
-info "Đang cài đặt node_modules..."
-npm install --include=dev --no-audit --no-fund --legacy-peer-deps
+# Kiểm tra xem container blue có đang chạy không
+BLUE_RUNNING=$(docker ps --filter "name=prinktech-website-blue" --filter "status=running" -q | wc -l)
+GREEN_RUNNING=$(docker ps --filter "name=prinktech-website-green" --filter "status=running" -q | wc -l)
 
-info "Đang dọn dẹp cache Next.js cũ (.next)..."
-rm -rf .next
-
-info "Đang build Next.js (chế độ Production)..."
-export NODE_ENV=production
-export NODE_OPTIONS="--max-old-space-size=4096"
-export NEXT_TELEMETRY_DISABLED=1
-npm run build
-
-if [ ! -f ".next/BUILD_ID" ]; then
-    error "Build Next.js thất bại (không xuất hiện thư mục .next/BUILD_ID)"
-fi
-
-success "Build Next.js thành công (Build ID: $(cat .next/BUILD_ID))."
-
-# ============================================
-# 3. RESTART CONTAINER (ZERO-DOWNTIME)
-# ============================================
-step "3️⃣  KHỞI CHẠY CONTAINER (ZERO-DOWNTIME)"
-
-info "Đang khởi động lại container bằng docker compose..."
-docker compose up -d --force-recreate
-
-sleep 3
-
-if docker ps | grep -q "$CONTAINER_NAME"; then
-    success "Container $CONTAINER_NAME đang chạy ở cổng 3019."
+if [ "$BLUE_RUNNING" -gt 0 ]; then
+    info "Phát hiện container BLUE đang chạy. Target deployment sẽ là GREEN."
+    TARGET_COLOR="green"
+    TARGET_SERVICE="web-green"
+    TARGET_CONTAINER="prinktech-website-green"
+    TARGET_PORT=3020
+    
+    OLD_COLOR="blue"
+    OLD_SERVICE="web-blue"
+    OLD_CONTAINER="prinktech-website-blue"
 else
-    error "Container docker compose không thể khởi chạy!"
+    info "Phát hiện container GREEN đang chạy hoặc chưa chạy container nào. Target deployment sẽ là BLUE."
+    TARGET_COLOR="blue"
+    TARGET_SERVICE="web-blue"
+    TARGET_CONTAINER="prinktech-website-blue"
+    TARGET_PORT=3019
+    
+    OLD_COLOR="green"
+    OLD_SERVICE="web-green"
+    OLD_CONTAINER="prinktech-website-green"
 fi
+
 # ============================================
-# 4. TỰ ĐỘNG CẬP NHẬT REVERSE PROXY CADDY
+# 3. BUILD & UP CONTAINER TARGET (KHÉP KÍN TRONG DOCKER)
 # ============================================
-step "4️⃣  CẤU HÌNH DOMAIN TRÊN CADDY"
+step "3️⃣  BUILD & UP CONTAINER MỚI ($TARGET_COLOR)"
+
+info "Đang build và khởi chạy dịch vụ $TARGET_SERVICE..."
+docker compose up -d --build "$TARGET_SERVICE"
+
+# ============================================
+# 4. KIỂM TRA SỨC KHỎE (HEALTH CHECK) CONTAINER MỚI
+# ============================================
+step "4️⃣  KIỂM TRA SỨC KHỎE (HEALTH CHECK)"
+
+info "Đang chờ container $TARGET_CONTAINER khởi động trên cổng $TARGET_PORT..."
+HEALTHY=false
+for i in {1..20}; do
+    if curl -s "http://localhost:$TARGET_PORT" > /dev/null; then
+        success "Container $TARGET_CONTAINER đã sẵn sàng và phản hồi thành công!"
+        HEALTHY=true
+        break
+    fi
+    info "Chờ container khởi động (lần $i/20)..."
+    sleep 3
+done
+
+if [ "$HEALTHY" = false ]; then
+    warning "Container mới khởi động thất bại hoặc không phản hồi. Tiến hành Rollback (giữ nguyên container cũ)."
+    docker compose stop "$TARGET_SERVICE" || true
+    error "Deploy thất bại. Container cũ ($OLD_CONTAINER) vẫn hoạt động an toàn."
+fi
+
+# ============================================
+# 5. SWAP PROXY TRÊN CADDY & RELOAD
+# ============================================
+step "5️⃣  CẬP NHẬT REVERSE PROXY CADDY (ZERO-DOWNTIME SWAP)"
 
 CADDYFILE_PATHS=(
     "/home/n8n/Caddyfile"
@@ -114,25 +137,42 @@ done
 if [ -n "$FOUND_CADDYFILE" ]; then
     info "Tìm thấy Caddyfile tại: $FOUND_CADDYFILE"
     
-    # Kiểm tra xem domain đã cấu hình chưa
-    if grep -q "prinktech.netslive.com" "$FOUND_CADDYFILE"; then
-        info "Cấu hình domain prinktech.netslive.com đã có sẵn trong Caddyfile."
+    # Thực hiện swap cấu hình proxy trong Caddyfile
+    if [ "$TARGET_COLOR" = "green" ]; then
+        # Đổi blue -> green, hoặc prinktech-website -> green (nếu là lần đầu nâng cấp)
+        sed -i 's/reverse_proxy prinktech-website-blue:3000/reverse_proxy prinktech-website-green:3000/g' "$FOUND_CADDYFILE"
+        sed -i 's/reverse_proxy prinktech-website:3000/reverse_proxy prinktech-website-green:3000/g' "$FOUND_CADDYFILE"
     else
-        info "Đang thêm cấu hình domain prinktech.netslive.com vào Caddyfile..."
-        echo -e "\nprinktech.netslive.com {\n    reverse_proxy prinktech-website:3000\n}" >> "$FOUND_CADDYFILE"
-        success "Đã thêm cấu hình domain."
+        # Đổi green -> blue
+        sed -i 's/reverse_proxy prinktech-website-green:3000/reverse_proxy prinktech-website-blue:3000/g' "$FOUND_CADDYFILE"
+        sed -i 's/reverse_proxy prinktech-website:3000/reverse_proxy prinktech-website-blue:3000/g' "$FOUND_CADDYFILE"
     fi
     
     # Reload Caddy container
     if docker ps | grep -q "n8n-caddy-1"; then
         info "Reloading Caddy container (n8n-caddy-1)..."
         docker exec n8n-caddy-1 caddy reload --config /etc/caddy/Caddyfile 2>/dev/null || true
-        success "Caddy reloaded thành công."
+        success "Caddy reload thành công! Cổng traffic mới: $TARGET_PORT."
     else
-        info "Không tìm thấy container n8n-caddy-1 (bỏ qua reload)."
+        warning "Không tìm thấy container n8n-caddy-1 để reload. Vui lòng reload caddy thủ công."
     fi
 else
-    info "Cảnh báo: Không tìm thấy Caddyfile trên VPS. Vui lòng tự cấu hình trỏ prinktech.netslive.com về container prinktech-website:3000."
+    warning "Không tìm thấy Caddyfile trên VPS. Vui lòng tự cấu hình trỏ domain về container $TARGET_CONTAINER:3000."
+fi
+
+# ============================================
+# 6. DỪNG CONTAINER CŨ
+# ============================================
+step "6️⃣  DỪNG CONTAINER CŨ ĐỂ GIẢI PHÓNG TÀI NGUYÊN"
+
+# Chỉ dừng container cũ nếu trước đó nó thực sự đang chạy
+OLD_RUNNING=$(docker ps --filter "name=$OLD_CONTAINER" --filter "status=running" -q | wc -l)
+if [ "$OLD_RUNNING" -gt 0 ]; then
+    info "Đang dừng container cũ ($OLD_CONTAINER)..."
+    docker compose stop "$OLD_SERVICE"
+    success "Đã dừng container cũ thành công."
+else
+    info "Không có container cũ nào đang hoạt động."
 fi
 
 echo ""
@@ -141,5 +181,6 @@ echo -e "${GREEN}║   ✅ DEPLOY WEBSITE THÀNH CÔNG!   ║${NC}"
 echo -e "${GREEN}╚════════════════════════════════════╝${NC}"
 echo ""
 echo "  🌐 Domain: https://prinktech.netslive.com"
-echo "  📂 Container: $CONTAINER_NAME (Cổng 3019)"
+echo "  📂 Container Active: $TARGET_CONTAINER (Cổng $TARGET_PORT)"
+echo "  ⚡ Trạng thái: ZERO-DOWNTIME DEPLOYED"
 echo ""
