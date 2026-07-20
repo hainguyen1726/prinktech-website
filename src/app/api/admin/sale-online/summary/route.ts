@@ -106,6 +106,7 @@ interface NormalizedOrder {
   shipping: number;      // Phí ship
   has_vat: boolean;
   order_count: number;
+  meters: number;        // Số mét in
 }
 
 async function fetchRevenues(from: string, to: string): Promise<NormalizedOrder[]> {
@@ -116,7 +117,7 @@ async function fetchRevenues(from: string, to: string): Promise<NormalizedOrder[
   const [retailRes, ordersRes] = await Promise.all([
     printingSupabase
       .from('retail_orders')
-      .select('id, created_at, source, total, subtotal, shipping_fee, request_vat, status')
+      .select('id, created_at, source, total, subtotal, shipping_fee, request_vat, status, converted_length')
       .gte('created_at', fromTs)
       .lte('created_at', toTs)
       .neq('status', 'cancelled'),
@@ -125,7 +126,7 @@ async function fetchRevenues(from: string, to: string): Promise<NormalizedOrder[
     // Chỉ lấy đơn có tag 'prinktech' (Sale Online) hoặc partner_type = 'standard'
     printingSupabase
       .from('orders')
-      .select('id, created_at, tags, total_amount, shipping_cost, discount_amount, status, partners(partner_type)')
+      .select('id, created_at, tags, total_amount, shipping_cost, discount_amount, status, quantity_actual, quantity_expected, partners(partner_type)')
       .gte('created_at', fromTs)
       .lte('created_at', toTs)
       .neq('status', 'cancelled'),
@@ -143,6 +144,7 @@ async function fetchRevenues(from: string, to: string): Promise<NormalizedOrder[
       shipping: Number(o.shipping_fee) || 0,
       has_vat: Boolean(o.request_vat),
       order_count: 1,
+      meters: Number(o.converted_length) || 0,
     });
   }
 
@@ -159,6 +161,7 @@ async function fetchRevenues(from: string, to: string): Promise<NormalizedOrder[
     const total = subtotal + shipping - discount;
     const has_vat = tags.some((t: string) => t.toLowerCase().includes('vat'));
     const channel = channelFromTags(tags);
+    const meters = Number(o.quantity_actual) || Number(o.quantity_expected) || 0;
 
     result.push({
       date: o.created_at.slice(0, 10),
@@ -168,6 +171,7 @@ async function fetchRevenues(from: string, to: string): Promise<NormalizedOrder[
       shipping,
       has_vat,
       order_count: 1,
+      meters,
     });
   }
 
@@ -216,6 +220,7 @@ export async function GET(req: NextRequest) {
   const totalExpenses = filteredExpenses.reduce((s: number, e: any) => s + Number(e.amount), 0);
   const totalProfit = totalRevenue - totalExpenses;
   const totalOrders = filteredRevenues.reduce((s, r) => s + r.order_count, 0);
+  const totalMeters = filteredRevenues.reduce((s, r) => s + r.meters, 0);
   const avgRevPerOrder = totalOrders > 0 ? Math.round(totalRevenue / totalOrders) : 0;
   const profitMargin = totalRevenue > 0 ? Math.round((totalProfit / totalRevenue) * 1000) / 10 : 0;
 
@@ -224,6 +229,7 @@ export async function GET(req: NextRequest) {
   const prevTotalExpenses = filteredPrevExpenses.reduce((s: number, e: any) => s + Number(e.amount), 0);
   const prevTotalProfit = prevTotalRevenue - prevTotalExpenses;
   const prevTotalOrders = filteredPrevRevenues.reduce((s, r) => s + r.order_count, 0);
+  const prevTotalMeters = filteredPrevRevenues.reduce((s, r) => s + r.meters, 0);
   const prevAvgRevPerOrder = prevTotalOrders > 0 ? Math.round(prevTotalRevenue / prevTotalOrders) : 0;
   const prevProfitMargin = prevTotalRevenue > 0 ? Math.round((prevTotalProfit / prevTotalRevenue) * 1000) / 10 : 0;
 
@@ -279,6 +285,7 @@ export async function GET(req: NextRequest) {
       expenses: { value: totalExpenses, prev: prevTotalExpenses, pct: pct(totalExpenses, prevTotalExpenses) },
       profit: { value: totalProfit, prev: prevTotalProfit, pct: pct(totalProfit, prevTotalProfit) },
       orders: { value: totalOrders, prev: prevTotalOrders, pct: pct(totalOrders, prevTotalOrders) },
+      meters: { value: totalMeters, prev: prevTotalMeters, pct: pct(totalMeters, prevTotalMeters) },
       avgRevPerOrder: { value: avgRevPerOrder, prev: prevAvgRevPerOrder, pct: pct(avgRevPerOrder, prevAvgRevPerOrder) },
       profitMargin: { value: profitMargin, prev: prevProfitMargin, pct: pct(profitMargin, prevProfitMargin) },
     },

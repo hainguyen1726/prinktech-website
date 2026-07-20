@@ -4,7 +4,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import {
   TrendingUp, TrendingDown, Minus,
   DollarSign, ShoppingCart, BarChart2, Percent,
-  Package, RefreshCw, AlertCircle, Check, X, Info
+  Package, RefreshCw, AlertCircle, Check, X, Info,
+  Ruler
 } from 'lucide-react';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -14,7 +15,7 @@ interface ChannelBreakdown { channel: string; value: number; orders?: number; }
 interface CategoryBreakdown { category: string; value: number; }
 interface SummaryData {
   period: { from: string; to: string };
-  kpis: { revenue: KPI; expenses: KPI; profit: KPI; orders: KPI; avgRevPerOrder: KPI; profitMargin: KPI; };
+  kpis: { revenue: KPI; expenses: KPI; profit: KPI; orders: KPI; avgRevPerOrder: KPI; profitMargin: KPI; meters: KPI; };
   breakdown: {
     revenueByChannel: ChannelBreakdown[];
     vatRevenue: number; nonVatRevenue: number; shippingRevenue: number;
@@ -87,10 +88,11 @@ function Toast({ msg, type, onClose }: { msg: string; type: 'success' | 'error';
 // KPI Card
 function KPICard({ label, value, pct, icon, format = 'currency', color }: {
   label: string; value: number; pct: number | null;
-  icon: React.ReactNode; format?: 'currency' | 'count' | 'percent'; color: string;
+  icon: React.ReactNode; format?: 'currency' | 'count' | 'percent' | 'meters'; color: string;
 }) {
   const displayVal = format === 'currency' ? fmt(value) + 'đ'
     : format === 'percent' ? value.toFixed(1) + '%'
+    : format === 'meters' ? value.toLocaleString('vi-VN') + ' m'
     : value.toLocaleString('vi-VN');
 
   const trend = pct === null ? null : pct > 0 ? 'up' : pct < 0 ? 'down' : 'flat';
@@ -350,11 +352,12 @@ export default function SaleOnlinePage() {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-7 gap-3">
         <KPICard label="Doanh thu" value={kpis?.revenue.value || 0} pct={kpis?.revenue.pct ?? null} icon={<DollarSign size={17} />} color="#10b981" />
         <KPICard label="Chi phí" value={kpis?.expenses.value || 0} pct={kpis?.expenses.pct ?? null} icon={<TrendingDown size={17} />} color="#ef4444" />
         <KPICard label="Lợi nhuận" value={kpis?.profit.value || 0} pct={kpis?.profit.pct ?? null} icon={<BarChart2 size={17} />} color="#6366f1" />
         <KPICard label="Số đơn" value={kpis?.orders.value || 0} pct={kpis?.orders.pct ?? null} icon={<ShoppingCart size={17} />} format="count" color="#f59e0b" />
+        <KPICard label="Số m in" value={kpis?.meters?.value || 0} pct={kpis?.meters?.pct ?? null} icon={<Ruler size={17} />} format="meters" color="#f97316" />
         <KPICard label="TB/đơn" value={kpis?.avgRevPerOrder.value || 0} pct={kpis?.avgRevPerOrder.pct ?? null} icon={<Package size={17} />} color="#8b5cf6" />
         <KPICard label="Biên lợi nhuận" value={kpis?.profitMargin.value || 0} pct={kpis?.profitMargin.pct ?? null} icon={<Percent size={17} />} format="percent" color="#0ea5e9" />
       </div>
