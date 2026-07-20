@@ -15,6 +15,8 @@ services:
         - NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY}
     ports:
       - "3019:3000"
+    volumes:
+      - ./src/data:/app/src/data
     env_file:
       - .env
     environment:
@@ -36,6 +38,8 @@ services:
         - NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY}
     ports:
       - "3021:3000"
+    volumes:
+      - ./src/data:/app/src/data
     env_file:
       - .env
     environment:
