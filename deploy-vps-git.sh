@@ -68,7 +68,7 @@ if [ "$BLUE_RUNNING" -gt 0 ]; then
     TARGET_COLOR="green"
     TARGET_SERVICE="web-green"
     TARGET_CONTAINER="prinktech-website-green"
-    TARGET_PORT=3020
+    TARGET_PORT=3021
     
     OLD_COLOR="blue"
     OLD_SERVICE="web-blue"
@@ -99,6 +99,9 @@ info "Đang build Docker image cho tag $GIT_COMMIT và khởi chạy dịch vụ
 # Thiết lập biến env cho docker-compose build
 export GIT_COMMIT_HASH="$GIT_COMMIT"
 docker compose build --build-arg NEXT_PUBLIC_SUPABASE_URL="$(grep NEXT_PUBLIC_SUPABASE_URL .env | cut -d '=' -f2)" --build-arg NEXT_PUBLIC_SUPABASE_ANON_KEY="$(grep NEXT_PUBLIC_SUPABASE_ANON_KEY .env | cut -d '=' -f2)" "$TARGET_SERVICE"
+
+# Xóa container target cũ (nếu có) để tránh xung đột tên container
+docker rm -f "$TARGET_CONTAINER" 2>/dev/null || true
 docker compose up -d "$TARGET_SERVICE"
 
 # Gán thêm tag cụ thể theo Git Commit cho Docker Image vừa build để lưu lịch sử phiên bản

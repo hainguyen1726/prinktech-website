@@ -68,7 +68,7 @@ if [ "$BLUE_RUNNING" -gt 0 ]; then
     TARGET_COLOR="green"
     TARGET_SERVICE="web-green"
     TARGET_CONTAINER="prinktech-website-green"
-    TARGET_PORT=3020
+    TARGET_PORT=3021
     
     OLD_COLOR="blue"
     OLD_SERVICE="web-blue"
@@ -95,6 +95,7 @@ sed -i '/NEXT_PUBLIC_APP_VERSION/d' .env || true
 echo "NEXT_PUBLIC_APP_VERSION=$ROLLBACK_VERSION" >> .env
 
 # Khởi chạy container target
+docker rm -f "$TARGET_CONTAINER" 2>/dev/null || true
 docker compose up -d "$TARGET_SERVICE"
 
 # 5. Kiểm tra sức khỏe
