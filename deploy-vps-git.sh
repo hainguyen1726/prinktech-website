@@ -49,7 +49,10 @@ git fetch origin master
 info "Đang reset cứng mã nguồn VPS về origin/master..."
 git reset --hard origin/master
 
-success "Cập nhật mã nguồn thành công."
+# Lấy Git Commit Hash và message mới nhất
+GIT_COMMIT=$(git rev-parse --short HEAD)
+COMMIT_MSG=$(git log -1 --pretty=%B | head -n 1)
+success "Cập nhật mã nguồn thành công. Phiên bản hiện tại: $GIT_COMMIT ($COMMIT_MSG)"
 
 # ============================================
 # 2. XÁC ĐỊNH TRẠNG THÁI BLUE-GREEN HIỆN TẠI
@@ -87,8 +90,19 @@ fi
 # ============================================
 step "3️⃣  BUILD & UP CONTAINER MỚI ($TARGET_COLOR)"
 
-info "Đang build và khởi chạy dịch vụ $TARGET_SERVICE..."
-docker compose up -d --build "$TARGET_SERVICE"
+info "Đang thiết lập biến môi trường phiên bản Git cho build stage..."
+# Ghi biến env phiên bản vào file .env trên VPS để Next.js nhận diện
+sed -i '/NEXT_PUBLIC_APP_VERSION/d' .env || true
+echo "NEXT_PUBLIC_APP_VERSION=$GIT_COMMIT" >> .env
+
+info "Đang build Docker image cho tag $GIT_COMMIT và khởi chạy dịch vụ $TARGET_SERVICE..."
+# Thiết lập biến env cho docker-compose build
+export GIT_COMMIT_HASH="$GIT_COMMIT"
+docker compose build --build-arg NEXT_PUBLIC_SUPABASE_URL="$(grep NEXT_PUBLIC_SUPABASE_URL .env | cut -d '=' -f2)" --build-arg NEXT_PUBLIC_SUPABASE_ANON_KEY="$(grep NEXT_PUBLIC_SUPABASE_ANON_KEY .env | cut -d '=' -f2)" "$TARGET_SERVICE"
+docker compose up -d "$TARGET_SERVICE"
+
+# Gán thêm tag cụ thể theo Git Commit cho Docker Image vừa build để lưu lịch sử phiên bản
+docker tag prinktech-website-web-$TARGET_COLOR:latest prinktech-website:$GIT_COMMIT || true
 
 # ============================================
 # 4. KIỂM TRA SỨC KHỎE (HEALTH CHECK) CONTAINER MỚI
@@ -108,8 +122,13 @@ for i in {1..20}; do
 done
 
 if [ "$HEALTHY" = false ]; then
-    warning "Container mới khởi động thất bại hoặc không phản hồi. Tiến hành Rollback (giữ nguyên container cũ)."
+    warning "Container mới khởi động thất bại hoặc không phản hồi. Tiến hành Rollback tự động (giữ nguyên container cũ)."
     docker compose stop "$TARGET_SERVICE" || true
+    
+    # Ghi nhận sự kiện lỗi vào log history
+    DEPLOY_DATE=$(date "+%Y-%m-%d %H:%M:%S")
+    echo "[$DEPLOY_DATE] FAILED: Attempted deploy version $GIT_COMMIT to $TARGET_COLOR failed healthcheck. Automatically rolled back to $OLD_CONTAINER." >> deploy_history.log
+    
     error "Deploy thất bại. Container cũ ($OLD_CONTAINER) vẫn hoạt động an toàn."
 fi
 
@@ -139,11 +158,9 @@ if [ -n "$FOUND_CADDYFILE" ]; then
     
     # Thực hiện swap cấu hình proxy trong Caddyfile
     if [ "$TARGET_COLOR" = "green" ]; then
-        # Đổi blue -> green, hoặc prinktech-website -> green (nếu là lần đầu nâng cấp)
         sed -i 's/reverse_proxy prinktech-website-blue:3000/reverse_proxy prinktech-website-green:3000/g' "$FOUND_CADDYFILE"
         sed -i 's/reverse_proxy prinktech-website:3000/reverse_proxy prinktech-website-green:3000/g' "$FOUND_CADDYFILE"
     else
-        # Đổi green -> blue
         sed -i 's/reverse_proxy prinktech-website-green:3000/reverse_proxy prinktech-website-blue:3000/g' "$FOUND_CADDYFILE"
         sed -i 's/reverse_proxy prinktech-website:3000/reverse_proxy prinktech-website-blue:3000/g' "$FOUND_CADDYFILE"
     fi
@@ -174,6 +191,10 @@ if [ "$OLD_RUNNING" -gt 0 ]; then
 else
     info "Không có container cũ nào đang hoạt động."
 fi
+
+# Ghi nhận deploy thành công vào lịch sử
+DEPLOY_DATE=$(date "+%Y-%m-%d %H:%M:%S")
+echo "[$DEPLOY_DATE] SUCCESS: Deployed version $GIT_COMMIT ($COMMIT_MSG) to $TARGET_COLOR. Active port: $TARGET_PORT." >> deploy_history.log
 
 echo ""
 echo -e "${GREEN}╔════════════════════════════════════╗${NC}"
