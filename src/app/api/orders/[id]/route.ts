@@ -185,7 +185,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     }
 
     // 6. Xây dựng lại ghi chú hợp lệ
-    let updatedNote = customer_note !== undefined ? (customer_note || '') : (oldOrder.customer_note || oldOrder.note || '');
+    const updatedNote = customer_note !== undefined ? (customer_note || '') : (oldOrder.customer_note || oldOrder.note || '');
 
     // Bảo lưu thông tin link Excel/PDF cũ nếu có
     const excelMatch = oldOrder.note?.match(/- Excel Báo giá:\s*(https?:\/\/[^\s\n]+)/);
@@ -194,7 +194,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     const pdfUrl = pdfMatch ? pdfMatch[1] : null;
 
     // Loại bỏ các dòng cũ để ghi đè sạch sẽ
-    let cleanNoteLines = updatedNote
+    const cleanNoteLines = updatedNote
       .split('\n')
       .filter((line: string) =>
         !line.trim().startsWith('- Excel Báo giá:') &&
