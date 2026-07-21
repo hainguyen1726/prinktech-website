@@ -263,12 +263,12 @@ export default function OrderList() {
   const [selectedCustomerId, setSelectedCustomerId] = useState('');
   const [newCustomer, setNewCustomer] = useState({ name: '', phone: '', address: '', email: '' });
   const [createFormData, setCreateFormData] = useState({
-    product_type: 'cuon',
-    product_label: 'In cuộn mét dài (Khổ 60cm)',
-    size_label: 'Khổ 60cm',
-    quantity: 200,
-    meters: 1.0,
-    rate_excl_vat: 160000,
+    product_type: 'other',
+    product_label: 'In tem UV DTF tùy chỉnh',
+    size_label: 'cái',
+    quantity: 100,
+    meters: 0,
+    rate_excl_vat: 2000,
     shipping_fee: 30000,
     design_link: '',
     note: '',
@@ -467,11 +467,11 @@ export default function OrderList() {
       setSubmittingForm(true);
       try {
         const items = adminDesigns.map(d => {
-          const hasM = createFormData.product_type === 'cuon';
-          const qty = parseInt(d.quantity) || createFormData.quantity;
-          const met = hasM ? (parseFloat(d.meters) || createFormData.meters) : undefined;
-          const rate = parseInt(d.rate_excl_vat) || createFormData.rate_excl_vat;
-          const sub = met ? met * rate : qty * rate;
+          const isRoll = createFormData.product_type === 'cuon';
+          const qty = Number(d.quantity) > 0 ? Number(d.quantity) : (Number(createFormData.quantity) || 1);
+          const met = isRoll ? (Number(d.meters) > 0 ? Number(d.meters) : (Number(createFormData.meters) || 1)) : undefined;
+          const rate = Number(d.rate_excl_vat) > 0 ? Number(d.rate_excl_vat) : (Number(createFormData.rate_excl_vat) || 0);
+          const sub = isRoll && met ? Math.round(met * rate) : Math.round(qty * rate);
           
           return {
             product_type: createFormData.product_type,
@@ -1004,14 +1004,39 @@ export default function OrderList() {
                     {/* Quản lý nhiều mẫu thiết kế */}
                     <div className="space-y-2">
                       <div className="flex justify-between items-center">
-                        <label className="block text-xs font-bold text-slate-600">Mẫu thiết kế (Có thể thêm nhiều mẫu)</label>
-                        <button
-                          type="button"
-                          onClick={() => setAdminDesigns([...adminDesigns, { name: '', quantity: createFormData.quantity, meters: createFormData.product_type === 'cuon' ? createFormData.meters : undefined, rate_excl_vat: createFormData.rate_excl_vat, url: '' }])}
-                          className="text-[11px] text-purple-600 hover:underline font-bold"
-                        >
-                          + Thêm mẫu
-                        </button>
+                        <label className="block text-xs font-bold text-slate-600">Mẫu thiết kế (Có thể thêm từ Kho Mẫu)</label>
+                        <div className="flex items-center gap-2">
+                          <CustomerDesignSelector
+                            partnerId={selectedCustomerId || undefined}
+                            partnerPhone={customerTab === 'existing' ? customersList.find(c => c.id === selectedCustomerId)?.phone : newCustomer.phone}
+                            customerName={customerTab === 'existing' ? customersList.find(c => c.id === selectedCustomerId)?.name : newCustomer.name}
+                            buttonText="🎨 Chọn từ Kho Mẫu"
+                            onSelectDesign={(design: CustomerDesign) => {
+                              const cleanPrice = Number(design.unit_price) > 0 ? Number(design.unit_price) : (Number(createFormData.rate_excl_vat) || 2000);
+                              setAdminDesigns(prev => [
+                                ...prev,
+                                {
+                                  name: design.name,
+                                  size_label: design.size_label || 'Tem lẻ',
+                                  quantity: createFormData.quantity || 100,
+                                  rate_excl_vat: cleanPrice,
+                                  url: design.file_url || '',
+                                  note: design.note || ''
+                                }
+                              ]);
+                              if (design.file_url && !createFormData.design_link) {
+                                setCreateFormData(p => ({ ...p, design_link: design.file_url || '' }));
+                              }
+                            }}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setAdminDesigns([...adminDesigns, { name: '', quantity: createFormData.quantity, rate_excl_vat: createFormData.rate_excl_vat, url: '' }])}
+                            className="text-[11px] text-purple-600 hover:underline font-bold"
+                          >
+                            + Thêm mẫu
+                          </button>
+                        </div>
                       </div>
 
                       {adminDesigns.length === 0 ? (

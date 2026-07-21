@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Search, Plus, FileText, Image as ImageIcon, ExternalLink, Check, Trash2, X, Edit2, Upload, ChevronLeft, ChevronRight, Globe, User } from 'lucide-react';
+import { Search, Plus, FileText, Image as ImageIcon, ExternalLink, Check, Trash2, X, Edit2, Upload, ChevronLeft, ChevronRight, Globe, User, Loader2 } from 'lucide-react';
 
 export type CustomerDesign = {
   id: string;
@@ -62,7 +62,17 @@ export default function CustomerDesignSelector({
   const [newDesignPrice, setNewDesignPrice] = useState('');
   const [newDesignFileUrl, setNewDesignFileUrl] = useState('');
   const [newDesignNote, setNewDesignNote] = useState('');
+  const [newDesignCustName, setNewDesignCustName] = useState('');
+  const [newDesignCustPhone, setNewDesignCustPhone] = useState('');
+  const [uploadingFile, setUploadingFile] = useState(false);
+  const [uploadedFileName, setUploadedFileName] = useState('');
   const [submittingNew, setSubmittingNew] = useState(false);
+
+  // Đồng bộ customerName / partnerPhone khi mở modal
+  useEffect(() => {
+    if (customerName) setNewDesignCustName(customerName);
+    if (partnerPhone) setNewDesignCustPhone(partnerPhone);
+  }, [customerName, partnerPhone]);
 
   const fetchDesigns = useCallback(async () => {
     if (!isOpen) return;
@@ -91,9 +101,58 @@ export default function CustomerDesignSelector({
     fetchDesigns();
   }, [fetchDesigns]);
 
+  // Xử lý upload file và tự động đổi tên file
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!newDesignName.trim()) {
+      alert('Vui lòng nhập "Tên mẫu tem" trước khi chọn tệp để hệ thống tự động đổi tên file!');
+      return;
+    }
+
+    setUploadingFile(true);
+    try {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = async () => {
+        const base64Str = (reader.result as string).split(',')[1];
+        
+        const res = await fetch('/api/admin/customer-designs/upload', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            customer_name: newDesignCustName || customerName || 'Khach_Hang',
+            design_name: newDesignName.trim(),
+            size_label: newDesignSize.trim(),
+            file_name: file.name,
+            file_data: base64Str,
+            mime_type: file.type
+          })
+        });
+
+        const json = await res.json();
+        if (json.success && json.file_url) {
+          setNewDesignFileUrl(json.file_url);
+          setUploadedFileName(json.renamed_filename || file.name);
+        } else {
+          alert(json.error || 'Upload file thất bại');
+        }
+        setUploadingFile(false);
+      };
+    } catch (err) {
+      console.error('Lỗi upload file:', err);
+      alert('Lỗi khi tải file lên');
+      setUploadingFile(false);
+    }
+  };
+
   const handleAddNewDesign = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!partnerId || !newDesignName.trim()) return;
+    if (!newDesignName.trim()) {
+      alert('Vui lòng nhập tên mẫu thiết kế!');
+      return;
+    }
 
     setSubmittingNew(true);
     try {
@@ -101,7 +160,9 @@ export default function CustomerDesignSelector({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          partner_id: partnerId,
+          partner_id: partnerId || null,
+          partner_phone: partnerPhone || newDesignCustPhone.trim() || null,
+          customer_name: customerName || newDesignCustName.trim() || null,
           name: newDesignName.trim(),
           size_label: newDesignSize.trim(),
           unit_price: Number(newDesignPrice) || 0,
@@ -119,9 +180,13 @@ export default function CustomerDesignSelector({
         setNewDesignPrice('');
         setNewDesignFileUrl('');
         setNewDesignNote('');
+        setUploadedFileName('');
+      } else {
+        alert(json.error || 'Lỗi khi thêm mẫu mới');
       }
     } catch (err) {
       console.error('Lỗi tạo mẫu thiết kế:', err);
+      alert('Lỗi hệ thống khi thêm mẫu mới');
     } finally {
       setSubmittingNew(false);
     }
@@ -165,7 +230,7 @@ export default function CustomerDesignSelector({
   };
 
   const handleSelect = (design: CustomerDesign) => {
-    const cleanPrice = Number(design.unit_price) || 0;
+    const cleanPrice = Number(design.unit_price) > 0 ? Number(design.unit_price) : 0;
     const sanitizedDesign = {
       ...design,
       unit_price: cleanPrice
@@ -210,7 +275,7 @@ export default function CustomerDesignSelector({
                   <span>🎨</span> Kho Mẫu Thiết Kế {customerName ? `— ${customerName}` : ''}
                 </h3>
                 <p className="text-xs text-text-muted mt-0.5">
-                  Tra cứu file thiết kế cũ, gắn link file AI/PDF và chèn trực tiếp vào lệnh in mới
+                  Tra cứu file thiết kế cũ, tải lên file AI/PDF tự động đổi tên và chèn trực tiếp vào lệnh in mới
                 </p>
               </div>
               <button
@@ -262,68 +327,110 @@ export default function CustomerDesignSelector({
                   />
                 </div>
 
-                {partnerId && (
-                  <button
-                    type="button"
-                    onClick={() => setShowAddNew(prev => !prev)}
-                    className="h-9 px-3 rounded-xl bg-[var(--accent)] hover:bg-[var(--accent)]/90 text-white text-xs font-bold transition flex items-center gap-1 shrink-0 cursor-pointer"
-                  >
-                    <Plus className="w-4 h-4" />
-                    <span>{showAddNew ? 'Đóng' : 'Thêm mẫu mới'}</span>
-                  </button>
-                )}
+                <button
+                  type="button"
+                  onClick={() => setShowAddNew(prev => !prev)}
+                  className="h-9 px-3.5 rounded-xl bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-500 hover:to-fuchsia-500 text-white text-xs font-bold transition flex items-center gap-1.5 shrink-0 cursor-pointer shadow-sm"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>{showAddNew ? 'Đóng' : '+ Thêm mẫu mới'}</span>
+                </button>
               </div>
             </div>
 
             {/* Form Thêm Mẫu Mới (Expandable) */}
             {showAddNew && (
-              <form onSubmit={handleAddNewDesign} className="p-4 bg-purple-50/50 dark:bg-purple-950/20 border-b border-card-border space-y-3">
-                <p className="text-xs font-bold text-purple-700 dark:text-purple-300">➕ Thêm tệp thiết kế mới vào Kho khách hàng</p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2.5">
-                  <input
-                    type="text"
-                    required
-                    value={newDesignName}
-                    onChange={e => setNewDesignName(e.target.value)}
-                    placeholder="Tên mẫu tem (VD: Tem Logo Bát Tràng Gờ Nổi)"
-                    className="h-9 px-3 rounded-lg border border-card-border bg-background text-xs font-semibold"
-                  />
-                  <input
-                    type="text"
-                    value={newDesignSize}
-                    onChange={e => setNewDesignSize(e.target.value)}
-                    placeholder="Kích thước (VD: 13x13cm)"
-                    className="h-9 px-3 rounded-lg border border-card-border bg-background text-xs font-semibold"
-                  />
-                  <input
-                    type="number"
-                    value={newDesignPrice}
-                    onChange={e => setNewDesignPrice(e.target.value)}
-                    placeholder="Đơn giá mẫu (VD: 15000)"
-                    className="h-9 px-3 rounded-lg border border-card-border bg-background text-xs font-semibold"
-                  />
-                  <input
-                    type="text"
-                    value={newDesignFileUrl}
-                    onChange={e => setNewDesignFileUrl(e.target.value)}
-                    placeholder="Link Google Drive file in AI/PDF"
-                    className="h-9 px-3 rounded-lg border border-card-border bg-background text-xs font-semibold"
-                  />
+              <form onSubmit={handleAddNewDesign} className="p-4 bg-purple-50/60 dark:bg-purple-950/30 border-b border-card-border space-y-3">
+                <div className="flex justify-between items-center">
+                  <p className="text-xs font-extrabold text-purple-700 dark:text-purple-300 flex items-center gap-1.5">
+                    <span>➕ Thêm tệp thiết kế mới vào Kho</span>
+                    <span className="text-[10px] font-normal text-purple-600 dark:text-purple-400 bg-purple-100 dark:bg-purple-900/50 px-2 py-0.5 rounded-full">
+                      Tự động đổi tên file theo chuẩn chuẩn hoá
+                    </span>
+                  </p>
                 </div>
-                <div className="flex justify-end gap-2">
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2.5">
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300">Tên mẫu tem *</label>
+                    <input
+                      type="text"
+                      required
+                      value={newDesignName}
+                      onChange={e => setNewDesignName(e.target.value)}
+                      placeholder="VD: Tem Rượu Cốt Sâm Ngọc Linh"
+                      className="w-full h-9 px-3 rounded-lg border border-card-border bg-background text-xs font-semibold"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300">Kích thước</label>
+                    <input
+                      type="text"
+                      value={newDesignSize}
+                      onChange={e => setNewDesignSize(e.target.value)}
+                      placeholder="VD: 5x8cm"
+                      className="w-full h-9 px-3 rounded-lg border border-card-border bg-background text-xs font-semibold"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300">Đơn giá mẫu (đ)</label>
+                    <input
+                      type="number"
+                      value={newDesignPrice}
+                      onChange={e => setNewDesignPrice(e.target.value)}
+                      placeholder="VD: 2188"
+                      className="w-full h-9 px-3 rounded-lg border border-card-border bg-background text-xs font-semibold"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300">Tải file thiết kế (AI/PDF)</label>
+                    <div className="flex gap-1.5 items-center">
+                      <label className="h-9 px-3 rounded-lg bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold transition flex items-center justify-center gap-1 cursor-pointer shrink-0">
+                        {uploadingFile ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />}
+                        <span>{uploadingFile ? 'Tải lên...' : 'Tải file'}</span>
+                        <input
+                          type="file"
+                          accept=".pdf,.ai,.psd,.png,.webp,.zip,.rar"
+                          className="hidden"
+                          onChange={handleFileUpload}
+                          disabled={uploadingFile}
+                        />
+                      </label>
+                      <input
+                        type="text"
+                        value={newDesignFileUrl}
+                        onChange={e => setNewDesignFileUrl(e.target.value)}
+                        placeholder="hoặc Dán link Drive..."
+                        className="flex-1 h-9 px-2.5 rounded-lg border border-card-border bg-background text-xs"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {uploadedFileName && (
+                  <p className="text-[11px] text-emerald-600 font-bold flex items-center gap-1">
+                    <span>✅ File đã tải lên & tự động đổi tên thành:</span>
+                    <span className="font-mono underline">{uploadedFileName}</span>
+                  </p>
+                )}
+
+                <div className="flex justify-end gap-2 pt-1">
                   <button
                     type="button"
                     onClick={() => setShowAddNew(false)}
-                    className="h-8 px-3 rounded-lg border border-card-border text-xs font-bold text-text-muted"
+                    className="h-8 px-3 rounded-lg border border-card-border text-xs font-bold text-text-muted hover:bg-block-bg"
                   >
                     Hủy
                   </button>
                   <button
                     type="submit"
-                    disabled={submittingNew}
-                    className="h-8 px-4 rounded-lg bg-[var(--accent)] text-white text-xs font-bold disabled:opacity-50"
+                    disabled={submittingNew || uploadingFile}
+                    className="h-8 px-4 rounded-lg bg-[var(--accent)] text-white text-xs font-bold disabled:opacity-50 cursor-pointer shadow-sm"
                   >
-                    {submittingNew ? 'Đang lưu...' : 'Lưu mẫu mới'}
+                    {submittingNew ? 'Đang lưu...' : '💾 Lưu mẫu vào Kho'}
                   </button>
                 </div>
               </form>
@@ -343,9 +450,17 @@ export default function CustomerDesignSelector({
                     {searchTerm 
                       ? 'Thử gõ từ khóa khác hoặc bấm nút "Tất cả kho mẫu"' 
                       : scope === 'customer' 
-                        ? 'Khách hàng này chưa có mẫu lưu sẵn. Hãy bấm "+ Thêm mẫu mới" hoặc chọn "Tất cả kho mẫu".' 
+                        ? 'Khách hàng này chưa có mẫu lưu sẵn. Hãy bấm "+ Thêm mẫu mới" ở góc trên hoặc chọn "Tất cả kho mẫu".' 
                         : 'Chưa có mẫu nào trong hệ thống'}
                   </p>
+                  <button
+                    type="button"
+                    onClick={() => setShowAddNew(true)}
+                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-purple-600 text-white text-xs font-bold hover:bg-purple-700 transition cursor-pointer mt-2 shadow-sm"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>Thêm mẫu thiết kế mới ngay</span>
+                  </button>
                 </div>
               ) : (
                 <div className="border border-card-border rounded-xl overflow-hidden shadow-sm">
@@ -355,7 +470,7 @@ export default function CustomerDesignSelector({
                         <th className="py-2.5 px-3 w-10 text-center">STT</th>
                         <th className="py-2.5 px-3">Tên mẫu thiết kế</th>
                         <th className="py-2.5 px-3 w-28 text-center">Kích thước</th>
-                        <th className="py-2.5 px-3 w-28 text-right">Đơn giá</th>
+                        <th className="py-2.5 px-3 w-28 text-right">Đơn giá mẫu</th>
                         <th className="py-2.5 px-3 w-40">Khách hàng</th>
                         <th className="py-2.5 px-3">File in (AI/PDF)</th>
                         <th className="py-2.5 px-3 w-32 text-center">Thao tác</th>

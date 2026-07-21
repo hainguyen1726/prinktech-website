@@ -35,7 +35,7 @@ export async function GET(req: NextRequest) {
         if (p) {
           targetPartnerId = p.id;
         } else {
-          // Khách hàng chưa từng lưu trong hệ thống hoặc chưa có mẫu -> Trả về rỗng ngay, KHÔNG lộ mẫu khách khác!
+          // Khách hàng chưa từng lưu trong hệ thống -> Trả về rỗng ngay (KHÔNG lộ mẫu khách khác) trừ khi chọn 'all'
           if (scope !== 'all') {
             return NextResponse.json({ data: [] });
           }
@@ -67,7 +67,7 @@ export async function GET(req: NextRequest) {
   }
 }
 
-// POST /api/admin/customer-designs — Thêm mẫu thiết kế mới vào kho
+// POST /api/admin/customer-designs — Thêm mẫu thiết kế mới vào kho (Auto-create partner nếu thiếu ID)
 export async function POST(req: NextRequest) {
   try {
     const auth = await verifyAdminOrStaff(req);
@@ -76,23 +76,58 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { partner_id, name, size_label, sticker_type, file_url, preview_url, unit_price, note } = body;
+    let { partner_id, partner_phone, customer_name, name, size_label, sticker_type, file_url, preview_url, unit_price, note } = body;
 
-    if (!partner_id || !name) {
-      return NextResponse.json({ error: 'partner_id và name là bắt buộc' }, { status: 400 });
+    if (!name || !name.trim()) {
+      return NextResponse.json({ error: 'Tên mẫu thiết kế là bắt buộc' }, { status: 400 });
+    }
+
+    // Tự động tìm hoặc tạo partner_id nếu không được truyền trực tiếp
+    if (!partner_id) {
+      if (partner_phone) {
+        const cleanPhone = partner_phone.replace(/\D/g, '');
+        const { data: existingP } = await supabase
+          .from('partners')
+          .select('id')
+          .or(`phone.ilike.%${cleanPhone}%,phone.eq.${partner_phone}`)
+          .maybeSingle();
+
+        if (existingP) {
+          partner_id = existingP.id;
+        } else {
+          // Tạo đối tác mới
+          const { data: newP, error: pErr } = await supabase
+            .from('partners')
+            .insert([{
+              name: customer_name?.trim() || 'Khách hàng mới',
+              phone: partner_phone.trim(),
+              address: 'Chưa cập nhật địa chỉ'
+            }])
+            .select()
+            .single();
+
+          if (!pErr && newP) {
+            partner_id = newP.id;
+          }
+        }
+      }
+    }
+
+    if (!partner_id) {
+      return NextResponse.json({ error: 'Không thể xác định đối tác (cần partner_id hoặc partner_phone)' }, { status: 400 });
     }
 
     const { data, error } = await supabase
       .from('customer_designs')
       .insert([{
         partner_id,
-        name,
-        size_label: size_label || '',
+        name: name.trim(),
+        size_label: size_label?.trim() || '',
         sticker_type: sticker_type || 'dtf_sheet',
-        file_url: file_url || null,
-        preview_url: preview_url || null,
+        file_url: file_url?.trim() || null,
+        preview_url: preview_url?.trim() || null,
         unit_price: Number(unit_price) || 0,
-        note: note || null,
+        note: note?.trim() || null,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       }])
