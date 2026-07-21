@@ -333,7 +333,7 @@ export default function OrderList() {
       shipping_fee: order.shipping_fee || 0,
       discount: order.discount || 0,
       cost_amount: order.cost_amount || 0,
-      has_vat: (order as any).has_vat || false,
+      has_vat: Boolean((order as any).has_vat || order.tags?.includes('VAT 8%')),
       items: rawItems.map((it: any) => {
         const q = Number(it.quantity) || 1;
         const price = Number(it.unit_price) > 0 ? Number(it.unit_price) : (Number(it.rate_excl_vat) > 0 ? Number(it.rate_excl_vat) : 0);
@@ -788,6 +788,39 @@ export default function OrderList() {
         setSelectedOrder(prev => prev ? { ...prev, payment_status: newPayStatus } : null);
       }
       showToast('Cập nhật thanh toán thành công!', 'success');
+    } catch (err) {
+      showToast((err as Error).message, 'error');
+    } finally {
+      setUpdatingId(null);
+    }
+  };
+
+  const handleVatToggle = async (orderId: string, currentHasVat: boolean) => {
+    setUpdatingId(orderId);
+    try {
+      const newHasVat = !currentHasVat;
+      const res = await fetch(`/api/orders/${orderId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ has_vat: newHasVat }),
+      });
+      if (!res.ok) {
+        const errJson = await res.json().catch(() => ({}));
+        throw new Error(errJson?.error || `Cập nhật VAT thất bại (${res.status})`);
+      }
+      
+      const updateOrderObj = (o: Order) => {
+        let updatedTags = Array.isArray(o.tags) ? [...o.tags] : [];
+        if (newHasVat && !updatedTags.includes('VAT 8%')) updatedTags.push('VAT 8%');
+        else if (!newHasVat) updatedTags = updatedTags.filter(t => t !== 'VAT 8%');
+        return { ...o, has_vat: newHasVat, tags: updatedTags };
+      };
+
+      setOrders(prev => prev.map(o => o.id === orderId ? updateOrderObj(o) : o));
+      if (selectedOrder?.id === orderId) {
+        setSelectedOrder(prev => prev ? updateOrderObj(prev) : null);
+      }
+      showToast(`Đã ${newHasVat ? 'bật' : 'tắt'} VAT 8% thành công!`, 'success');
     } catch (err) {
       showToast((err as Error).message, 'error');
     } finally {
@@ -1592,6 +1625,23 @@ export default function OrderList() {
                                   >
                                     {order.payment_status === 'paid' ? '✓ Đã' : '✕ Chưa'}
                                   </button>
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      const hasVat = Boolean(order.has_vat || order.tags?.includes('VAT 8%'));
+                                      handleVatToggle(order.id, hasVat);
+                                    }}
+                                    disabled={updatingId === order.id}
+                                    className={`inline-block px-1.5 py-0.5 rounded text-[9px] font-bold border transition-all cursor-pointer disabled:opacity-50 ${
+                                      Boolean(order.has_vat || order.tags?.includes('VAT 8%'))
+                                        ? 'bg-amber-50 text-amber-800 border-amber-300 dark:bg-amber-950/40 dark:text-amber-300'
+                                        : 'bg-slate-50 text-slate-400 border-slate-200'
+                                    }`}
+                                    title="Bấm để bật/tắt Thuế VAT 8%"
+                                  >
+                                    {Boolean(order.has_vat || order.tags?.includes('VAT 8%')) ? '🧾 VAT' : 'không VAT'}
+                                  </button>
                                 </div>
                                 <div className="font-extrabold text-slate-900 dark:text-slate-100 text-sm mt-1">{formatCurrency(order.total)}</div>
                               </div>
@@ -1633,6 +1683,7 @@ export default function OrderList() {
                         <th className="pb-3 text-right font-bold">Tổng tiền</th>
                         <th className="pb-3 text-center font-bold">Trạng thái</th>
                         <th className="pb-3 text-center font-bold">Thanh toán</th>
+                        <th className="pb-3 text-center font-bold">Thuế (VAT)</th>
                         <th className="pb-3 text-right font-bold">Thao tác</th>
                       </tr>
                     </thead>
@@ -1640,6 +1691,7 @@ export default function OrderList() {
                       {orders.map((order, i) => {
                         const status = ORDER_STATUS_LABELS[order.status] || { label: order.status, color: '' };
                         const isChecked = selectedOrderIds.has(order.id);
+                        const hasVat = Boolean(order.has_vat || order.tags?.includes('VAT 8%'));
                         return (
                           <tr
                             key={order.id}
@@ -1706,6 +1758,21 @@ export default function OrderList() {
                                 title="Bấm để đổi trạng thái thanh toán"
                               >
                                 {order.payment_status === 'paid' ? '✓ Đã' : '✕ Chưa'}
+                              </button>
+                            </td>
+                            <td className="py-3.5 text-center" onClick={e => e.stopPropagation()}>
+                              <button
+                                type="button"
+                                onClick={() => handleVatToggle(order.id, hasVat)}
+                                disabled={updatingId === order.id}
+                                className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold border transition-all cursor-pointer shadow-xs hover:opacity-85 disabled:opacity-50 ${
+                                  hasVat
+                                    ? 'bg-amber-50 text-amber-800 border-amber-300 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-700'
+                                    : 'bg-slate-50 text-slate-500 border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700'
+                                }`}
+                                title="Bấm để bật/tắt Thuế VAT 8%"
+                              >
+                                {hasVat ? '🧾 8% VAT' : '💸 Không VAT'}
                               </button>
                             </td>
                             <td className="py-3.5 text-right" onClick={e => e.stopPropagation()}>
@@ -1953,6 +2020,14 @@ export default function OrderList() {
                     <span>Tạm tính</span>
                     <span className="tabular-nums text-foreground font-semibold">{formatCurrency(selectedOrder.subtotal)}</span>
                   </div>
+                  {Boolean((selectedOrder as any).has_vat || selectedOrder.tags?.includes('VAT 8%')) && (
+                    <div className="flex justify-between text-xs text-amber-800 dark:text-amber-300 font-bold bg-amber-50 dark:bg-amber-950/30 p-1.5 rounded-lg border border-amber-200">
+                      <span className="flex items-center gap-1">🧾 Thuế VAT (8%)</span>
+                      <span className="tabular-nums">
+                        {formatCurrency(Math.round((selectedOrder.subtotal || 0) * 0.08))}
+                      </span>
+                    </div>
+                  )}
                   <div className="flex justify-between text-xs text-text-muted font-medium">
                     <span>Phí ship</span>
                     <span className="tabular-nums text-foreground font-semibold">
@@ -2674,6 +2749,21 @@ export default function OrderList() {
                       onChange={e => setEditFormData({ ...editFormData, tracking_number: e.target.value })}
                       className="w-full h-9 px-3 rounded-lg border border-card-border bg-background text-xs font-semibold"
                     />
+                  </div>
+
+                  <div className="space-y-1 sm:col-span-2">
+                    <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Thuế xuất hóa đơn (VAT)</label>
+                    <label className="flex items-center gap-2 cursor-pointer select-none border border-amber-200 bg-amber-50/70 dark:bg-amber-950/30 px-3 h-9 rounded-lg hover:bg-amber-100 transition-colors">
+                      <input
+                        type="checkbox"
+                        checked={Boolean(editFormData.has_vat)}
+                        onChange={e => setEditFormData({ ...editFormData, has_vat: e.target.checked })}
+                        className="w-4 h-4 text-amber-600 rounded focus:ring-amber-500 cursor-pointer accent-amber-600"
+                      />
+                      <span className="text-xs font-bold text-amber-900 dark:text-amber-300">
+                        🧾 Áp dụng Thuế VAT 8% (Có xuất hóa đơn)
+                      </span>
+                    </label>
                   </div>
 
                   <div className="space-y-1 sm:col-span-2">

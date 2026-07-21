@@ -218,6 +218,8 @@ export type Order = {
   cost_amount?: number;
   packaging_fee?: number;
   source?: string;
+  has_vat?: boolean;
+  tags?: string[];
   created_at: string;
   updated_at: string;
   confirmed_at: string | null;
