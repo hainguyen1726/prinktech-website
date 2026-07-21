@@ -65,7 +65,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
         id: o.id,
         order_number: o.order_code,
         customer_id: o.partner_id,
-        sticker_type: o.sticker_type || 'uv_dtf_noi',
+        sticker_type: o.sticker_type || 'dtf_sheet',
         quantity_items: o.quantity_expected,
         quantity_meters: o.quantity_actual,
         design_link: o.design_link,

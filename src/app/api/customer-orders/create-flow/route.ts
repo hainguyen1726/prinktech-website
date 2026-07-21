@@ -358,7 +358,7 @@ export async function POST(req: NextRequest) {
     const newOrder = {
       order_code: orderCode,
       partner_id: customer_id,
-      sticker_type: anyMeters ? 'dtf_roll' : 'uv_dtf_noi',
+      sticker_type: anyMeters ? 'dtf_roll' : 'dtf_sheet',
       design_link: orderFolderLink, // Link thư mục Google Drive đơn hàng con
       preview_image: null,
       layout_image: null,

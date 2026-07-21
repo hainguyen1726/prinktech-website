@@ -73,7 +73,7 @@ export async function POST(req: NextRequest) {
       .insert({
         order_code,
         partner_id,
-        sticker_type: sticker_type || 'dtf_roll',
+        sticker_type: (sticker_type === 'dtf_roll' || sticker_type === 'dtf_sheet') ? sticker_type : 'dtf_sheet',
         design_link: design_link || null,
         preview_image: preview_image || null,
         quantity_expected: quantity_expected || 0,
