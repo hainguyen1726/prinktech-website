@@ -1976,7 +1976,7 @@ export default function OrderList() {
                     </button>
                     <button
                       onClick={() => openEditModal(selectedOrder)}
-                      className="px-2.5 py-1 rounded-lg bg-purple-650 hover:bg-purple-700 text-white font-bold text-xs shadow-sm transition flex items-center gap-1 cursor-pointer"
+                      className="px-2.5 py-1 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs shadow-sm transition flex items-center gap-1 cursor-pointer"
                     >
                       ✏️ Sửa đơn
                     </button>

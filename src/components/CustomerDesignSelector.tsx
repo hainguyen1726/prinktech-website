@@ -192,17 +192,21 @@ export default function CustomerDesignSelector({
     }
   };
 
-  const handleSaveRowEdit = async (designId: string) => {
+  const handleSaveRowEdit = async (designId: string, customUrl?: string) => {
     setSavingEdit(true);
     try {
+      const targetUrl = customUrl !== undefined ? customUrl : editFileUrl.trim();
+      const targetPrice = editUnitPrice !== '' ? Number(editUnitPrice) : undefined;
+      
+      const bodyPayload: Record<string, any> = { id: designId, file_url: targetUrl || null };
+      if (targetPrice !== undefined && !isNaN(targetPrice)) {
+        bodyPayload.unit_price = targetPrice;
+      }
+
       const res = await fetch('/api/admin/customer-designs', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          id: designId,
-          file_url: editFileUrl.trim() || null,
-          unit_price: Number(editUnitPrice) || 0
-        })
+        body: JSON.stringify(bodyPayload)
       });
 
       const json = await res.json();
@@ -214,6 +218,48 @@ export default function CustomerDesignSelector({
       console.error('Lỗi cập nhật mẫu thiết kế:', err);
     } finally {
       setSavingEdit(false);
+    }
+  };
+
+  const handleRowFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, design: CustomerDesign) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setEditingId(design.id);
+    setSavingEdit(true);
+    try {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = async () => {
+        const base64Str = (reader.result as string).split(',')[1];
+        
+        const res = await fetch('/api/admin/customer-designs/upload', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            customer_name: design.partners?.name || customerName || 'Khach_Hang',
+            design_name: design.name,
+            size_label: design.size_label || '',
+            file_name: file.name,
+            file_data: base64Str,
+            mime_type: file.type
+          })
+        });
+
+        const json = await res.json();
+        if (json.success && json.file_url) {
+          await handleSaveRowEdit(design.id, json.file_url);
+        } else {
+          alert(json.error || 'Upload file thất bại');
+          setSavingEdit(false);
+          setEditingId(null);
+        }
+      };
+    } catch (err) {
+      console.error('Lỗi upload file:', err);
+      alert('Lỗi khi tải file lên');
+      setSavingEdit(false);
+      setEditingId(null);
     }
   };
 
@@ -576,7 +622,7 @@ export default function CustomerDesignSelector({
                                     rel="noopener noreferrer"
                                     className="text-[11px] font-bold text-blue-600 dark:text-blue-400 hover:underline inline-flex items-center gap-1 truncate max-w-[160px]"
                                   >
-                                    <span>📁 Link File</span>
+                                    <span>📄 Link File</span>
                                     <ExternalLink className="w-3 h-3 shrink-0" />
                                   </a>
                                   <button
@@ -593,18 +639,32 @@ export default function CustomerDesignSelector({
                                   </button>
                                 </div>
                               ) : (
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    setEditingId(design.id);
-                                    setEditFileUrl('');
-                                    setEditUnitPrice(design.unit_price || 0);
-                                  }}
-                                  className="inline-flex items-center gap-1 text-[11px] font-semibold text-purple-600 hover:underline cursor-pointer"
-                                >
-                                  <Upload className="w-3 h-3" />
-                                  <span>+ Gắn link file</span>
-                                </button>
+                                <div className="flex items-center gap-1.5">
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setEditingId(design.id);
+                                      setEditFileUrl('');
+                                      setEditUnitPrice(design.unit_price || 0);
+                                    }}
+                                    className="inline-flex items-center gap-1 text-[11px] font-bold text-purple-600 dark:text-purple-400 hover:underline cursor-pointer"
+                                    title="Dán đường dẫn URL file"
+                                  >
+                                    <Globe className="w-3 h-3" />
+                                    <span>Dán Link</span>
+                                  </button>
+                                  <span className="text-text-muted/40">|</span>
+                                  <label className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-600 dark:text-emerald-400 hover:underline cursor-pointer">
+                                    <Upload className="w-3 h-3" />
+                                    <span>Upload File</span>
+                                    <input
+                                      type="file"
+                                      accept=".pdf,.ai,.psd,.cdr,.eps,.png,.jpg,.webp,.zip,.rar"
+                                      className="hidden"
+                                      onChange={(e) => handleRowFileUpload(e, design)}
+                                    />
+                                  </label>
+                                </div>
                               )}
                             </td>
 

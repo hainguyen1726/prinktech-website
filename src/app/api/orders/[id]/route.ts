@@ -165,6 +165,18 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
         uploaded_at: df.uploaded_at || new Date().toISOString(),
         is_latest: df.is_latest !== undefined ? Boolean(df.is_latest) : (idx === 0)
       }));
+    } else if (formattedItems && formattedItems.some(it => it.design_url)) {
+      const itemsWithDesign = formattedItems.filter(it => it.design_url);
+      formattedDesignFiles = itemsWithDesign.map((it, idx) => ({
+        id: `df-${Date.now()}-${idx}`,
+        sku_label: it.product_label || 'File thiết kế',
+        file_url: it.design_url,
+        file_name: `${it.product_label || 'file'}.pdf`,
+        file_type: it.design_url?.toLowerCase().includes('.ai') ? 'ai' : 'pdf',
+        version: 'v1',
+        uploaded_at: new Date().toISOString(),
+        is_latest: idx === 0
+      }));
     }
 
     // 5. Tính toán lại Tổng tiền & Giá vốn
@@ -277,7 +289,11 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
         tags: tags,
         updated_at: new Date().toISOString()
       };
-      if (formattedItems) updates.items = formattedItems;
+      if (formattedItems) {
+        updates.items = formattedItems;
+        const primaryDesign = formattedItems.find(it => it.design_url)?.design_url;
+        if (primaryDesign) updates.design_link = primaryDesign;
+      }
       if (status) updates.status = mapRetailToLegacyStatus(status);
       if (payment_status) updates.payment_status = payment_status;
       if (formattedDesignFiles) updates.design_files = formattedDesignFiles;
