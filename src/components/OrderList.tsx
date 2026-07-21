@@ -821,9 +821,20 @@ export default function OrderList() {
       
       const updateOrderObj = (o: Order) => {
         let updatedTags = Array.isArray(o.tags) ? [...o.tags] : [];
-        if (newHasVat && !updatedTags.includes('VAT 8%')) updatedTags.push('VAT 8%');
-        else if (!newHasVat) updatedTags = updatedTags.filter(t => t !== 'VAT 8%');
-        return { ...o, has_vat: newHasVat, tags: updatedTags };
+        if (newHasVat) {
+          updatedTags = updatedTags.filter(t => !t.toLowerCase().includes('vat'));
+          updatedTags.push('VAT 8%');
+        } else {
+          updatedTags = updatedTags.filter(t => !t.toLowerCase().includes('vat'));
+        }
+        
+        const sub = Number(o.subtotal) || 0;
+        const ship = Number(o.shipping_fee) || 0;
+        const disc = Number(o.discount) || 0;
+        const vat = newHasVat ? Math.round(sub * 0.08) : 0;
+        const newTotal = sub + ship + vat - disc;
+        
+        return { ...o, has_vat: newHasVat, tags: updatedTags, total: newTotal };
       };
 
       setOrders(prev => prev.map(o => o.id === orderId ? updateOrderObj(o) : o));

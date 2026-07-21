@@ -266,7 +266,6 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       updateRes = await supabase.from('retail_orders').update(updates).eq('id', id).select().single();
     } else {
       const updates: Record<string, any> = {
-        total_amount: newSubtotal, // Cập nhật tổng tiền hàng trước VAT (subtotal)
         shipping_cost: newShippingCost,
         discount_amount: newDiscount,
         cost_amount: newCostAmount,
