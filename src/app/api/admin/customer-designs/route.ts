@@ -76,7 +76,8 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    let { partner_id, partner_phone, customer_name, name, size_label, sticker_type, file_url, preview_url, unit_price, note } = body;
+    let { partner_id } = body;
+    const { partner_phone, customer_name, name, size_label, sticker_type, file_url, preview_url, unit_price, note } = body;
 
     if (!name || !name.trim()) {
       return NextResponse.json({ error: 'Tên mẫu thiết kế là bắt buộc' }, { status: 400 });
