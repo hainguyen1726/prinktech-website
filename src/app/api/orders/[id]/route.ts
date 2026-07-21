@@ -236,10 +236,13 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     // 7. Chuẩn hóa Tags (VAT 8%)
     let tags = Array.isArray(oldOrder.tags) ? [...oldOrder.tags] : ['Tem UV DTF', 'Prinktech'];
     if (has_vat !== undefined) {
-      if (has_vat && !tags.includes('VAT 8%')) {
+      if (has_vat) {
+        // Loại bỏ sạch các tag chứa chữ 'vat' (nhưng viết khác format) để chuẩn hóa về 'VAT 8%' duy nhất
+        tags = tags.filter(t => !t.toLowerCase().includes('vat'));
         tags.push('VAT 8%');
-      } else if (!has_vat && tags.includes('VAT 8%')) {
-        tags = tags.filter(t => t !== 'VAT 8%');
+      } else {
+        // Loại bỏ sạch tất cả các tag có chứa chữ 'vat' (không phân biệt hoa thường)
+        tags = tags.filter(t => !t.toLowerCase().includes('vat'));
       }
     }
 
@@ -263,6 +266,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       updateRes = await supabase.from('retail_orders').update(updates).eq('id', id).select().single();
     } else {
       const updates: Record<string, any> = {
+        total_amount: newSubtotal, // Cập nhật tổng tiền hàng trước VAT (subtotal)
         shipping_cost: newShippingCost,
         discount_amount: newDiscount,
         cost_amount: newCostAmount,

@@ -159,7 +159,10 @@ async function fetchRevenues(from: string, to: string): Promise<NormalizedOrder[
     const shipping = Number(o.shipping_cost) || 0;
     const discount = Number(o.discount_amount) || 0;
     const total = subtotal + shipping - discount;
-    const has_vat = tags.some((t: string) => t.toLowerCase().includes('vat'));
+    const has_vat = tags.some((t: string) => {
+      const tl = t.toLowerCase();
+      return tl.includes('vat') && !tl.includes('0%') && !tl.includes('không') && !tl.includes('khong');
+    });
     const channel = channelFromTags(tags);
     const meters = Number(o.quantity_actual) || Number(o.quantity_expected) || 0;
 

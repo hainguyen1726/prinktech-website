@@ -254,7 +254,7 @@ export async function GET(req: NextRequest) {
         shipping_carrier: shippingCarrier,
         tracking_number: trackingNumber,
         source: orderSource,
-        has_vat: Array.isArray(o.tags) && o.tags.includes('VAT 8%'),
+        has_vat: hasVat,
         note: o.note || '',
         tags: o.tags || [],
         created_at: o.created_at,
