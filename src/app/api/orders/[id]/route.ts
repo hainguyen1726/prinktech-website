@@ -187,11 +187,16 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     // 6. Xây dựng lại ghi chú hợp lệ
     const updatedNote = customer_note !== undefined ? (customer_note || '') : (oldOrder.customer_note || oldOrder.note || '');
 
-    // Bảo lưu thông tin link Excel/PDF cũ nếu có
+    // Bảo lưu thông tin link Excel/PDF, carrier & tracking cũ từ ghi chú nếu có
     const excelMatch = oldOrder.note?.match(/- Excel Báo giá:\s*(https?:\/\/[^\s\n]+)/);
     const pdfMatch = oldOrder.note?.match(/- PDF Báo giá:\s*(https?:\/\/[^\s\n]+)/);
+    const oldCarrierMatch = oldOrder.note?.match(/- Đơn vị vận chuyển:\s*([^\n\r]+)/);
+    const oldTrackingMatch = oldOrder.note?.match(/- Mã vận đơn:\s*([^\n\r]+)/);
+
     const excelUrl = excelMatch ? excelMatch[1] : null;
     const pdfUrl = pdfMatch ? pdfMatch[1] : null;
+    const oldCarrier = oldCarrierMatch ? oldCarrierMatch[1].trim() : (oldOrder.shipping_carrier || '');
+    const oldTracking = oldTrackingMatch ? oldTrackingMatch[1].trim() : (oldOrder.tracking_number || '');
 
     // Loại bỏ các dòng cũ để ghi đè sạch sẽ
     const cleanNoteLines = updatedNote
@@ -214,8 +219,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       if (existingJsonMatch) cleanNoteLines.push(`- Dữ liệu sản phẩm JSON: ${existingJsonMatch[1]}`);
     }
 
-    const carrierStr = shipping_carrier !== undefined ? (shipping_carrier || '') : (oldOrder.shipping_carrier || '');
-    const trackingStr = tracking_number !== undefined ? (tracking_number || '') : (oldOrder.tracking_number || '');
+    const carrierStr = shipping_carrier !== undefined ? (shipping_carrier || '') : oldCarrier;
+    const trackingStr = tracking_number !== undefined ? (tracking_number || '') : oldTracking;
 
     if (carrierStr) cleanNoteLines.push(`- Đơn vị vận chuyển: ${carrierStr}`);
     if (trackingStr) cleanNoteLines.push(`- Mã vận đơn: ${trackingStr}`);
