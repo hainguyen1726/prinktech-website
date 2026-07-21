@@ -186,10 +186,10 @@ export default function QuoteBillModal({ order, isOpen, onClose }: QuoteBillModa
                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Đơn vị phát hành</p>
                 <h2 className="font-black text-slate-800 text-sm leading-tight">PRINK TECH</h2>
                 <p className="text-[11px] text-slate-600 mt-0.5 flex items-center gap-1">
-                  <Phone size={10} /> Hotline / Zalo: <strong className="text-slate-900 font-bold">0822.968.412</strong>
+                  <Phone size={10} /> Hotline / Zalo: <span className="text-slate-800 font-normal">0822.968.412</span>
                 </p>
                 <p className="text-[11px] text-slate-600 flex items-center gap-1">
-                  <Globe size={10} /> Website: <a href="https://prinktech.netslive.com" target="_blank" rel="noreferrer" className="text-pink-600 font-bold underline">https://prinktech.netslive.com</a>
+                  <Globe size={10} /> Website: <a href="https://prinktech.netslive.com" target="_blank" rel="noreferrer" className="text-slate-800 font-normal underline">https://prinktech.netslive.com</a>
                 </p>
               </div>
             </div>
@@ -241,7 +241,7 @@ export default function QuoteBillModal({ order, isOpen, onClose }: QuoteBillModa
                   <th className="py-2.5 px-3 font-bold text-right whitespace-nowrap">Số lượng</th>
                   <th className="py-2.5 px-3 font-bold text-right whitespace-nowrap">Đơn giá</th>
                   <th className="py-2.5 px-3 font-bold text-center whitespace-nowrap">CK</th>
-                  <th className="py-2.5 px-3 font-bold text-right bg-pink-600 whitespace-nowrap">Thành tiền</th>
+                  <th className="py-2.5 px-3 font-bold text-right bg-pink-600 text-white whitespace-nowrap">Thành tiền</th>
                 </tr>
               </thead>
               <tbody>
