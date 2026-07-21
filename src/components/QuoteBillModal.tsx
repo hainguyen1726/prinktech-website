@@ -100,15 +100,32 @@ export default function QuoteBillModal({ order, isOpen, onClose }: QuoteBillModa
   };
 
   const subtotal = order.subtotal || rawItems.reduce((s, it) => s + (Number(it.subtotal) || 0), 0);
-  const shippingFee = Number(order.shipping_fee) || 0;
-  const discount = Number(order.discount) || 0;
-  const hasVat = Boolean(order.has_vat || order.tags?.includes('VAT 8%'));
-
-  let finalTotal = order.total || (subtotal + shippingFee - discount);
-  if (hasVat && !order.total) {
-    finalTotal = Math.round((subtotal + shippingFee - discount) * 1.08);
+  
+  // Trích xuất Phí ship chuẩn từ đơn hàng hoặc ghi chú
+  let shippingFee = Number(order.shipping_fee) || 0;
+  const rawNoteStr = (order.customer_note || '') + '\n' + ((order as any).note || '');
+  if (!shippingFee && rawNoteStr) {
+    const shipMatch = rawNoteStr.match(/Phí ship:?\s*([\d\.\,]+)k?/i);
+    if (shipMatch) {
+      let valNum = Number(shipMatch[1].replace(/[\.\,]/g, ''));
+      if (valNum < 1000) valNum = valNum * 1000;
+      shippingFee = valNum;
+    }
   }
-  const vatAmount = hasVat ? (finalTotal - subtotal - shippingFee + discount) : 0;
+
+  const discount = Number(order.discount) || 0;
+
+  // Trích xuất Thuế VAT chuẩn (từ has_vat, tags, hoặc ghi chú)
+  const tags = Array.isArray(order.tags) ? order.tags : [];
+  const hasVat = Boolean(
+    order.has_vat || 
+    tags.some((t: string) => t.toLowerCase().includes('vat')) ||
+    rawNoteStr.toLowerCase().includes('vat 8%') ||
+    rawNoteStr.toLowerCase().includes('thuế vat')
+  );
+
+  const vatAmount = hasVat ? Math.round(subtotal * 0.08) : 0;
+  const finalTotal = subtotal + shippingFee + vatAmount - discount;
 
   const totalRollMeters = rawItems
     .filter(it => it.unit === 'm')
@@ -290,7 +307,7 @@ export default function QuoteBillModal({ order, isOpen, onClose }: QuoteBillModa
               {hasVat && (
                 <div className="flex justify-between items-center py-2 border-b border-slate-200 text-[13px] whitespace-nowrap text-amber-600">
                   <span className="font-semibold">VAT (8%):</span>
-                  <span className="font-bold">{formatCurrency(vatAmount)}</span>
+                  <span className="font-bold text-rose-600">{formatCurrency(vatAmount)}</span>
                 </div>
               )}
 

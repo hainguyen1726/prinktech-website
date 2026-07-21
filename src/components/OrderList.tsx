@@ -1639,18 +1639,30 @@ export default function OrderList() {
                                     type="button"
                                     onClick={(e) => {
                                       e.stopPropagation();
-                                      const hasVat = Boolean(order.has_vat || order.tags?.includes('VAT 8%'));
-                                      handleVatToggle(order.id, hasVat);
+                                      const isOrderVat = Boolean(
+                                        order.has_vat || 
+                                        order.tags?.some((t: string) => t.toLowerCase().includes('vat')) ||
+                                        order.note?.toLowerCase().includes('vat 8%')
+                                      );
+                                      handleVatToggle(order.id, isOrderVat);
                                     }}
                                     disabled={updatingId === order.id}
                                     className={`inline-block px-1.5 py-0.5 rounded text-[9px] font-bold border transition-all cursor-pointer disabled:opacity-50 ${
-                                      Boolean(order.has_vat || order.tags?.includes('VAT 8%'))
+                                      Boolean(
+                                        order.has_vat || 
+                                        order.tags?.some((t: string) => t.toLowerCase().includes('vat')) ||
+                                        order.note?.toLowerCase().includes('vat 8%')
+                                      )
                                         ? 'bg-amber-50 text-amber-800 border-amber-300 dark:bg-amber-950/40 dark:text-amber-300'
                                         : 'bg-slate-50 text-slate-400 border-slate-200'
                                     }`}
                                     title="Bấm để bật/tắt Thuế VAT 8%"
                                   >
-                                    {Boolean(order.has_vat || order.tags?.includes('VAT 8%')) ? '🧾 VAT' : 'không VAT'}
+                                    {Boolean(
+                                      order.has_vat || 
+                                      order.tags?.some((t: string) => t.toLowerCase().includes('vat')) ||
+                                      order.note?.toLowerCase().includes('vat 8%')
+                                    ) ? '🧾 VAT' : 'không VAT'}
                                   </button>
                                 </div>
                                 <div className="font-extrabold text-slate-900 dark:text-slate-100 text-sm mt-1">{formatCurrency(order.total)}</div>
@@ -1701,7 +1713,12 @@ export default function OrderList() {
                       {orders.map((order, i) => {
                         const status = ORDER_STATUS_LABELS[order.status] || { label: order.status, color: '' };
                         const isChecked = selectedOrderIds.has(order.id);
-                        const hasVat = Boolean(order.has_vat || order.tags?.includes('VAT 8%'));
+                        const hasVat = Boolean(
+                          order.has_vat || 
+                          order.tags?.some((t: string) => t.toLowerCase().includes('vat')) ||
+                          order.note?.toLowerCase().includes('vat 8%') ||
+                          order.note?.toLowerCase().includes('thuế vat')
+                        );
                         return (
                           <tr
                             key={order.id}

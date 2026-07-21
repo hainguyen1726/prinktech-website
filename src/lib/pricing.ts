@@ -220,6 +220,7 @@ export type Order = {
   source?: string;
   has_vat?: boolean;
   tags?: string[];
+  note?: string;
   created_at: string;
   updated_at: string;
   confirmed_at: string | null;
