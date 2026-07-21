@@ -31,7 +31,8 @@ ENV NEXT_TELEMETRY_DISABLED 1
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
-COPY --from=builder /app/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/public ./public
+RUN mkdir -p ./public/temp_bao_gia && chown -R nextjs:nodejs ./public
 COPY --from=builder --chown=nextjs:nodejs /app/src/data ./src/data
 COPY --from=builder --chown=nextjs:nodejs /app/.next ./.next
 COPY --from=builder /app/node_modules ./node_modules

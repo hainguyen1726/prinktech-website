@@ -4,6 +4,7 @@ import { verifyAdminOrStaff } from '@/lib/adminAuth';
 import { google } from 'googleapis';
 import fs from 'fs';
 import path from 'path';
+import os from 'os';
 import { generateExcelQuote, generatePdfQuote } from '@/lib/quoteGenerator';
 
 const CLIENT_ID = process.env.GOOGLE_CLIENT_ID || "";
@@ -137,10 +138,18 @@ export async function POST(req: NextRequest) {
       orderCode = `ORD-${dateStr}-${seconds}${ms}`;
     }
 
-    // 3. Tạo thư mục tạm để sinh báo giá cục bộ
-    const tempDir = path.join(process.cwd(), 'public', 'temp_bao_gia', orderCode);
-    if (!fs.existsSync(tempDir)) {
-      fs.mkdirSync(tempDir, { recursive: true });
+    // 3. Tạo thư mục tạm để sinh báo giá cục bộ (Ưu tiên os.tmpdir() để tránh EACCES permission denied trên Docker)
+    let tempDir = path.join(os.tmpdir(), 'temp_bao_gia', orderCode);
+    try {
+      if (!fs.existsSync(tempDir)) {
+        fs.mkdirSync(tempDir, { recursive: true });
+      }
+    } catch (e) {
+      console.warn('Fallback tempDir creation error:', e);
+      tempDir = path.join(process.cwd(), 'public', 'temp_bao_gia', orderCode);
+      if (!fs.existsSync(tempDir)) {
+        fs.mkdirSync(tempDir, { recursive: true });
+      }
     }
 
     const nameSlug = customerName.replace(/\s+/g, '_');
