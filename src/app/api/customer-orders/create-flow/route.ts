@@ -249,7 +249,7 @@ export async function POST(req: NextRequest) {
       fields: 'id, webViewLink',
     });
     const orderFolderId = createOrderSubfolder.data.id;
-    const orderFolderLink = createOrderSubfolder.data.webViewLink;
+    orderFolderLink = createOrderSubfolder.data.webViewLink || null;
     
     try {
       await drive.permissions.create({
