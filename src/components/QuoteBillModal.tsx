@@ -303,33 +303,33 @@ export default function QuoteBillModal({ order, isOpen, onClose, onOrderUpdated 
 
           {/* ── Bảng đơn hàng ── */}
           <div className="mb-6 overflow-hidden rounded-xl border border-slate-200">
-            <table className="w-full text-left border-collapse text-[12px]">
+            <table className="w-full text-left border-collapse text-[11px]">
               <thead>
                 <tr className="bg-slate-800 text-white">
-                  <th className="py-2.5 px-3 font-bold text-center w-8 whitespace-nowrap">STT</th>
-                  <th className="py-2.5 px-3 font-bold whitespace-nowrap">Mã đơn hàng</th>
-                  <th className="py-2.5 px-3 font-bold whitespace-nowrap">Tên sản phẩm / Loại in</th>
-                  <th className="py-2.5 px-3 font-bold text-center whitespace-nowrap">Ngày</th>
-                  <th className="py-2.5 px-3 font-bold text-right whitespace-nowrap">Số lượng</th>
-                  <th className="py-2.5 px-3 font-bold text-center whitespace-nowrap">ĐVT</th>
-                  <th className="py-2.5 px-3 font-bold text-right whitespace-nowrap">Đơn giá</th>
-                  <th className="py-2.5 px-3 font-bold text-center whitespace-nowrap">CK</th>
-                  <th className="py-2.5 px-3 font-bold text-right bg-pink-600 text-white whitespace-nowrap" style={{ color: '#ffffff' }}>Thành tiền</th>
+                  <th className="py-1.5 px-2 font-bold text-center w-6 whitespace-nowrap">STT</th>
+                  <th className="py-1.5 px-2 font-bold whitespace-nowrap">Mã đơn hàng</th>
+                  <th className="py-1.5 px-2 font-bold whitespace-nowrap">Tên sản phẩm / Loại in</th>
+                  <th className="py-1.5 px-2 font-bold text-center whitespace-nowrap">Ngày</th>
+                  <th className="py-1.5 px-2 font-bold text-right whitespace-nowrap">Số lượng</th>
+                  <th className="py-1.5 px-2 font-bold text-center whitespace-nowrap">ĐVT</th>
+                  <th className="py-1.5 px-2 font-bold text-right whitespace-nowrap">Đơn giá</th>
+                  <th className="py-1.5 px-2 font-bold text-center whitespace-nowrap">CK</th>
+                  <th className="py-1.5 px-2 font-bold text-right whitespace-nowrap quote-th-thanhtien">Thành tiền</th>
                 </tr>
               </thead>
               <tbody>
                 {rawItems.map((item: any, idx: number) => {
                   return (
                     <tr key={idx} className={`border-b border-slate-100 ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'}`}>
-                      <td className="py-2.5 px-3 text-center text-slate-400 font-medium whitespace-nowrap">{idx + 1}</td>
-                      <td className="py-2.5 px-3 font-bold text-slate-800 whitespace-nowrap">{order.order_number}</td>
-                      <td className="py-2.5 px-3 text-slate-700 font-semibold whitespace-nowrap">{item.product_label}</td>
-                      <td className="py-2.5 px-3 text-center text-slate-500 whitespace-nowrap">{dateStr}</td>
-                      <td className="py-2.5 px-3 text-right font-bold text-slate-800 whitespace-nowrap">{item.quantity.toLocaleString('vi-VN')}</td>
-                      <td className="py-2.5 px-3 text-center text-slate-600 font-medium whitespace-nowrap">{item.unit}</td>
-                      <td className="py-2.5 px-3 text-right text-slate-600 whitespace-nowrap">{formatCurrency(item.unit_price)}</td>
-                      <td className="py-2.5 px-3 text-center text-slate-400 whitespace-nowrap">—</td>
-                      <td className="py-2.5 px-3 text-right font-black text-slate-900 bg-pink-50 whitespace-nowrap">
+                      <td className="py-1.5 px-2 text-center text-slate-400 font-medium whitespace-nowrap">{idx + 1}</td>
+                      <td className="py-1.5 px-2 font-bold text-slate-800 whitespace-nowrap">{order.order_number}</td>
+                      <td className="py-1.5 px-2 text-slate-700 font-semibold whitespace-nowrap">{item.product_label}</td>
+                      <td className="py-1.5 px-2 text-center text-slate-500 whitespace-nowrap">{dateStr}</td>
+                      <td className="py-1.5 px-2 text-right font-bold text-slate-800 whitespace-nowrap">{item.quantity.toLocaleString('vi-VN')}</td>
+                      <td className="py-1.5 px-2 text-center text-slate-600 font-medium whitespace-nowrap">{item.unit}</td>
+                      <td className="py-1.5 px-2 text-right text-slate-600 whitespace-nowrap">{formatCurrency(item.unit_price)}</td>
+                      <td className="py-1.5 px-2 text-center text-slate-400 whitespace-nowrap">—</td>
+                      <td className="py-1.5 px-2 text-right font-black text-slate-900 bg-pink-50 whitespace-nowrap">
                         {formatCurrency(item.subtotal)}
                       </td>
                     </tr>
@@ -404,6 +404,12 @@ export default function QuoteBillModal({ order, isOpen, onClose, onOrderUpdated 
 
       {/* Style CSS cho In Ấn */}
       <style jsx global>{`
+        /* Override !important trong globals.css cho th nền hồng */
+        th.quote-th-thanhtien,
+        #quote-print-area table thead th.quote-th-thanhtien {
+          background-color: #db2777 !important;
+          color: #ffffff !important;
+        }
         @media print {
           body * {
             visibility: hidden;
@@ -439,6 +445,14 @@ export default function QuoteBillModal({ order, isOpen, onClose, onOrderUpdated 
           * {
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
+          }
+          /* Override color globals.css khi in ấn */
+          #quote-print-area table thead th {
+            color: #ffffff !important;
+          }
+          th.quote-th-thanhtien {
+            background-color: #db2777 !important;
+            color: #ffffff !important;
           }
         }
       `}</style>
