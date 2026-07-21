@@ -19,7 +19,7 @@ Tài liệu này định nghĩa quy trình làm việc và giao thức đồng b
 
 1. **Production (Môi trường chạy thực tế - Zero-Downtime Blue-Green):**
    - **Đường dẫn thư mục**: `/srv/website-prinktech/`
-   - **Cơ chế hoạt động**: Ứng dụng chạy song song hai container `prinktech-website-blue` (cổng 3019) và `prinktech-website-green` (cổng 3020). Khi deploy, hệ thống tự động build Docker image khép kín từ Dockerfile, khởi chạy container rảnh, kiểm tra sức khỏe và swap proxy trên Caddy zero-downtime, sau đó mới tắt container cũ.
+   - **Cơ chế hoạt động**: Ứng dụng chạy song song hai container `prinktech-website-blue` (cổng host 3019) và `prinktech-website-green` (cổng host 3021). Cả hai đều gán mạng external `my_shared_network`. Caddy reverse proxy trỏ theo container name `:3000` (`prinktech-website-blue:3000` hoặc `prinktech-website-green:3000`). Khi deploy, hệ thống tự động build Docker image khép kín từ Dockerfile, khởi chạy container rảnh, kiểm tra sức khỏe và swap proxy trên Caddy bằng Python Regex linh hoạt & inode-safe stream overwrite, sau đó mới tắt container cũ.
    - **Quy tắc**: Đây là môi trường chạy web chính thức cho người dùng. AI Agent không tự ý can thiệp hoặc sửa code trực tiếp tại đây TRỪ KHI được người dùng yêu cầu hoặc cấp quyền trực tiếp. Môi trường này nhận code sạch từ nhánh chính master đã được kiểm duyệt và deploy.
 
 2. **Dev Workspace (Môi trường phát triển của Hermes):**

@@ -131,16 +131,25 @@ for path in "${CADDYFILE_PATHS[@]}"; do
 done
 
 if [ -n "$FOUND_CADDYFILE" ]; then
-    info "Đang swap proxy trong Caddyfile..."
-    if [ "$TARGET_COLOR" = "green" ]; then
-        sed -i 's/reverse_proxy prinktech-website-blue:3000/reverse_proxy prinktech-website-green:3000/g' "$FOUND_CADDYFILE"
-    else
-        sed -i 's/reverse_proxy prinktech-website-green:3000/reverse_proxy prinktech-website-blue:3000/g' "$FOUND_CADDYFILE"
-    fi
+    info "Đang swap proxy trong Caddyfile bằng Python regex linh hoạt & Inode-safe..."
+    python3 -c "
+import sys, re
+caddyfile = sys.argv[1]
+target = sys.argv[2]
+with open(caddyfile, 'r') as f:
+    content = f.read()
+pattern = r'(prinktech\.netslive\.com\s*\{[^}]*reverse_proxy\s+)[^\s\n\}]+'
+new_content = re.sub(pattern, r'\g<1>' + target, content)
+with open('/tmp/caddy_swap.tmp', 'w') as f:
+    f.write(new_content)
+" "$FOUND_CADDYFILE" "$TARGET_CONTAINER:3000"
+
+    cat /tmp/caddy_swap.tmp > "$FOUND_CADDYFILE"
+    rm -f /tmp/caddy_swap.tmp
     
     docker exec -i n8n-caddy-1 sh -c 'cat > /etc/caddy/Caddyfile' < "$FOUND_CADDYFILE"
     docker exec n8n-caddy-1 caddy reload --config /etc/caddy/Caddyfile
-    success "Caddy reload thành công!"
+    success "Caddy reload rollback thành công! Traffic trỏ về $TARGET_CONTAINER:3000."
 fi
 
 # 7. Stop container lỗi
