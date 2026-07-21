@@ -1,9 +1,8 @@
 'use client';
 
 import React, { useRef } from 'react';
-import Image from 'next/image';
 import { Order, formatCurrency } from '@/lib/pricing';
-import { Printer, X } from 'lucide-react';
+import { Printer, X, MapPin, Phone, Calendar, Globe } from 'lucide-react';
 
 interface QuoteBillModalProps {
   order: Order | null;
@@ -11,7 +10,7 @@ interface QuoteBillModalProps {
   onClose: () => void;
 }
 
-// Hàm lọc bỏ thông tin hệ thống khỏi Ghi chú
+// Lọc sạch các dòng ghi chú hệ thống (Excel, PDF, JSON, Vận chuyển...)
 const getCleanCustomerNote = (note: string | null | undefined): string => {
   if (!note) return '';
   return note
@@ -39,7 +38,7 @@ export default function QuoteBillModal({ order, isOpen, onClose }: QuoteBillModa
   const isPerMeter = (order as any).pricing_type === 'per_meter' || (order as any).sticker_type === 'dtf_roll';
   const quantityActual = Number((order as any).quantity_actual) || Number((order as any).quantity_expected) || 0;
 
-  // Lấy danh sách mặt hàng và chuẩn hóa Số lượng & ĐVT
+  // Lấy danh sách mặt hàng và chuẩn hóa Số lượng / ĐVT
   let rawItems: any[] = [];
   
   if (Array.isArray(order.items) && order.items.length > 0) {
@@ -55,7 +54,7 @@ export default function QuoteBillModal({ order, isOpen, onClose }: QuoteBillModa
           : Math.round(sub / qty);
 
         return {
-          product_label: it.product_label || it.name || 'In tem UV DTF cuộn',
+          product_label: it.product_label || it.name || 'In cuộn DTF',
           unit: 'm',
           quantity: qty,
           unit_price: price,
@@ -72,12 +71,11 @@ export default function QuoteBillModal({ order, isOpen, onClose }: QuoteBillModa
       };
     });
   } else {
-    // Trường hợp đơn cũ không lưu mảng items
     const sub = order.subtotal || (order as any).total_amount || 0;
     if (isPerMeter && quantityActual > 0) {
       rawItems = [
         {
-          product_label: 'In tem UV DTF cuộn',
+          product_label: 'In cuộn DTF',
           unit: 'm',
           quantity: quantityActual,
           unit_price: Math.round(sub / quantityActual),
@@ -106,12 +104,15 @@ export default function QuoteBillModal({ order, isOpen, onClose }: QuoteBillModa
   const discount = Number(order.discount) || 0;
   const hasVat = Boolean(order.has_vat || order.tags?.includes('VAT 8%'));
 
-  // Tính tổng tiền & làm tròn số đẹp
   let finalTotal = order.total || (subtotal + shippingFee - discount);
   if (hasVat && !order.total) {
     finalTotal = Math.round((subtotal + shippingFee - discount) * 1.08);
   }
   const vatAmount = hasVat ? (finalTotal - subtotal - shippingFee + discount) : 0;
+
+  const totalRollMeters = rawItems
+    .filter(it => it.unit === 'm')
+    .reduce((acc, it) => acc + (Number(it.quantity) || 0), 0);
 
   const cleanNote = getCleanCustomerNote(order.customer_note || (order as any).note);
 
@@ -122,114 +123,125 @@ export default function QuoteBillModal({ order, isOpen, onClose }: QuoteBillModa
   });
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-3 md:p-6 overflow-y-auto animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/75 backdrop-blur-xs p-3 md:p-6 overflow-y-auto animate-in fade-in duration-200">
       {/* Container Dialog */}
-      <div className="bg-white text-slate-900 rounded-2xl shadow-2xl w-full max-w-3xl overflow-hidden flex flex-col max-h-[95vh] border border-slate-200">
+      <div className="bg-white text-slate-900 rounded-2xl shadow-2xl w-full max-w-4xl overflow-hidden flex flex-col max-h-[96vh]">
         
-        {/* Action Bar (Ẩn khi In) */}
-        <div className="print:hidden bg-slate-900 text-white px-5 py-3 flex items-center justify-between shadow-md">
+        {/* Action Bar Top (Ẩn khi In) */}
+        <div className="print:hidden bg-slate-900 text-white px-6 py-3.5 flex items-center justify-between shadow-md">
           <div className="flex items-center gap-2">
-            <span className="text-amber-400 font-extrabold text-sm">🧾 BÁO GIÁ ĐƠN HÀNG</span>
-            <span className="text-slate-400 text-xs font-mono">({order.order_number})</span>
+            <span className="px-2.5 py-0.5 bg-pink-500/20 text-pink-400 font-extrabold text-xs rounded-full border border-pink-500/30">🧾 BÁO GIÁ</span>
+            <span className="text-slate-300 text-xs font-mono">({order.order_number})</span>
           </div>
           <div className="flex items-center gap-2">
             <button
               onClick={handlePrint}
-              className="px-4 py-1.5 bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold rounded-lg transition flex items-center gap-1.5 shadow-sm cursor-pointer"
+              className="px-4 py-1.5 bg-pink-600 hover:bg-pink-700 text-white text-xs font-bold rounded-xl transition flex items-center gap-1.5 shadow-sm cursor-pointer"
             >
-              <Printer size={15} /> In Báo Giá / PDF
+              <Printer size={15} /> In Bill
             </button>
             <button
               onClick={onClose}
-              className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition cursor-pointer"
+              className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition cursor-pointer"
             >
               <X size={18} />
             </button>
           </div>
         </div>
 
-        {/* BÁO GIÁ XƯỞNG IN (Printable Content) */}
-        <div className="p-6 md:p-8 overflow-y-auto bg-white text-slate-900 print:p-0 print:overflow-visible" ref={printRef}>
+        {/* BILL DOCUMENT — GIỐNG 100% CODE XƯỞNG IN (print.netslive.com) */}
+        <div className="p-8 overflow-y-auto bg-white text-slate-900 print:p-0 print:overflow-visible" ref={printRef}>
           
-          {/* Header Báo giá */}
-          <div className="flex justify-between items-start border-b-2 border-slate-800 pb-4 mb-5">
-            <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <Image
-                  src="/logo_prinktech.png"
-                  alt="Prink Tech Logo"
-                  width={150}
-                  height={48}
-                  className="object-contain"
-                  priority
-                />
+          {/* ── Header ── */}
+          <div className="flex justify-between items-start pb-6 border-b-2 border-pink-500">
+            {/* Logo + thông tin công ty */}
+            <div className="flex items-start gap-4">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/logo-horizontal-dark-text.png"
+                alt="PrinK Tech"
+                className="h-14 object-contain"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = '/logo_prinktech.png';
+                }}
+              />
+              <div className="border-l-2 border-slate-200 pl-4 ml-2">
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Đơn vị phát hành</p>
+                <h2 className="font-black text-slate-800 text-sm leading-tight">PRINK TECH</h2>
+                <p className="text-[11px] text-slate-600 mt-0.5 flex items-center gap-1">
+                  <Phone size={10} /> Hotline / Zalo: <strong className="text-slate-900 font-bold">0822.968.412</strong>
+                </p>
+                <p className="text-[11px] text-slate-600 flex items-center gap-1">
+                  <Globe size={10} /> Website: <a href="https://prinktech.netslive.com" target="_blank" rel="noreferrer" className="text-pink-600 font-bold underline">https://prinktech.netslive.com</a>
+                </p>
               </div>
-              <p className="text-[11px] font-bold text-slate-700 mt-1">Xưởng In Tem UV DTF & Sticker Chuyên Nghiệp</p>
-              <p className="text-xs text-slate-800 font-bold">
-                Hotline / Zalo: <span className="text-purple-700 font-extrabold">0822.968.412</span>
-              </p>
-              <p className="text-xs text-slate-700">
-                Website: <span className="text-purple-700 font-bold">https://prinktech.netslive.com</span>
-              </p>
             </div>
 
-            <div className="text-right space-y-1">
-              <h1 className="text-2xl font-black text-slate-900 tracking-tight uppercase">BÁO GIÁ</h1>
-              <p className="text-xs font-bold text-slate-700">
-                Số: <span className="font-mono text-purple-700 font-black text-sm">{order.order_number}</span>
-              </p>
-              <p className="text-xs text-slate-600">Ngày lập: <span className="font-bold text-slate-800">{dateStr}</span></p>
-            </div>
-          </div>
-
-          {/* Thông tin Khách hàng */}
-          <div className="border border-slate-400 rounded-lg p-3.5 mb-5 bg-slate-50/50">
-            <h3 className="text-[11px] font-extrabold uppercase text-slate-600 tracking-wider mb-2">Thông tin Khách hàng</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
-              <div>
-                <span className="text-slate-600">Khách hàng: </span>
-                <strong className="text-slate-900 font-bold text-sm">{order.customer_name}</strong>
-              </div>
-              <div>
-                <span className="text-slate-600">Số điện thoại: </span>
-                <strong className="text-slate-900 font-bold">{order.customer_phone}</strong>
-              </div>
-              <div className="md:col-span-2 pt-1 border-t border-slate-200/80">
-                <span className="text-slate-600">Địa chỉ giao hàng: </span>
-                <span className="text-slate-900 font-semibold">{order.customer_address || 'Chưa cập nhật'}</span>
+            {/* Tiêu đề bill */}
+            <div className="text-right">
+              <h1 className="text-2xl font-black text-slate-800 uppercase tracking-tight leading-tight">
+                BÁO GIÁ
+              </h1>
+              <div className="mt-3 space-y-1">
+                <p className="text-[11px] text-slate-500 font-medium whitespace-nowrap">
+                  <span className="font-bold text-slate-700">Số:</span>{' '}
+                  <span className="font-black text-slate-800">{order.order_number}</span>
+                </p>
+                <p className="text-[11px] text-slate-500 flex items-center justify-end gap-1 whitespace-nowrap">
+                  <Calendar size={10} />
+                  <span className="font-bold text-slate-700">Ngày lập:</span>{' '}
+                  {dateStr}
+                </p>
               </div>
             </div>
           </div>
 
-          {/* Bảng Mặt hàng - Phong cách Xưởng in chuẩn */}
-          <div className="mb-5">
-            <table className="w-full text-xs text-left border-collapse border border-slate-400">
+          {/* ── Thông tin khách hàng ── */}
+          <div className="my-6 px-6 py-4 bg-slate-50 border border-slate-200 rounded-xl">
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Khách hàng / Bên mua</p>
+            <h3 className="font-black text-slate-800 text-base">{order.customer_name}</h3>
+            {order.customer_phone && (
+              <p className="text-[12px] text-slate-600 mt-0.5 flex items-center gap-1">
+                <Phone size={11} /> {order.customer_phone}
+              </p>
+            )}
+            {order.customer_address && (
+              <p className="text-[12px] text-slate-600 flex items-center gap-1 mt-0.5">
+                <MapPin size={11} /> {order.customer_address}
+              </p>
+            )}
+          </div>
+
+          {/* ── Bảng đơn hàng ── */}
+          <div className="mb-6 overflow-hidden rounded-xl border border-slate-200">
+            <table className="w-full text-left border-collapse text-[12px]">
               <thead>
-                <tr className="bg-slate-200 text-slate-800 border-b border-slate-400 font-extrabold uppercase text-[11px]">
-                  <th className="py-2.5 px-3 border-r border-slate-400 w-10 text-center">STT</th>
-                  <th className="py-2.5 px-3 border-r border-slate-400">Tên sản phẩm / Dịch vụ</th>
-                  <th className="py-2.5 px-3 border-r border-slate-400 text-center w-16">ĐVT</th>
-                  <th className="py-2.5 px-3 border-r border-slate-400 text-right w-20">Số lượng</th>
-                  <th className="py-2.5 px-3 border-r border-slate-400 text-right w-28">Đơn giá</th>
-                  <th className="py-2.5 px-3 text-right w-28">Thành tiền</th>
+                <tr className="bg-slate-800 text-white">
+                  <th className="py-2.5 px-3 font-bold text-center w-8 whitespace-nowrap">STT</th>
+                  <th className="py-2.5 px-3 font-bold whitespace-nowrap">Mã đơn hàng</th>
+                  <th className="py-2.5 px-3 font-bold whitespace-nowrap">Tên sản phẩm / Loại in</th>
+                  <th className="py-2.5 px-3 font-bold text-center whitespace-nowrap">Ngày</th>
+                  <th className="py-2.5 px-3 font-bold text-right whitespace-nowrap">Số lượng</th>
+                  <th className="py-2.5 px-3 font-bold text-right whitespace-nowrap">Đơn giá</th>
+                  <th className="py-2.5 px-3 font-bold text-center whitespace-nowrap">CK</th>
+                  <th className="py-2.5 px-3 font-bold text-right bg-pink-600 whitespace-nowrap">Thành tiền</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-300">
+              <tbody>
                 {rawItems.map((item: any, idx: number) => {
-                  const qty = item.quantity;
-                  const price = item.unit_price;
-                  const sub = item.subtotal;
-
+                  const qtyStr = `${item.quantity.toLocaleString('vi-VN')} ${item.unit}`;
                   return (
-                    <tr key={idx} className="bg-white">
-                      <td className="py-3 px-3 border-r border-slate-300 text-center font-bold text-slate-600">{idx + 1}</td>
-                      <td className="py-3 px-3 border-r border-slate-300 font-bold text-slate-900">
-                        {item.product_label}
+                    <tr key={idx} className={`border-b border-slate-100 ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'}`}>
+                      <td className="py-2.5 px-3 text-center text-slate-400 font-medium whitespace-nowrap">{idx + 1}</td>
+                      <td className="py-2.5 px-3 font-bold text-slate-800 whitespace-nowrap">{order.order_number}</td>
+                      <td className="py-2.5 px-3 text-slate-700 font-semibold whitespace-nowrap">{item.product_label}</td>
+                      <td className="py-2.5 px-3 text-center text-slate-500 whitespace-nowrap">{dateStr}</td>
+                      <td className="py-2.5 px-3 text-right font-bold text-slate-800 whitespace-nowrap">{qtyStr}</td>
+                      <td className="py-2.5 px-3 text-right text-slate-600 whitespace-nowrap">{formatCurrency(item.unit_price)}</td>
+                      <td className="py-2.5 px-3 text-center text-slate-400 whitespace-nowrap">—</td>
+                      <td className="py-2.5 px-3 text-right font-black text-slate-900 bg-pink-50 whitespace-nowrap">
+                        {formatCurrency(item.subtotal)}
                       </td>
-                      <td className="py-3 px-3 border-r border-slate-300 text-center font-bold text-slate-700 uppercase">{item.unit}</td>
-                      <td className="py-3 px-3 border-r border-slate-300 text-right font-bold text-slate-900">{qty}</td>
-                      <td className="py-3 px-3 border-r border-slate-300 text-right font-semibold text-slate-800">{formatCurrency(price)}</td>
-                      <td className="py-3 px-3 text-right font-extrabold text-slate-900">{formatCurrency(sub)}</td>
                     </tr>
                   );
                 })}
@@ -237,64 +249,63 @@ export default function QuoteBillModal({ order, isOpen, onClose }: QuoteBillModa
             </table>
           </div>
 
-          {/* Tổng cộng & Ghi chú */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 pt-2">
-            {/* Ghi chú */}
-            <div className="space-y-1">
-              <p className="text-[11px] font-extrabold uppercase text-slate-600">Ghi chú đơn hàng:</p>
-              <div className="text-xs text-slate-800 bg-slate-50 p-3 rounded-lg border border-slate-300 font-medium whitespace-pre-wrap min-h-[70px]">
+          {/* ── Tổng cộng + Ghi chú ── */}
+          <div className="pb-6 flex flex-col md:flex-row gap-6 items-start">
+            {/* Khối Ghi chú */}
+            <div className="flex-1 bg-slate-50 border border-slate-200 rounded-xl p-5 w-full">
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">📋 Ghi chú đơn hàng</p>
+              <p className="text-[12px] text-slate-700 font-medium leading-relaxed whitespace-pre-wrap">
                 {cleanNote || 'Không có ghi chú thêm.'}
-              </div>
+              </p>
             </div>
 
-            {/* Bảng Tính Tiền */}
-            <div className="space-y-2 text-xs border border-slate-400 rounded-lg p-3 bg-slate-50/50">
-              <div className="flex justify-between py-1 border-b border-slate-200">
-                <span className="text-slate-600 font-medium">Tạm tính tiền hàng:</span>
-                <span className="font-bold text-slate-900">{formatCurrency(subtotal)}</span>
+            {/* Bảng tổng */}
+            <div className="w-full md:w-72 space-y-2">
+              {totalRollMeters > 0 && (
+                <div className="flex justify-between items-center py-2 border-b border-slate-200 text-[13px] whitespace-nowrap">
+                  <span className="text-slate-600 font-medium">Tổng số mét in:</span>
+                  <span className="font-bold text-slate-800">{totalRollMeters.toLocaleString('vi-VN')} m</span>
+                </div>
+              )}
+
+              <div className="flex justify-between items-center py-2 border-b border-slate-200 text-[13px] whitespace-nowrap">
+                <span className="text-slate-600 font-medium">Tạm tính:</span>
+                <span className="font-extrabold text-slate-800">{formatCurrency(subtotal)}</span>
               </div>
 
               {shippingFee > 0 && (
-                <div className="flex justify-between py-1 border-b border-slate-200">
+                <div className="flex justify-between items-center py-2 border-b border-slate-200 text-[13px] whitespace-nowrap">
                   <span className="text-slate-600 font-medium">Phí vận chuyển (Phí ship):</span>
-                  <span className="font-bold text-slate-900">{formatCurrency(shippingFee)}</span>
+                  <span className="font-extrabold text-slate-800">{formatCurrency(shippingFee)}</span>
                 </div>
               )}
 
               {discount > 0 && (
-                <div className="flex justify-between py-1 border-b border-slate-200 text-rose-600">
+                <div className="flex justify-between items-center py-2 border-b border-slate-200 text-[13px] whitespace-nowrap text-rose-600">
                   <span className="font-medium">Chiết khấu:</span>
                   <span className="font-bold">-{formatCurrency(discount)}</span>
                 </div>
               )}
 
               {hasVat && (
-                <div className="flex justify-between py-1 border-b border-slate-200 text-amber-800">
-                  <span className="font-bold">Thuế VAT (8%):</span>
+                <div className="flex justify-between items-center py-2 border-b border-slate-200 text-[13px] whitespace-nowrap text-amber-600">
+                  <span className="font-semibold">VAT (8%):</span>
                   <span className="font-bold">{formatCurrency(vatAmount)}</span>
                 </div>
               )}
 
-              <div className="flex justify-between py-2 border-t-2 border-slate-900 text-sm font-extrabold mt-1">
-                <span className="text-slate-900">TỔNG THANH TOÁN:</span>
-                <span className="text-purple-700 text-base font-black">{formatCurrency(finalTotal)}</span>
+              <div className="flex justify-between items-center py-3 bg-slate-800 text-white rounded-xl px-4 mt-3 whitespace-nowrap shadow-sm">
+                <span className="font-bold text-xs uppercase tracking-wider">TỔNG PHẢI TRẢ:</span>
+                <span className="font-black text-lg text-pink-400 whitespace-nowrap">{formatCurrency(finalTotal)}</span>
               </div>
             </div>
           </div>
 
-          {/* Chữ ký Xưởng & Khách hàng */}
-          <div className="grid grid-cols-2 gap-4 text-center mt-8 pt-4 border-t border-slate-300 text-xs">
-            <div>
-              <p className="font-extrabold uppercase text-slate-800">KHÁCH HÀNG</p>
-              <p className="text-[10px] text-slate-400 italic">(Ký, ghi rõ họ tên)</p>
-              <div className="h-16"></div>
-            </div>
-            <div>
-              <p className="font-extrabold uppercase text-slate-800">NGƯỜI LẬP BÁO GIÁ</p>
-              <p className="text-[10px] text-slate-400 italic">(Ký, ghi rõ họ tên)</p>
-              <div className="h-16"></div>
-              <p className="font-extrabold text-purple-700">Prink Tech Team</p>
-            </div>
+          {/* ── Footer ── */}
+          <div className="pt-4 border-t border-slate-200 flex justify-between items-center text-[11px] text-slate-400 font-medium">
+            <span>Xưởng in UV DTF — PrinK Tech</span>
+            <span className="italic">Chân thành cảm ơn quý khách!</span>
+            <span>Số: {order.order_number}</span>
           </div>
 
         </div>
