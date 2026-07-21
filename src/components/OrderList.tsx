@@ -1677,7 +1677,7 @@ export default function OrderList() {
                           <span className="font-bold text-[var(--accent)] tabular-nums">{formatCurrency(item.subtotal)}</span>
                         </div>
                         <p className="text-text-muted font-medium">
-                          {item.quantity} {item.unit} × {formatCurrency(item.unit_price)}
+                          {item.quantity} {item.unit || (item as any).size_label || 'cái'} × {formatCurrency(item.unit_price ?? (item as any).rate_excl_vat ?? (item.subtotal && item.quantity ? Math.round(item.subtotal / item.quantity) : 0))}
                         </p>
                         {item.note && <p className="text-text-muted italic">Ghi chú: {item.note}</p>}
                         
@@ -1820,33 +1820,36 @@ export default function OrderList() {
                             : '—'}
                         </span>
                       </div>
-                      <div className="flex justify-between text-text-muted">
-                        <span>Giá vốn in trả xưởng:</span>
-                        <span className="font-bold text-foreground font-mono">
-                          {formatCurrency(
-                            selectedOrder.cost_amount !== undefined && Number(selectedOrder.cost_amount) > 0
-                              ? Number(selectedOrder.cost_amount)
-                              : Math.round((selectedOrder.converted_length || 0) * 150000)
-                          )}
-                        </span>
-                      </div>
-                      <div className="flex justify-between text-text-muted">
-                        <span>Phí ship khách trả:</span>
-                        <span className="font-bold text-foreground font-mono">
-                          {formatCurrency(selectedOrder.shipping_fee)}
-                        </span>
-                      </div>
-                      <div className="flex justify-between text-xs font-bold pt-1.5 border-t border-emerald-250 dark:border-emerald-800 text-emerald-700 dark:text-emerald-400">
-                        <span>Lợi nhuận ròng thực tế:</span>
-                        <span className="font-mono">
-                          {formatCurrency(
-                            selectedOrder.total - 
-                            (selectedOrder.cost_amount !== undefined && Number(selectedOrder.cost_amount) > 0
-                              ? Number(selectedOrder.cost_amount)
-                              : Math.round((selectedOrder.converted_length || 0) * 150000))
-                          )}
-                        </span>
-                      </div>
+                      {(() => {
+                        const isRoll = (selectedOrder as any).sticker_type === 'dtf_roll' || (selectedOrder as any).sticker_type === 'cuon';
+                        const rawCost = Number(selectedOrder.cost_amount) || 0;
+                        const sub = Number(selectedOrder.subtotal) || 0;
+                        const cleanCost = isRoll 
+                          ? Math.round(((selectedOrder as any).converted_length || 1) * 80000)
+                          : (rawCost > 0 && rawCost <= sub * 1.2 ? rawCost : Math.round(sub * 0.35));
+                        const profit = Number(selectedOrder.total || 0) - cleanCost;
+
+                        return (
+                          <>
+                            <div className="flex justify-between text-text-muted">
+                              <span>Giá vốn in trả xưởng:</span>
+                              <span className="font-bold text-foreground font-mono">
+                                {formatCurrency(cleanCost)}
+                              </span>
+                            </div>
+                            <div className="flex justify-between text-text-muted">
+                              <span>Phí ship khách trả:</span>
+                              <span className="font-bold text-foreground font-mono">
+                                {formatCurrency(selectedOrder.shipping_fee)}
+                              </span>
+                            </div>
+                            <div className="flex justify-between text-xs font-bold pt-1.5 border-t border-emerald-250 dark:border-emerald-800 text-emerald-700 dark:text-emerald-400">
+                              <span>Lợi nhuận ròng thực tế:</span>
+                              <span className="font-mono">{formatCurrency(profit)}</span>
+                            </div>
+                          </>
+                        );
+                      })()}
                     </div>
                   </div>
                 )}

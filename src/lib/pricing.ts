@@ -157,12 +157,14 @@ export function getActiveTier(product: Product, quantity: number): TierPrice | n
   }) ?? null;
 }
 
-export function formatCurrency(amount: number): string {
+export function formatCurrency(amount: any): string {
+  const num = Number(amount);
+  if (isNaN(num) || !isFinite(num)) return '0 ₫';
   return new Intl.NumberFormat('vi-VN', {
     style: 'currency',
     currency: 'VND',
     maximumFractionDigits: 0,
-  }).format(amount);
+  }).format(num);
 }
 
 export const ORDER_STATUS_LABELS: Record<string, { label: string; color: string }> = {

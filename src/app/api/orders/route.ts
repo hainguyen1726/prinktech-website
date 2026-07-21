@@ -177,6 +177,25 @@ export async function GET(req: NextRequest) {
         ];
       }
 
+      // Chuẩn hóa từng item để luôn có unit_price và unit chuẩn, tránh NaN ₫
+      items = items.map((it: any) => {
+        const q = Number(it.quantity) || 1;
+        const sub = Number(it.subtotal) || 0;
+        const price = Number(it.unit_price) > 0 
+          ? Number(it.unit_price) 
+          : (Number(it.rate_excl_vat) > 0 
+            ? Number(it.rate_excl_vat) 
+            : (sub > 0 && q > 0 ? Math.round(sub / q) : 0));
+        return {
+          ...it,
+          product_label: it.product_label || it.name || 'Tem UV DTF',
+          quantity: q,
+          unit: it.unit || it.size_label || 'cái',
+          unit_price: price,
+          subtotal: sub || Math.round(q * price)
+        };
+      });
+
       const itemSubtotal = Number(o.total_amount) || 0;
       const shippingFee = Number(o.shipping_cost) || 0;
       const discount = Number(o.discount_amount) || 0;
@@ -187,6 +206,22 @@ export async function GET(req: NextRequest) {
         const found = o.tags.find((t: string) => t.toLowerCase().startsWith('nguồn:'));
         if (found) {
           orderSource = found.replace(/nguồn:\s*/i, '').trim().toLowerCase();
+        }
+      }
+
+      const isRoll = o.sticker_type === 'dtf_roll' || o.sticker_type === 'cuon';
+      const rawCost = Number(o.cost_amount) || 0;
+
+      // Bảo vệ giá vốn cost_amount không bao giờ bị vọt lên 60 triệu cho tem lẻ
+      let calculatedCost = 0;
+      if (isRoll) {
+        const meters = Number(o.quantity_actual) || Number(o.quantity_expected) || 1.0;
+        calculatedCost = Math.round(meters * 80000);
+      } else {
+        if (rawCost > 0 && rawCost <= itemSubtotal * 1.2) {
+          calculatedCost = rawCost;
+        } else {
+          calculatedCost = Math.round(itemSubtotal * 0.35);
         }
       }
 
@@ -215,12 +250,8 @@ export async function GET(req: NextRequest) {
         source: orderSource,
         has_vat: Array.isArray(o.tags) && o.tags.includes('VAT 8%'),
         created_at: o.created_at,
-        converted_length: o.sticker_type === 'dtf_roll' ? (Number(o.quantity_actual) || 0) : 0,
-        cost_amount: Number(o.cost_amount) > 0 
-          ? Number(o.cost_amount) 
-          : o.sticker_type === 'dtf_roll' 
-            ? Math.round((Number(o.quantity_actual) || 0) * 80000) 
-            : Math.round((itemSubtotal || 0) * 0.35),
+        converted_length: isRoll ? (Number(o.quantity_actual) || 0) : 0,
+        cost_amount: calculatedCost,
         packaging_fee: (Number(o.packaging_unit_price) || 0) * (Number(o.pack_total_packs) || 0)
       };
     });
