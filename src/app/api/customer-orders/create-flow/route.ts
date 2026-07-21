@@ -163,11 +163,16 @@ export async function POST(req: NextRequest) {
     ];
     const templateExcelPath = templateCandidates.find(p => fs.existsSync(p)) || templateCandidates[0];
 
-    // 5. Kết nối Google Drive & đồng bộ
-    console.log('Connecting to Google Drive...');
-    const oAuth2Client = new google.auth.OAuth2(CLIENT_ID, CLIENT_SECRET, REDIRECT_URI);
-    oAuth2Client.setCredentials({ refresh_token: REFRESH_TOKEN });
-    const drive = google.drive({ version: 'v3', auth: oAuth2Client });
+    // 5. Kết nối Google Drive & đồng bộ (Có try-catch bảo vệ để đơn hàng luôn được tạo thành công)
+    let orderFolderLink: string | null = null;
+    let excelLink = 'N/A';
+    let pdfLink = 'N/A';
+
+    try {
+      console.log('Connecting to Google Drive...');
+      const oAuth2Client = new google.auth.OAuth2(CLIENT_ID, CLIENT_SECRET, REDIRECT_URI);
+      oAuth2Client.setCredentials({ refresh_token: REFRESH_TOKEN });
+      const drive = google.drive({ version: 'v3', auth: oAuth2Client });
 
     // A. Tìm hoặc tạo Folder của khách hàng: dạng "<Số thứ tự>. <Tên khách>_<SĐT>" (ví dụ "4. GP House_0845011975")
     const listRes = await drive.files.list({
@@ -335,8 +340,11 @@ export async function POST(req: NextRequest) {
 
     const excelFile = filesToUpload[0].name;
     const pdfFile = filesToUpload[1].name;
-    const excelLink = uploadedLinks[excelFile] || 'N/A';
-    const pdfLink = uploadedLinks[pdfFile] || 'N/A';
+    excelLink = uploadedLinks[excelFile] || 'N/A';
+    pdfLink = uploadedLinks[pdfFile] || 'N/A';
+    } catch (driveErr) {
+      console.error('⚠️ Warning Google Drive sync error (order will still be saved to DB):', driveErr);
+    }
 
     const orderNote = `${note || ''}\n` +
       `- Excel Báo giá: ${excelLink}\n` +
