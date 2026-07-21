@@ -766,12 +766,12 @@ export default function OrderList() {
         throw new Error(errJson?.error || `Cập nhật thất bại (${res.status})`);
       }
       
-      // Update state
       setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: newStatus } : o));
       if (selectedOrder?.id === orderId) {
         setSelectedOrder(prev => prev ? { ...prev, status: newStatus } : null);
       }
       showToast('Cập nhật trạng thái đơn hàng thành công!', 'success');
+      fetchOrders();
     } catch (err) {
       showToast((err as Error).message, 'error');
     } finally {
@@ -792,12 +792,12 @@ export default function OrderList() {
         throw new Error(errJson?.error || `Cập nhật thất bại (${res.status})`);
       }
       
-      // Update state
       setOrders(prev => prev.map(o => o.id === orderId ? { ...o, payment_status: newPayStatus } : o));
       if (selectedOrder?.id === orderId) {
         setSelectedOrder(prev => prev ? { ...prev, payment_status: newPayStatus } : null);
       }
       showToast('Cập nhật thanh toán thành công!', 'success');
+      fetchOrders();
     } catch (err) {
       showToast((err as Error).message, 'error');
     } finally {
@@ -842,6 +842,7 @@ export default function OrderList() {
         setSelectedOrder(prev => prev ? updateOrderObj(prev) : null);
       }
       showToast(`Đã ${newHasVat ? 'bật' : 'tắt'} VAT 8% thành công!`, 'success');
+      fetchOrders();
     } catch (err) {
       showToast((err as Error).message, 'error');
     } finally {
@@ -1669,8 +1670,7 @@ export default function OrderList() {
                                   >
                                     {Boolean(
                                       order.has_vat || 
-                                      order.tags?.some((t: string) => t.toLowerCase().includes('vat')) ||
-                                      order.note?.toLowerCase().includes('vat 8%')
+                                      order.tags?.some((t: string) => t.toLowerCase().includes('vat'))
                                     ) ? '🧾 VAT' : 'không VAT'}
                                   </button>
                                 </div>
@@ -1724,9 +1724,7 @@ export default function OrderList() {
                         const isChecked = selectedOrderIds.has(order.id);
                         const hasVat = Boolean(
                           order.has_vat || 
-                          order.tags?.some((t: string) => t.toLowerCase().includes('vat')) ||
-                          order.note?.toLowerCase().includes('vat 8%') ||
-                          order.note?.toLowerCase().includes('thuế vat')
+                          order.tags?.some((t: string) => t.toLowerCase().includes('vat'))
                         );
                         return (
                           <tr

@@ -48,7 +48,10 @@ export default function QuoteBillModal({ order, isOpen, onClose, onOrderUpdated 
       const u = (it.unit || '').toLowerCase();
       const isMeterUnit = u.includes('mét') || u.includes('met') || u === 'm';
       
-      if (isMeterUnit || isPerMeter) {
+      // Chỉ ép về mét nếu đơn vị gốc là mét, hoặc đơn hàng tính theo mét và đơn vị trống/là mét
+      const shouldTreatAsMeter = isMeterUnit || (isPerMeter && (!u || isMeterUnit));
+      
+      if (shouldTreatAsMeter) {
         const qty = quantityActual > 0 ? quantityActual : Number(it.quantity) || 1;
         const sub = Number(it.subtotal) || order.subtotal || 0;
         const price = Number(it.unit_price) && Number(it.unit_price) > 50000 
@@ -308,21 +311,22 @@ export default function QuoteBillModal({ order, isOpen, onClose, onOrderUpdated 
                   <th className="py-2.5 px-3 font-bold whitespace-nowrap">Tên sản phẩm / Loại in</th>
                   <th className="py-2.5 px-3 font-bold text-center whitespace-nowrap">Ngày</th>
                   <th className="py-2.5 px-3 font-bold text-right whitespace-nowrap">Số lượng</th>
+                  <th className="py-2.5 px-3 font-bold text-center whitespace-nowrap">ĐVT</th>
                   <th className="py-2.5 px-3 font-bold text-right whitespace-nowrap">Đơn giá</th>
                   <th className="py-2.5 px-3 font-bold text-center whitespace-nowrap">CK</th>
-                  <th className="py-2.5 px-3 font-bold text-right bg-pink-600 text-white whitespace-nowrap">Thành tiền</th>
+                  <th className="py-2.5 px-3 font-bold text-right bg-pink-600 text-white whitespace-nowrap" style={{ color: '#ffffff' }}>Thành tiền</th>
                 </tr>
               </thead>
               <tbody>
                 {rawItems.map((item: any, idx: number) => {
-                  const qtyStr = `${item.quantity.toLocaleString('vi-VN')} ${item.unit}`;
                   return (
                     <tr key={idx} className={`border-b border-slate-100 ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'}`}>
                       <td className="py-2.5 px-3 text-center text-slate-400 font-medium whitespace-nowrap">{idx + 1}</td>
                       <td className="py-2.5 px-3 font-bold text-slate-800 whitespace-nowrap">{order.order_number}</td>
                       <td className="py-2.5 px-3 text-slate-700 font-semibold whitespace-nowrap">{item.product_label}</td>
                       <td className="py-2.5 px-3 text-center text-slate-500 whitespace-nowrap">{dateStr}</td>
-                      <td className="py-2.5 px-3 text-right font-bold text-slate-800 whitespace-nowrap">{qtyStr}</td>
+                      <td className="py-2.5 px-3 text-right font-bold text-slate-800 whitespace-nowrap">{item.quantity.toLocaleString('vi-VN')}</td>
+                      <td className="py-2.5 px-3 text-center text-slate-600 font-medium whitespace-nowrap">{item.unit}</td>
                       <td className="py-2.5 px-3 text-right text-slate-600 whitespace-nowrap">{formatCurrency(item.unit_price)}</td>
                       <td className="py-2.5 px-3 text-center text-slate-400 whitespace-nowrap">—</td>
                       <td className="py-2.5 px-3 text-right font-black text-slate-900 bg-pink-50 whitespace-nowrap">

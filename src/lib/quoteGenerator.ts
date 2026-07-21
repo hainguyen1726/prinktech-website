@@ -10,6 +10,7 @@ export interface QuoteItem {
   meters?: number;
   rateExclVat: number;
   note?: string;
+  unit?: string; // Đơn vị tính
 }
 
 export interface QuoteData {
@@ -59,7 +60,8 @@ export async function generateExcelQuote(data: QuoteData, templatePath: string, 
     quantity: data.quantity || 0,
     meters: data.meters,
     rateExclVat: data.rateExclVat || 0,
-    note: data.note
+    note: data.note,
+    unit: undefined
   }];
 
   const count = items.length;
@@ -209,7 +211,8 @@ export function generatePdfQuote(data: QuoteData, outputPath: string): Promise<v
         quantity: data.quantity || 0,
         meters: data.meters,
         rateExclVat: data.rateExclVat || 0,
-        note: data.note
+        note: data.note,
+        unit: undefined
       }];
 
       const fmt = (num: number) => Math.round(num).toLocaleString('vi-VN') + ' đ';
@@ -231,7 +234,7 @@ export function generatePdfQuote(data: QuoteData, outputPath: string): Promise<v
         doc.text(new Date().toLocaleDateString('vi-VN'), 260, currentY + 4, { width: 70, align: 'center' });
         
         const hasM = item.meters !== undefined && item.meters !== null && item.meters > 0;
-        const qtyStr = hasM ? `${item.meters!.toFixed(1)} m` : `${item.quantity} cái`;
+        const qtyStr = hasM ? `${item.meters!.toFixed(1)} m` : `${item.quantity} ${item.unit || 'cái'}`;
         doc.text(qtyStr, 335, currentY + 4, { width: 50, align: 'center' });
         doc.text(fmt(item.rateExclVat), 390, currentY + 4, { width: 60, align: 'right' });
         
@@ -299,7 +302,8 @@ export function generatePdfQuote(data: QuoteData, outputPath: string): Promise<v
 
       const anyMeters = items.some(item => item.meters !== undefined && item.meters !== null && item.meters > 0);
       const totalMeters = items.reduce((s, i) => s + (i.meters || 0), 0);
-      const qtyDisplay = anyMeters ? `${totalMeters.toFixed(1)} m` : `${totalQty} cái`;
+      const primaryUnit = items.find(item => !item.meters)?.unit || 'cái';
+      const qtyDisplay = anyMeters ? `${totalMeters.toFixed(1)} m` : `${totalQty} ${primaryUnit}`;
       
       drawSumRow("Tổng số lượng in:", qtyDisplay);
       drawSumRow("Tạm tính:", fmt(amountExclVat));

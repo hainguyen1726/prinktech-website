@@ -95,9 +95,12 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       const isPerMeter = oldOrder.pricing_type === 'per_meter' || oldOrder.sticker_type === 'dtf_roll';
       const qty = Number(item.quantity) || 1;
       
-      let unit = u.includes('tờ') ? 'tờ' : 'cái';
+      // Chỉ ép về mét nếu đơn vị gốc là mét, hoặc đơn hàng tính theo mét và đơn vị trống/là mét
+      const shouldTreatAsMeter = isMeterUnit || (isPerMeter && (!u || isMeterUnit));
+
+      let unit = item.unit || 'cái';
       let meters = undefined;
-      if (isMeterUnit || isPerMeter) {
+      if (shouldTreatAsMeter) {
         unit = 'm';
         meters = qty;
       }
@@ -108,7 +111,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         quantity: qty,
         meters: meters,
         rateExclVat: Number(item.unit_price || item.rate_excl_vat || 0),
-        note: item.note || undefined
+        note: item.note || undefined,
+        unit: unit
       };
     });
 
