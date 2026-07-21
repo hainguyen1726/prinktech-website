@@ -290,10 +290,10 @@ export default function QuoteBillModal({ order, isOpen, onClose }: QuoteBillModa
                 <span className="font-extrabold text-slate-800">{formatCurrency(subtotal)}</span>
               </div>
 
-              {shippingFee > 0 && (
-                <div className="flex justify-between items-center py-2 border-b border-slate-200 text-[13px] whitespace-nowrap">
-                  <span className="text-slate-600 font-medium">Phí vận chuyển (Phí ship):</span>
-                  <span className="font-extrabold text-slate-800">{formatCurrency(shippingFee)}</span>
+              {hasVat && (
+                <div className="flex justify-between items-center py-2 border-b border-slate-200 text-[13px] whitespace-nowrap text-amber-600">
+                  <span className="font-semibold">VAT (8%):</span>
+                  <span className="font-bold text-rose-600">{formatCurrency(vatAmount)}</span>
                 </div>
               )}
 
@@ -304,10 +304,10 @@ export default function QuoteBillModal({ order, isOpen, onClose }: QuoteBillModa
                 </div>
               )}
 
-              {hasVat && (
-                <div className="flex justify-between items-center py-2 border-b border-slate-200 text-[13px] whitespace-nowrap text-amber-600">
-                  <span className="font-semibold">VAT (8%):</span>
-                  <span className="font-bold text-rose-600">{formatCurrency(vatAmount)}</span>
+              {shippingFee > 0 && (
+                <div className="flex justify-between items-center py-2 border-b border-slate-200 text-[13px] whitespace-nowrap">
+                  <span className="text-slate-600 font-medium">Phí vận chuyển (Phí ship):</span>
+                  <span className="font-extrabold text-slate-800">{formatCurrency(shippingFee)}</span>
                 </div>
               )}
 
