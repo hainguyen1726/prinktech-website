@@ -1949,12 +1949,11 @@ export default function OrderList() {
                         </span>
                       </div>
                       {(() => {
-                        const isRoll = (selectedOrder as any).sticker_type === 'dtf_roll' || (selectedOrder as any).sticker_type === 'cuon';
+                        const meters = Number((selectedOrder as any).converted_length) || 0;
                         const rawCost = Number(selectedOrder.cost_amount) || 0;
-                        const sub = Number(selectedOrder.subtotal) || 0;
-                        const cleanCost = isRoll 
-                          ? Math.round(((selectedOrder as any).converted_length || 1) * 80000)
-                          : (rawCost > 0 && rawCost <= sub * 1.2 ? rawCost : Math.round(sub * 0.35));
+                        const cleanCost = meters > 0 
+                          ? (rawCost > 0 ? rawCost : Math.round(meters * 150000))
+                          : (rawCost > 0 ? rawCost : 0);
                         const profit = Number(selectedOrder.total || 0) - cleanCost;
 
                         return (

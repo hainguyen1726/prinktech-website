@@ -212,19 +212,17 @@ export async function GET(req: NextRequest) {
         }
       }
 
-      const isRoll = o.sticker_type === 'dtf_roll' || o.sticker_type === 'cuon';
       const rawCost = Number(o.cost_amount) || 0;
       const actualMeters = Number(o.quantity_actual) || 0;
 
-      // Bảo vệ giá vốn cost_amount không bao giờ bị vọt lên 60 triệu cho tem lẻ
+      // Giá vốn xưởng (Giá vốn trả xưởng = số mét thực tế * 150.000đ. Nếu chưa nhập số mét hoặc ghép đơn = 0m, giá vốn = 0đ)
       let calculatedCost = 0;
-      if (rawCost > 0 && rawCost <= itemSubtotal * 1.5) {
+      if (actualMeters > 0) {
+        calculatedCost = rawCost > 0 ? rawCost : Math.round(actualMeters * 150000);
+      } else if (rawCost > 0 && rawCost <= itemSubtotal * 1.5) {
         calculatedCost = rawCost;
-      } else if (isRoll) {
-        const meters = actualMeters || Number(o.quantity_expected) || 1.0;
-        calculatedCost = Math.round(meters * 150000);
       } else {
-        calculatedCost = Math.round(itemSubtotal * 0.35);
+        calculatedCost = 0;
       }
 
       return {
