@@ -1,13 +1,14 @@
 'use client';
 
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { Order, formatCurrency } from '@/lib/pricing';
-import { Printer, X, MapPin, Phone, Calendar, Globe } from 'lucide-react';
+import { Printer, X, MapPin, Phone, Calendar, Globe, Save } from 'lucide-react';
 
 interface QuoteBillModalProps {
   order: Order | null;
   isOpen: boolean;
   onClose: () => void;
+  onOrderUpdated?: (updatedOrder: any) => void;
 }
 
 // Lọc sạch các dòng ghi chú hệ thống (Excel, PDF, JSON, Vận chuyển...)
@@ -30,8 +31,9 @@ const getCleanCustomerNote = (note: string | null | undefined): string => {
     .trim();
 };
 
-export default function QuoteBillModal({ order, isOpen, onClose }: QuoteBillModalProps) {
+export default function QuoteBillModal({ order, isOpen, onClose, onOrderUpdated }: QuoteBillModalProps) {
   const printRef = useRef<HTMLDivElement>(null);
+  const [isArchiving, setIsArchiving] = useState(false);
 
   if (!isOpen || !order) return null;
 
@@ -59,16 +61,22 @@ export default function QuoteBillModal({ order, isOpen, onClose }: QuoteBillModa
           quantity: qty,
           unit_price: price,
           subtotal: sub,
+          note: it.note
+        };
+      } else {
+        const qty = Number(it.quantity) || 1;
+        const price = Number(it.unit_price) > 0 ? Number(it.unit_price) : (Number(it.rate_excl_vat) > 0 ? Number(it.rate_excl_vat) : 0);
+        const sub = Number(it.subtotal) > 0 ? Number(it.subtotal) : Math.round(qty * price);
+
+        return {
+          product_label: it.product_label || it.name || 'Tem UV DTF',
+          unit: it.unit || 'cái',
+          quantity: qty,
+          unit_price: price,
+          subtotal: sub,
+          note: it.note
         };
       }
-
-      return {
-        product_label: it.product_label || it.name || 'In tem UV DTF',
-        unit: u.includes('tờ') ? 'tờ' : 'cái',
-        quantity: Number(it.quantity) || 1,
-        unit_price: Number(it.unit_price) || 0,
-        subtotal: Number(it.subtotal) || 0,
-      };
     });
   } else {
     const sub = order.subtotal || (order as any).total_amount || 0;
@@ -99,6 +107,34 @@ export default function QuoteBillModal({ order, isOpen, onClose }: QuoteBillModa
     window.print();
   };
 
+  const handleArchive = async () => {
+    setIsArchiving(true);
+    try {
+      const res = await fetch(`/api/orders/${order.id}/archive`, {
+        method: 'POST',
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'Lưu trữ thất bại');
+      }
+      
+      alert('Lưu trữ đơn hàng lên Google Drive thành công!');
+      if (onOrderUpdated) {
+        onOrderUpdated({
+          ...order,
+          note: data.note,
+          quote_excel_url: data.excel_url,
+          quote_pdf_url: data.pdf_url
+        });
+      }
+    } catch (err: any) {
+      console.error(err);
+      alert(err.message || 'Lỗi lưu trữ đơn hàng');
+    } finally {
+      setIsArchiving(false);
+    }
+  };
+
   const subtotal = order.subtotal || rawItems.reduce((s, it) => s + (Number(it.subtotal) || 0), 0);
   
   // Trích xuất Phí ship chuẩn từ đơn hàng hoặc ghi chú
@@ -115,13 +151,11 @@ export default function QuoteBillModal({ order, isOpen, onClose }: QuoteBillModa
 
   const discount = Number(order.discount) || 0;
 
-  // Trích xuất Thuế VAT chuẩn (từ has_vat, tags, hoặc ghi chú)
+  // Trích xuất Thuế VAT chuẩn (từ has_vat hoặc tags)
   const tags = Array.isArray(order.tags) ? order.tags : [];
   const hasVat = Boolean(
     order.has_vat || 
-    tags.some((t: string) => t.toLowerCase().includes('vat')) ||
-    rawNoteStr.toLowerCase().includes('vat 8%') ||
-    rawNoteStr.toLowerCase().includes('thuế vat')
+    tags.some((t: string) => t.toLowerCase().includes('vat'))
   );
 
   const vatAmount = hasVat ? Math.round(subtotal * 0.08) : 0;
@@ -139,6 +173,13 @@ export default function QuoteBillModal({ order, isOpen, onClose }: QuoteBillModa
     year: 'numeric'
   });
 
+  // Tìm link Excel và PDF từ ghi chú nếu có
+  const noteStr = (order as any).note || '';
+  const excelMatch = noteStr.match(/- Excel Báo giá:\s*(https?:\/\/[^\s\n]+)/);
+  const pdfMatch = noteStr.match(/- PDF Báo giá:\s*(https?:\/\/[^\s\n]+)/);
+  const excelUrl = excelMatch ? excelMatch[1] : (order as any).quote_excel_url || null;
+  const pdfUrl = pdfMatch ? pdfMatch[1] : (order as any).quote_pdf_url || null;
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/75 backdrop-blur-xs p-3 md:p-6 overflow-y-auto animate-in fade-in duration-200">
       {/* Container Dialog */}
@@ -146,11 +187,39 @@ export default function QuoteBillModal({ order, isOpen, onClose }: QuoteBillModa
         
         {/* Action Bar Top (Ẩn khi In) */}
         <div className="print:hidden bg-slate-900 text-white px-6 py-3.5 flex items-center justify-between shadow-md">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <span className="px-2.5 py-0.5 bg-pink-500/20 text-pink-400 font-extrabold text-xs rounded-full border border-pink-500/30">🧾 BÁO GIÁ</span>
             <span className="text-slate-300 text-xs font-mono">({order.order_number})</span>
+            {excelUrl && (
+              <a
+                href={excelUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-3 py-1 bg-emerald-600/20 hover:bg-emerald-600/35 border border-emerald-500/30 text-emerald-400 text-[11px] font-bold rounded-xl transition flex items-center gap-1 cursor-pointer"
+              >
+                📊 Tải Excel
+              </a>
+            )}
+            {pdfUrl && (
+              <a
+                href={pdfUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-3 py-1 bg-rose-600/20 hover:bg-rose-600/35 border border-rose-500/30 text-rose-400 text-[11px] font-bold rounded-xl transition flex items-center gap-1 cursor-pointer"
+              >
+                📄 Tải PDF
+              </a>
+            )}
           </div>
           <div className="flex items-center gap-2">
+            <button
+              onClick={handleArchive}
+              disabled={isArchiving}
+              className="px-4 py-1.5 bg-purple-600 hover:bg-purple-700 disabled:bg-purple-800/50 text-white text-xs font-bold rounded-xl transition flex items-center gap-1.5 shadow-sm cursor-pointer disabled:cursor-not-allowed"
+            >
+              <Save size={15} /> 
+              {isArchiving ? '⏳ Đang lưu...' : excelUrl ? '🔄 Cập nhật Lưu trữ' : '💾 Lưu trữ lên Drive'}
+            </button>
             <button
               onClick={handlePrint}
               className="px-4 py-1.5 bg-pink-600 hover:bg-pink-700 text-white text-xs font-bold rounded-xl transition flex items-center gap-1.5 shadow-sm cursor-pointer"

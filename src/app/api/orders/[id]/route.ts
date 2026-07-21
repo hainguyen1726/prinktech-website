@@ -175,7 +175,13 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
     const newShippingCost = shipping_fee !== undefined ? Number(shipping_fee) || 0 : (oldOrder.shipping_cost ?? oldOrder.shipping_fee ?? 35000);
     const newDiscount = discount !== undefined ? Number(discount) || 0 : (oldOrder.discount_amount ?? oldOrder.discount ?? 0);
-    const newTotalAmount = newSubtotal + newShippingCost - newDiscount;
+    
+    // Kiểm tra VAT có hiệu lực hay không
+    const finalHasVat = has_vat !== undefined 
+      ? has_vat 
+      : Boolean(oldOrder.request_vat || oldOrder.has_vat || oldOrder.tags?.some((t: string) => t.toLowerCase().includes('vat')));
+    const vatAmount = finalHasVat ? Math.round(newSubtotal * 0.08) : 0;
+    const newTotalAmount = newSubtotal + newShippingCost + vatAmount - newDiscount;
 
     let newCostAmount = cost_amount !== undefined ? Number(cost_amount) : oldOrder.cost_amount;
     if (newCostAmount === undefined || newCostAmount <= 0 || newCostAmount > newSubtotal * 1.5) {

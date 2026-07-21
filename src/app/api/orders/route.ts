@@ -204,7 +204,11 @@ export async function GET(req: NextRequest) {
 
       const shippingFee = Number(o.shipping_cost) || 0;
       const discount = Number(o.discount_amount) || 0;
-      const total = itemSubtotal + shippingFee - discount;
+      
+      const tags = Array.isArray(o.tags) ? o.tags : [];
+      const hasVat = tags.some((t: string) => t.toLowerCase().includes('vat'));
+      const vatAmount = hasVat ? Math.round(itemSubtotal * 0.08) : 0;
+      const total = itemSubtotal + shippingFee + vatAmount - discount;
 
       let orderSource = 'admin';
       if (Array.isArray(o.tags)) {

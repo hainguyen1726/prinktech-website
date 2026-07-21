@@ -1641,8 +1641,7 @@ export default function OrderList() {
                                       e.stopPropagation();
                                       const isOrderVat = Boolean(
                                         order.has_vat || 
-                                        order.tags?.some((t: string) => t.toLowerCase().includes('vat')) ||
-                                        order.note?.toLowerCase().includes('vat 8%')
+                                        order.tags?.some((t: string) => t.toLowerCase().includes('vat'))
                                       );
                                       handleVatToggle(order.id, isOrderVat);
                                     }}
@@ -1650,8 +1649,7 @@ export default function OrderList() {
                                     className={`inline-block px-1.5 py-0.5 rounded text-[9px] font-bold border transition-all cursor-pointer disabled:opacity-50 ${
                                       Boolean(
                                         order.has_vat || 
-                                        order.tags?.some((t: string) => t.toLowerCase().includes('vat')) ||
-                                        order.note?.toLowerCase().includes('vat 8%')
+                                        order.tags?.some((t: string) => t.toLowerCase().includes('vat'))
                                       )
                                         ? 'bg-amber-50 text-amber-800 border-amber-300 dark:bg-amber-950/40 dark:text-amber-300'
                                         : 'bg-slate-50 text-slate-400 border-slate-200'
@@ -2854,6 +2852,23 @@ export default function OrderList() {
         order={quoteBillOrder}
         isOpen={showQuoteBillModal}
         onClose={() => setShowQuoteBillModal(false)}
+        onOrderUpdated={(updatedOrder) => {
+          setQuoteBillOrder(updatedOrder);
+          setOrders(prev => prev.map(o => o.id === updatedOrder.id ? {
+            ...o,
+            note: updatedOrder.note,
+            quote_excel_url: updatedOrder.quote_excel_url,
+            quote_pdf_url: updatedOrder.quote_pdf_url
+          } : o));
+          if (selectedOrder?.id === updatedOrder.id) {
+            setSelectedOrder(prev => prev ? {
+              ...prev,
+              note: updatedOrder.note,
+              quote_excel_url: updatedOrder.quote_excel_url,
+              quote_pdf_url: updatedOrder.quote_pdf_url
+            } : null);
+          }
+        }}
       />
     </div>
   );
