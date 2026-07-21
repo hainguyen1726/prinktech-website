@@ -215,7 +215,7 @@ export async function GET(req: NextRequest) {
         source: orderSource,
         has_vat: Array.isArray(o.tags) && o.tags.includes('VAT 8%'),
         created_at: o.created_at,
-        converted_length: Number(o.quantity_actual) || 0,
+        converted_length: o.sticker_type === 'dtf_roll' ? (Number(o.quantity_actual) || 0) : 0,
         cost_amount: Number(o.cost_amount) || 0,
         packaging_fee: (Number(o.packaging_unit_price) || 0) * (Number(o.pack_total_packs) || 0)
       };

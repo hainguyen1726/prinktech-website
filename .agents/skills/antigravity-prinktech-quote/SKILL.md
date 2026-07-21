@@ -29,9 +29,11 @@ graph TD
 
 ## 📂 2. NGUYÊN TẮC CẤU TRÚC VÀ ĐẶT TÊN THƯ MỤC
 
-### 2.1 Cục bộ (Local Directory)
-- **Thư mục lưu trữ**: `bao_gia/[STT]. [Ten_Khach_Hang]_C_[So_Dien_Thoai]`
-  *(Ví dụ: `bao_gia/2. Dang_Khoa_Sinh_C_0768598540`)*
+### 2.1 Cấu trúc & Quy tắc STT Đồng bộ (BẮT BUỘC KIỂM TRA DRIVE TRƯỚC)
+- **Quy tắc Kiểm tra STT**: Trước khi tạo thư mục khách hàng mới, Agent **bắt buộc phải quét danh sách thư mục trên Google Drive** (thư mục cha `1HKqBw0DKnmQvcXzyjo9cgtrFl15Ehj24`) để tìm `STT` lớn nhất hiện tại. Số thứ tự mới sẽ là `STT_Mới = STT_Lớn_Nhất + 1`.
+- **Thư mục lưu trữ Cục bộ (Local Directory)**: `bao_gia/[STT]. [Ten_Khach_Hang]_C_[So_Dien_Thoai]`
+  *(Ví dụ: `bao_gia/5. Nguyen_Duc_Nghia_C_0334626393`)*
+- **Thư mục Google Drive**: `[STT]. ${customer_name} - ${customer_phone}` *(Ví dụ: `5. Nguyễn Đức Nghĩa - 0334626393`)*
 - **Danh sách file bắt buộc**:
   1. `1. Bao_gia_in_tem_UV_DTF_[Ten_Khach_Hang]_V2.xlsx` (Bảng tính Excel báo giá gốc)
   2. `2. Bao_gia_in_tem_UV_DTF_[Ten_Khach_Hang]_V2.pdf` (Tệp PDF xuất ra gửi khách)
@@ -41,7 +43,7 @@ graph TD
 
 ### 2.2 Google Drive
 - **Thư mục cha**: `1HKqBw0DKnmQvcXzyjo9cgtrFl15Ehj24` (Thư mục Báo giá chung của dự án)
-- **Thư mục con**: `[STT]. ${customer_name} - ${customer_phone}` *(Ví dụ: `2. Đặng Khoa Sinh - 0768598540`)*
+- **Thư mục con**: `[STT]. ${customer_name} - ${customer_phone}` *(Ví dụ: `5. Nguyễn Đức Nghĩa - 0334626393`)*
 - **Quyền hạn**: Phải cấp quyền đọc công khai (`anyone` as `reader`) cho thư mục con sau khi tạo để website load ảnh / file không bị lỗi phân quyền.
 
 ---
@@ -102,7 +104,7 @@ Agent phải tự động hoặc thủ công rà soát danh sách kiểm tra (Ch
   - **Đơn giá in `unit_price` và Số lượng `quantity_actual`**:
     - **Nếu in theo mét dài cuộn**: `quantity_actual` = số mét dài, `unit_price` = đơn giá in/mét đã gồm VAT 8% (tức là `Tổng tiền in gồm VAT / số mét`).
     - **Nếu bán theo cái / tờ**: `quantity_actual` = số lượng cái hoặc tờ thực tế, `unit_price` = đơn giá in của 1 cái hoặc 1 tờ đã gồm VAT 8% (tức là `Tổng tiền in gồm VAT / số lượng cái hoặc tờ`).
-  - **Trạng thái đơn hàng `status`**: Bắt buộc lưu là `'processing'` (đang xử lý) để vượt qua Check Constraint `orders_status_check` của cơ sở dữ liệu.
+  - **Trạng thái đơn hàng `status`**: Bắt buộc lưu là `'pending'` (Chờ xác nhận) khi tạo đơn/báo giá mới.
   - **Liên kết file**: Lưu link thư mục Google Drive vào cột `design_link`, link ảnh layout vào `preview_image` & `layout_image`, link Excel và PDF báo giá vào cột `note`.
 - **Bảng Nhật ký (`order_logs`)**:
   - Ghi nhận lịch sử hoạt động `action = 'create'` với chi tiết các thay đổi (`changes`).

@@ -61,26 +61,48 @@ async function syncOrder({
     oAuth2Client.setCredentials({ refresh_token: REFRESH_TOKEN });
     const drive = google.drive({ version: 'v3', auth: oAuth2Client });
 
-    // Trích xuất số thứ tự (STT) từ localFolderSlug (ví dụ: "2.") để đánh số thư mục Drive
-    const sttMatch = localFolderSlug.match(/^(\d+\.)/);
-    const sttPrefix = sttMatch ? `${sttMatch[1]} ` : ''; // Ví dụ: "2. "
-    
-    // Tên thư mục Drive được đánh số đồng bộ: "2. Đặng Khoa Sinh - 0768598540"
-    const folderName = `${sttPrefix}${customerName} - ${customerPhone}`;
-    let folderId = null;
-    let driveFolderLink = null;
-
-    // Tìm thư mục cũ
-    const searchRes = await drive.files.list({
-      q: `'${PARENT_DRIVE_FOLDER_ID}' in parents and name = '${folderName}' and mimeType = 'application/vnd.google-apps.folder' and trashed = false`,
+    // 1. Quét Google Drive để xác định STT lớn nhất hiện tại
+    const driveListRes = await drive.files.list({
+      q: `'${PARENT_DRIVE_FOLDER_ID}' in parents and mimeType = 'application/vnd.google-apps.folder' and trashed = false`,
       fields: 'files(id, name, webViewLink)',
     });
+    
+    let maxSTT = 0;
+    let existingFolder = null;
+    const existingFolders = driveListRes.data.files || [];
+    
+    for (const f of existingFolders) {
+      const match = f.name.match(/^\s*(\d+)\./);
+      if (match) {
+        const num = parseInt(match[1], 10);
+        if (num > maxSTT) maxSTT = num;
+      }
+      if (f.name.includes(customerPhone) || f.name.includes(customerName)) {
+        existingFolder = f;
+      }
+    }
 
-    if (searchRes.data.files && searchRes.data.files.length > 0) {
-      folderId = searchRes.data.files[0].id;
-      driveFolderLink = searchRes.data.files[0].webViewLink;
-      console.log("Found existing folder:", folderId);
+    let folderId = null;
+    let driveFolderLink = null;
+    let folderName = '';
+
+    if (existingFolder) {
+      folderId = existingFolder.id;
+      driveFolderLink = existingFolder.webViewLink;
+      folderName = existingFolder.name;
+      console.log("Found existing folder on Drive:", folderName, "(ID:", folderId, ")");
     } else {
+      // Trích xuất số thứ tự (STT) từ localFolderSlug hoặc tự tính từ Drive
+      const sttMatch = localFolderSlug.match(/^(\d+)\./);
+      let sttNum = sttMatch ? parseInt(sttMatch[1], 10) : maxSTT + 1;
+      
+      // Đảm bảo không trùng STT đã có trên Drive
+      if (existingFolders.some(f => f.name.startsWith(`${sttNum}.`))) {
+        sttNum = maxSTT + 1;
+      }
+      
+      folderName = `${sttNum}. ${customerName} - ${customerPhone}`;
+      console.log(`Creating new Drive folder (STT ${sttNum}): "${folderName}"...`);
       const createRes = await drive.files.create({
         requestBody: {
           name: folderName,
@@ -180,8 +202,13 @@ async function syncOrder({
     const randNum = Math.floor(Math.random() * 9000) + 1000;
     const orderCode = `ORD-${dateStr}-${randNum}`;
 
-    // Tính đơn giá in/mét đã gồm VAT 8%
-    const unitPriceInclVat = Math.round(subtotalAfterVat / meters);
+    // Kiểm tra loại đơn hàng (cuộn vs cái/tờ)
+    const isPieceOrder = meters === undefined || meters === null || meters < 0.5 || tags?.includes('In mẫu 5 cái');
+    const stickerType = isPieceOrder ? 'dtf_sheet' : 'dtf_roll';
+    const actualQty = isPieceOrder ? quantity : meters;
+    
+    // Tính đơn giá in đã gồm VAT 8% (theo mét nếu cuộn, hoặc theo cái nếu tem lẻ)
+    const unitPriceInclVat = Math.round(subtotalAfterVat / (actualQty || 1));
 
     // Tìm file Excel & PDF trong folder
     const excelFile = localFiles.find(f => f.endsWith('.xlsx')) || '';
@@ -197,16 +224,16 @@ async function syncOrder({
     const newOrder = {
       order_code: orderCode,
       partner_id: partnerId,
-      sticker_type: 'dtf_roll',
+      sticker_type: stickerType,
       design_link: driveFolderLink,
       preview_image: directLayoutLink,
       layout_image: directLayoutLink,
       quantity_expected: quantity,
-      quantity_actual: meters,
+      quantity_actual: actualQty,
       unit_price: unitPriceInclVat,
       shipping_cost: shippingFee,
       discount_amount: 0,
-      status: 'processing', // Bắt buộc để tránh check constraint
+      status: 'pending', // Trạng thái đơn hàng mới tạo: Chờ xác nhận
       payment_status: 'unpaid',
       note: orderNote,
       created_at: new Date().toISOString(),
@@ -246,7 +273,7 @@ async function syncOrder({
 }
 
 // Chạy trực tiếp từ dòng lệnh (để test hoặc demo)
-if (process.argv[1].endsWith('sync_order.mjs')) {
+if (process.argv[1] && process.argv[1].endsWith('sync_order.mjs')) {
   syncOrder({
     customerName: "Đặng Khoa Sinh",
     customerPhone: "0768598540",
