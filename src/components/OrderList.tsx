@@ -122,6 +122,15 @@ export default function OrderList() {
   const totalSubtotal = selectedOrdersForStats.reduce((sum, o) => sum + (o.subtotal || 0), 0);
   const totalShippingFee = selectedOrdersForStats.reduce((sum, o) => sum + (o.shipping_fee || 0), 0);
   const totalPackagingFee = selectedOrdersForStats.reduce((sum, o) => sum + (o.packaging_fee || 0), 0);
+  const totalGrandTotal = selectedOrdersForStats.reduce((sum, o) => {
+    if (typeof o.total === 'number' && o.total > 0) return sum + o.total;
+    const sub = Number(o.subtotal) || 0;
+    const ship = Number(o.shipping_fee) || 0;
+    const pack = Number(o.packaging_fee) || 0;
+    const disc = Number(o.discount) || 0;
+    const vat = o.has_vat ? Math.round(sub * 0.08) : 0;
+    return sum + (sub + ship + pack + vat - disc);
+  }, 0);
 
   // Helper tính khoảng thời gian theo preset
   const calculateDateRange = (preset: string, fromVal: string, toVal: string) => {
@@ -1532,6 +1541,55 @@ export default function OrderList() {
         </div>
 
 
+        {/* Summary Bar hiển thị ở Header khi chọn đơn hàng */}
+        {selectedOrderIds.size > 0 && (
+          <div className="sticky top-2 z-40 mb-4 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-2 border-purple-500/40 dark:border-purple-500/40 shadow-xl rounded-2xl p-3.5 md:p-4 flex flex-col md:flex-row md:items-center justify-between gap-3 animate-in slide-in-from-top duration-300">
+            <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+              <div className="flex items-center gap-2">
+                <span className="h-2.5 w-2.5 rounded-full bg-purple-550 animate-pulse" />
+                <span className="text-xs md:text-sm font-bold text-slate-800 dark:text-slate-200">
+                  Đang chọn: <strong className="text-purple-650 dark:text-purple-400 font-extrabold">{selectedOrderIds.size}</strong> đơn hàng
+                </span>
+              </div>
+              
+              <div className="h-4 w-px bg-slate-200 dark:bg-slate-800 hidden md:block" />
+
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs md:text-sm">
+                <div className="flex items-center gap-1">
+                  <span className="text-slate-500 dark:text-slate-400 font-medium">Tổng số m:</span>
+                  <span className="font-extrabold text-slate-900 dark:text-white font-mono">{totalMeters.toLocaleString('vi-VN')} m</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <span className="text-slate-500 dark:text-slate-400 font-medium">Tiền in:</span>
+                  <span className="font-extrabold text-emerald-600 dark:text-emerald-450 font-mono">{formatCurrency(totalSubtotal)}</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <span className="text-slate-500 dark:text-slate-400 font-medium">Tiền ship:</span>
+                  <span className="font-extrabold text-blue-600 dark:text-blue-450 font-mono">{formatCurrency(totalShippingFee)}</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <span className="text-slate-500 dark:text-slate-400 font-medium">Đóng gói:</span>
+                  <span className="font-extrabold text-orange-600 dark:text-orange-450 font-mono">{formatCurrency(totalPackagingFee)}</span>
+                </div>
+                
+                <div className="h-4 w-px bg-slate-200 dark:bg-slate-800 hidden md:block" />
+                
+                <div className="flex items-center gap-1 bg-pink-50 dark:bg-pink-950/40 px-2.5 py-1 rounded-lg border border-pink-200 dark:border-pink-800/50">
+                  <span className="text-pink-600 dark:text-pink-400 font-bold">Tổng tiền:</span>
+                  <span className="font-black text-pink-600 dark:text-pink-400 font-mono text-sm md:text-base">{formatCurrency(totalGrandTotal)}</span>
+                </div>
+              </div>
+            </div>
+
+            <button
+              onClick={() => setSelectedOrderIds(new Set())}
+              className="px-3.5 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs rounded-xl shadow-sm transition-all cursor-pointer self-end md:self-auto text-center shrink-0"
+            >
+              Hủy chọn
+            </button>
+          </div>
+        )}
+
         {/* Grid layout */}
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-6 items-start">
           
@@ -2411,47 +2469,7 @@ export default function OrderList() {
           </div>
         </div>
       )}
-      {/* Floating Summary Bar */}
-      {selectedOrderIds.size > 0 && (
-        <div className="fixed bottom-6 left-4 right-4 md:left-[280px] z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border border-slate-200 dark:border-slate-800 shadow-2xl rounded-2xl p-4 md:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 animate-in slide-in-from-bottom duration-300">
-          <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
-            <div className="flex items-center gap-2">
-              <span className="h-2.5 w-2.5 rounded-full bg-purple-550 animate-pulse" />
-              <span className="text-sm font-bold text-slate-800 dark:text-slate-200">
-                Đang chọn: <strong className="text-purple-650 dark:text-purple-400 font-extrabold">{selectedOrderIds.size}</strong> đơn hàng
-              </span>
-            </div>
-            
-            <div className="h-4 w-px bg-slate-200 dark:bg-slate-800 hidden md:block" />
 
-            <div className="grid grid-cols-2 sm:flex sm:items-center gap-x-5 gap-y-1.5 text-xs md:text-sm">
-              <div className="flex items-center gap-1.5">
-                <span className="text-slate-500 dark:text-slate-400 font-medium">Tổng số m:</span>
-                <span className="font-extrabold text-slate-900 dark:text-white font-mono">{totalMeters.toLocaleString('vi-VN')} m</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <span className="text-slate-500 dark:text-slate-400 font-medium">Tiền in:</span>
-                <span className="font-extrabold text-emerald-600 dark:text-emerald-450 font-mono">{formatCurrency(totalSubtotal)}</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <span className="text-slate-500 dark:text-slate-400 font-medium">Tiền ship:</span>
-                <span className="font-extrabold text-blue-600 dark:text-blue-450 font-mono">{formatCurrency(totalShippingFee)}</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <span className="text-slate-500 dark:text-slate-400 font-medium">Đóng gói:</span>
-                <span className="font-extrabold text-orange-600 dark:text-orange-450 font-mono">{formatCurrency(totalPackagingFee)}</span>
-              </div>
-            </div>
-          </div>
-
-          <button
-            onClick={() => setSelectedOrderIds(new Set())}
-            className="px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs rounded-xl shadow-sm transition-all cursor-pointer self-end md:self-auto text-center"
-          >
-            Hủy chọn
-          </button>
-          </div>
-        )}
 
         {/* MODAL SỬA ĐƠN HÀNG ĐÃ TẠO */}
         {showEditModal && editFormData && (

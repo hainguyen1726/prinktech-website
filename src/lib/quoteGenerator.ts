@@ -194,11 +194,10 @@ export function generatePdfQuote(data: QuoteData, outputPath: string): Promise<v
       doc.font(fBold).fontSize(8.5);
       doc.fillColor(cTextMuted);
       doc.text("STT", 35, tableTop + 6, { width: 22, align: 'center' });
-      doc.text("Mẫu tem (Mã đơn)", 62, tableTop + 6, { width: 118 });
-      doc.text("Quy cách / Cỡ", 185, tableTop + 6, { width: 70 });
-      doc.text("Ngày", 260, tableTop + 6, { width: 70, align: 'center' });
-      doc.text("Số lượng", 335, tableTop + 6, { width: 50, align: 'center' });
-      doc.text("Đơn giá", 390, tableTop + 6, { width: 60, align: 'right' });
+      doc.text("Mẫu tem (Mã đơn)", 62, tableTop + 6, { width: 140 });
+      doc.text("Quy cách / Cỡ", 205, tableTop + 6, { width: 85 });
+      doc.text("Số lượng", 290, tableTop + 6, { width: 85, align: 'center' });
+      doc.text("Đơn giá", 375, tableTop + 6, { width: 75, align: 'right' });
       doc.text("CK", 455, tableTop + 6, { width: 25, align: 'center' });
       
       doc.fillColor('#ffffff');
@@ -229,14 +228,13 @@ export function generatePdfQuote(data: QuoteData, outputPath: string): Promise<v
 
         doc.font(fRegular).fontSize(8.5).fillColor(cTextDark);
         doc.text(String(index++), 35, currentY + 4, { width: 22, align: 'center' });
-        doc.text(item.productName, 62, currentY + 4, { width: 118 });
-        doc.text(item.size, 185, currentY + 4, { width: 70 });
-        doc.text(new Date().toLocaleDateString('vi-VN'), 260, currentY + 4, { width: 70, align: 'center' });
+        doc.text(item.productName, 62, currentY + 4, { width: 140 });
+        doc.text(item.size, 205, currentY + 4, { width: 85 });
         
         const hasM = item.meters !== undefined && item.meters !== null && item.meters > 0;
         const qtyStr = hasM ? `${item.meters!.toFixed(1)} m` : `${item.quantity} ${item.unit || 'cái'}`;
-        doc.text(qtyStr, 335, currentY + 4, { width: 50, align: 'center' });
-        doc.text(fmt(item.rateExclVat), 390, currentY + 4, { width: 60, align: 'right' });
+        doc.text(qtyStr, 290, currentY + 4, { width: 85, align: 'center' });
+        doc.text(fmt(item.rateExclVat), 375, currentY + 4, { width: 75, align: 'right' });
         
         doc.font(fBold).fillColor(cAccent).text("—", 455, currentY + 4, { width: 25, align: 'center' });
         
