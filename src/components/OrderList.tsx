@@ -1545,40 +1545,58 @@ export default function OrderList() {
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex justify-between items-start">
-                          <div>
-                            <span className="font-mono font-bold text-xs text-[var(--accent)]">{order.order_number}</span>
-                            <div className="mt-1">
-                              <span className={`inline-block px-1.5 py-0.5 rounded text-[9px] font-bold border ${
-                                order.source === 'website' || order.source === 'web'
-                                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200' 
-                                  : order.source === 'fb' || order.source === 'facebook'
-                                  ? 'bg-blue-50 text-blue-700 border-blue-200'
-                                  : order.source === 'shopee'
-                                  ? 'bg-orange-50 text-orange-700 border-orange-200'
-                                  : order.source === 'tiktok'
-                                  ? 'bg-slate-50 text-slate-800 border-slate-300'
-                                  : order.source === 'other' || order.source === 'khác'
-                                  ? 'bg-yellow-50 text-yellow-800 border-yellow-200'
-                                  : 'bg-purple-50 text-purple-700 border-purple-200'
-                              }`}>
-                                {order.source === 'website' || order.source === 'web' ? '🌐 Website' :
-                                 order.source === 'fb' || order.source === 'facebook' ? '📘 Facebook' :
-                                 order.source === 'shopee' ? '🛍️ Shopee' :
-                                 order.source === 'tiktok' ? '🎵 Tiktok' :
-                                 order.source === 'other' || order.source === 'khác' ? '❓ Khác' : '👤 Admin tạo'}
-                              </span>
+                              <div>
+                                <span className="font-mono font-bold text-xs text-[var(--accent)]">{order.order_number}</span>
+                                <div className="mt-1">
+                                  <span className={`inline-block px-1.5 py-0.5 rounded text-[9px] font-bold border ${
+                                    order.source === 'website' || order.source === 'web'
+                                      ? 'bg-emerald-50 text-emerald-700 border-emerald-200' 
+                                      : order.source === 'fb' || order.source === 'facebook'
+                                      ? 'bg-blue-50 text-blue-700 border-blue-200'
+                                      : order.source === 'shopee'
+                                      ? 'bg-orange-50 text-orange-700 border-orange-200'
+                                      : order.source === 'tiktok'
+                                      ? 'bg-slate-50 text-slate-800 border-slate-300'
+                                      : order.source === 'other' || order.source === 'khác'
+                                      ? 'bg-yellow-50 text-yellow-800 border-yellow-200'
+                                      : 'bg-purple-50 text-purple-700 border-purple-200'
+                                  }`}>
+                                    {order.source === 'website' || order.source === 'web' ? '🌐 Website' :
+                                     order.source === 'fb' || order.source === 'facebook' ? '📘 Facebook' :
+                                     order.source === 'shopee' ? '🛍️ Shopee' :
+                                     order.source === 'tiktok' ? '🎵 Tiktok' :
+                                     order.source === 'other' || order.source === 'khác' ? '❓ Khác' : '👤 Admin tạo'}
+                                  </span>
+                                </div>
+                                <h4 className="font-bold text-sm text-foreground mt-1">{order.customer_name}</h4>
+                                <p className="text-xs text-text-muted mt-0.5">{order.customer_phone}</p>
+                              </div>
+                              <div className="text-right flex flex-col items-end gap-1">
+                                <div className="flex items-center gap-1">
+                                  <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold border ${status.color}`}>
+                                    {status.label}
+                                  </span>
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handlePaymentStatusChange(order.id, order.payment_status === 'paid' ? 'unpaid' : 'paid');
+                                    }}
+                                    disabled={updatingId === order.id}
+                                    className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold border transition-all cursor-pointer disabled:opacity-50 ${
+                                      order.payment_status === 'paid'
+                                        ? 'bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-700'
+                                        : 'bg-rose-50 text-rose-700 border-rose-300 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-700'
+                                    }`}
+                                    title="Bấm để đổi trạng thái thanh toán"
+                                  >
+                                    {order.payment_status === 'paid' ? '✓ Đã' : '✕ Chưa'}
+                                  </button>
+                                </div>
+                                <div className="font-extrabold text-slate-900 dark:text-slate-100 text-sm mt-1">{formatCurrency(order.total)}</div>
+                              </div>
                             </div>
-                            <h4 className="font-bold text-sm text-foreground mt-1">{order.customer_name}</h4>
-                            <p className="text-xs text-text-muted mt-0.5">{order.customer_phone}</p>
                           </div>
-                          <div className="text-right">
-                            <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold border ${status.color}`}>
-                              {status.label}
-                            </span>
-                            <div className="font-extrabold text-slate-900 text-sm mt-2">{formatCurrency(order.total)}</div>
-                          </div>
-                        </div>
-                        </div>
                         </div>
                         <div className="flex justify-between items-center mt-3 pt-2 border-t border-card-border/50 text-[10px] text-text-muted pl-7.5">
                           <span>{new Date(order.created_at).toLocaleDateString('vi-VN')}</span>
@@ -1614,6 +1632,7 @@ export default function OrderList() {
                         <th className="pb-3 font-bold">Khách hàng</th>
                         <th className="pb-3 text-right font-bold">Tổng tiền</th>
                         <th className="pb-3 text-center font-bold">Trạng thái</th>
+                        <th className="pb-3 text-center font-bold">Thanh toán</th>
                         <th className="pb-3 text-right font-bold">Thao tác</th>
                       </tr>
                     </thead>
@@ -1657,7 +1676,7 @@ export default function OrderList() {
                                    order.source === 'shopee' ? '🛍️ Shopee' :
                                    order.source === 'tiktok' ? '🎵 Tiktok' :
                                    order.source === 'other' || order.source === 'khác' ? '❓ Khác' : '👤 Admin tạo'}
-                                 </span>
+                                </span>
                               </div>
                             </td>
                             <td className="py-3.5">
@@ -1673,6 +1692,21 @@ export default function OrderList() {
                               <span className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-bold border ${status.color}`}>
                                 {status.label}
                               </span>
+                            </td>
+                            <td className="py-3.5 text-center" onClick={e => e.stopPropagation()}>
+                              <button
+                                type="button"
+                                onClick={() => handlePaymentStatusChange(order.id, order.payment_status === 'paid' ? 'unpaid' : 'paid')}
+                                disabled={updatingId === order.id}
+                                className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold border transition-all cursor-pointer shadow-xs hover:opacity-85 disabled:opacity-50 ${
+                                  order.payment_status === 'paid'
+                                    ? 'bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-700'
+                                    : 'bg-rose-50 text-rose-700 border-rose-300 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-700'
+                                }`}
+                                title="Bấm để đổi trạng thái thanh toán"
+                              >
+                                {order.payment_status === 'paid' ? '✓ Đã' : '✕ Chưa'}
+                              </button>
                             </td>
                             <td className="py-3.5 text-right" onClick={e => e.stopPropagation()}>
                               <div className="flex items-center justify-end gap-1.5">
