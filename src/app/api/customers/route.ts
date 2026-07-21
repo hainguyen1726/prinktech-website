@@ -41,18 +41,45 @@ export async function GET(req: NextRequest) {
     if (partnerIds.length > 0) {
       const { data: orders } = await supabaseAdmin
         .from('orders')
-        .select('id, partner_id, total_amount, status, created_at')
+        .select('id, partner_id, total_amount, shipping_cost, discount_amount, note, status, created_at')
         .in('partner_id', partnerIds);
 
       (orders || []).forEach((o: any) => {
         if (!ordersByPartner[o.partner_id]) ordersByPartner[o.partner_id] = [];
-        ordersByPartner[o.partner_id].push(o);
+        
+        // Parse retail total
+        const jsonMatch = o.note?.match(/- Dữ liệu sản phẩm JSON:\s*([^\n\r]+)/);
+        let items = [];
+        if (jsonMatch) {
+          try { items = JSON.parse(jsonMatch[1]); } catch(e) {}
+        }
+
+        const calculatedItemsSubtotal = items.reduce((sum: number, it: any) => sum + (Number(it.subtotal) || 0), 0);
+        const shippingFee = Number(o.shipping_cost) || 0;
+        const discount = Number(o.discount_amount) || 0;
+
+        let retailTotal = 0;
+        if (calculatedItemsSubtotal > 0) {
+          retailTotal = calculatedItemsSubtotal + shippingFee - discount;
+        } else {
+          const totalMatch = o.note?.match(/Tổng\s*([0-9\.]+k|[0-9]+)/i);
+          if (totalMatch) {
+            const rawT = totalMatch[1].toLowerCase();
+            if (rawT.endsWith('k')) retailTotal = parseFloat(rawT) * 1000;
+            else retailTotal = Number(rawT) || 0;
+          }
+          if (retailTotal === 0) {
+            retailTotal = (Number(o.total_amount) || 0) + shippingFee - discount;
+          }
+        }
+
+        ordersByPartner[o.partner_id].push({ ...o, retailTotal });
       });
     }
 
     const formattedData = (partners || []).map((p: any) => {
       const pOrders = ordersByPartner[p.id] || [];
-      const totalSpent = pOrders.reduce((sum: number, o: any) => sum + (Number(o.total_amount) || 0), 0);
+      const totalSpent = pOrders.reduce((sum: number, o: any) => sum + (Number(o.retailTotal) || 0), 0);
       return {
         ...p,
         customer_code: `KH-${p.id.slice(0, 6).toUpperCase()}`,
