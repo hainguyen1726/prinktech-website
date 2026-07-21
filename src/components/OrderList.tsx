@@ -13,6 +13,7 @@ import {
 } from '@/lib/pricing';
 import AdminGuard from '@/components/AdminGuard';
 import CustomerDesignSelector, { CustomerDesign } from '@/components/CustomerDesignSelector';
+import QuoteBillModal from '@/components/QuoteBillModal';
 
 const getCleanNote = (note: string | null): string => {
   if (!note) return '';
@@ -306,6 +307,15 @@ export default function OrderList() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [editFormData, setEditFormData] = useState<any>(null);
   const [savingEdit, setSavingEdit] = useState(false);
+
+  // States cho Modal Xem & In Báo Giá (Bill)
+  const [quoteBillOrder, setQuoteBillOrder] = useState<Order | null>(null);
+  const [showQuoteBillModal, setShowQuoteBillModal] = useState<boolean>(false);
+
+  const handleOpenQuoteBill = (order: Order) => {
+    setQuoteBillOrder(order);
+    setShowQuoteBillModal(true);
+  };
 
   const openEditModal = (order: Order) => {
     const rawItems = Array.isArray(order.items) && order.items.length > 0 ? order.items : [
@@ -1778,6 +1788,13 @@ export default function OrderList() {
                             <td className="py-3.5 text-right" onClick={e => e.stopPropagation()}>
                               <div className="flex items-center justify-end gap-1.5">
                                 <button
+                                  onClick={() => handleOpenQuoteBill(order)}
+                                  className="px-2 py-1 rounded-lg border border-amber-300 bg-amber-50 text-amber-900 hover:bg-amber-100 transition-all font-bold text-xs cursor-pointer inline-flex items-center gap-1 shadow-sm"
+                                  title="Xem & In Báo Giá (Bill)"
+                                >
+                                  🧾 Bill
+                                </button>
+                                <button
                                   onClick={() => openEditModal(order)}
                                   className="px-2 py-1 rounded-lg border border-purple-200 bg-purple-50 text-purple-700 hover:bg-purple-100 transition-all font-bold text-xs cursor-pointer inline-flex items-center gap-1 shadow-sm"
                                   title="Sửa thông tin đơn hàng này"
@@ -1850,6 +1867,12 @@ export default function OrderList() {
                     Chi tiết đơn hàng
                   </h2>
                   <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => handleOpenQuoteBill(selectedOrder)}
+                      className="px-2.5 py-1 rounded-lg bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs shadow-sm transition flex items-center gap-1 cursor-pointer"
+                    >
+                      🧾 In Bill
+                    </button>
                     <button
                       onClick={() => openEditModal(selectedOrder)}
                       className="px-2.5 py-1 rounded-lg bg-purple-650 hover:bg-purple-700 text-white font-bold text-xs shadow-sm transition flex items-center gap-1 cursor-pointer"
@@ -2808,6 +2831,13 @@ export default function OrderList() {
           </div>
         </div>
       )}
+
+      {/* Modal Xem & In Báo Giá (Bill) */}
+      <QuoteBillModal
+        order={quoteBillOrder}
+        isOpen={showQuoteBillModal}
+        onClose={() => setShowQuoteBillModal(false)}
+      />
     </div>
   );
 }
