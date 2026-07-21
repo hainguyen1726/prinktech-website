@@ -167,7 +167,7 @@ export default function QuoteBillModal({ order, isOpen, onClose }: QuoteBillModa
         </div>
 
         {/* BILL DOCUMENT — GIỐNG 100% CODE XƯỞNG IN (print.netslive.com) */}
-        <div className="p-8 overflow-y-auto bg-white text-slate-900 print:p-0 print:overflow-visible" ref={printRef}>
+        <div id="quote-print-area" className="p-8 overflow-y-auto bg-white text-slate-900 print:p-0 print:overflow-visible" ref={printRef}>
           
           {/* ── Header ── */}
           <div className="flex justify-between items-start pb-6 border-b-2 border-pink-500">
@@ -335,17 +335,37 @@ export default function QuoteBillModal({ order, isOpen, onClose }: QuoteBillModa
           body * {
             visibility: hidden;
           }
-          .print\\:hidden {
+          .print\:hidden, .print-hidden {
             display: none !important;
           }
-          div[ref="printRef"], div[ref="printRef"] * {
+          #quote-print-area, #quote-print-area * {
             visibility: visible;
           }
-          div[ref="printRef"] {
+          #quote-print-area {
             position: absolute;
             left: 0;
             top: 0;
             width: 100%;
+            margin: 0;
+            padding: 0 !important;
+            box-shadow: none !important;
+            border: none !important;
+          }
+          @page {
+            size: auto;
+            margin: 10mm 15mm 10mm 15mm;
+          }
+          html, body {
+            background-color: #fff !important;
+            color: #000 !important;
+            font-size: 12px;
+          }
+          tr {
+            page-break-inside: avoid;
+          }
+          * {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
           }
         }
       `}</style>
