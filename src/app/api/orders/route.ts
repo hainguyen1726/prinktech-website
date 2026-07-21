@@ -127,6 +127,8 @@ export async function GET(req: NextRequest) {
       packaging_fee: 0,
       source: 'website',
       has_vat: o.request_vat || false,
+      note: o.note || '',
+      tags: [],
       created_at: o.created_at
     }));
 
@@ -249,6 +251,8 @@ export async function GET(req: NextRequest) {
         tracking_number: trackingNumber,
         source: orderSource,
         has_vat: Array.isArray(o.tags) && o.tags.includes('VAT 8%'),
+        note: o.note || '',
+        tags: o.tags || [],
         created_at: o.created_at,
         converted_length: actualMeters,
         cost_amount: calculatedCost,

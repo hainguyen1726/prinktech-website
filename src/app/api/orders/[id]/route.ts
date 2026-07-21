@@ -248,6 +248,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
         note: finalNote,
         updated_at: new Date().toISOString()
       };
+      if (has_vat !== undefined) updates.request_vat = has_vat;
       if (status) updates.status = status;
       if (payment_status) updates.payment_status = payment_status;
       if (shipping_carrier !== undefined) updates.shipping_carrier = shipping_carrier;
