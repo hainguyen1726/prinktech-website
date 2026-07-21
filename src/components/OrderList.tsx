@@ -302,6 +302,117 @@ export default function OrderList() {
   const [customersList, setCustomersList] = useState<any[]>([]);
   const [submittingForm, setSubmittingForm] = useState(false);
 
+  // States cho Modal Sửa Đơn Hàng Đã Tạo
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editFormData, setEditFormData] = useState<any>(null);
+  const [savingEdit, setSavingEdit] = useState(false);
+
+  const openEditModal = (order: Order) => {
+    const rawItems = Array.isArray(order.items) && order.items.length > 0 ? order.items : [
+      {
+        product_label: 'In tem UV DTF',
+        product_type: (order as any).sticker_type || 'sticker_piece',
+        quantity: (order as any).quantity_actual || (order as any).quantity_expected || 100,
+        unit: 'cái',
+        unit_price: Math.round((order.subtotal || 0) / 100) || 2000,
+        subtotal: order.subtotal || 0,
+        design_url: order.design_url || ''
+      }
+    ];
+
+    setEditFormData({
+      id: order.id,
+      order_number: order.order_number,
+      customer_name: order.customer_name || '',
+      customer_phone: order.customer_phone || '',
+      customer_address: order.customer_address || '',
+      customer_email: order.customer_email || '',
+      customer_note: getCleanNote(order.customer_note),
+      shipping_carrier: order.shipping_carrier || '',
+      tracking_number: order.tracking_number || '',
+      shipping_fee: order.shipping_fee || 0,
+      discount: order.discount || 0,
+      cost_amount: order.cost_amount || 0,
+      has_vat: (order as any).has_vat || false,
+      items: rawItems.map((it: any) => {
+        const q = Number(it.quantity) || 1;
+        const price = Number(it.unit_price) > 0 ? Number(it.unit_price) : (Number(it.rate_excl_vat) > 0 ? Number(it.rate_excl_vat) : 0);
+        const sub = Number(it.subtotal) > 0 ? Number(it.subtotal) : Math.round(q * price);
+        return {
+          product_label: it.product_label || it.name || 'Tem UV DTF',
+          product_type: it.product_type || (order as any).sticker_type || 'sticker_piece',
+          quantity: q,
+          width_cm: it.width_cm || '',
+          height_cm: it.height_cm || '',
+          unit: it.unit || (it.size_label || 'cái'),
+          unit_price: price,
+          subtotal: sub,
+          design_url: it.design_url || it.url || ''
+        };
+      })
+    });
+    setShowEditModal(true);
+  };
+
+  const handleSaveEditOrder = async () => {
+    if (!editFormData) return;
+    setSavingEdit(true);
+    try {
+      const res = await fetch(`/api/orders/${editFormData.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          customer_name: editFormData.customer_name,
+          customer_phone: editFormData.customer_phone,
+          customer_address: editFormData.customer_address,
+          customer_email: editFormData.customer_email,
+          customer_note: editFormData.customer_note,
+          shipping_carrier: editFormData.shipping_carrier,
+          tracking_number: editFormData.tracking_number,
+          shipping_fee: Number(editFormData.shipping_fee) || 0,
+          discount: Number(editFormData.discount) || 0,
+          cost_amount: Number(editFormData.cost_amount) || 0,
+          has_vat: editFormData.has_vat,
+          items: editFormData.items
+        })
+      });
+
+      const json = await res.json();
+      if (!res.ok || json.error) {
+        throw new Error(json.error || 'Cập nhật đơn hàng thất bại');
+      }
+
+      showToast('Đã cập nhật đơn hàng thành công!', 'success');
+      setShowEditModal(false);
+      fetchOrders();
+
+      if (selectedOrder && selectedOrder.id === editFormData.id) {
+        const newSubtotal = editFormData.items.reduce((s: number, it: any) => s + (Number(it.subtotal) || 0), 0);
+        const newTotal = newSubtotal + (Number(editFormData.shipping_fee) || 0) - (Number(editFormData.discount) || 0);
+        setSelectedOrder(prev => prev ? {
+          ...prev,
+          customer_name: editFormData.customer_name,
+          customer_phone: editFormData.customer_phone,
+          customer_address: editFormData.customer_address,
+          customer_email: editFormData.customer_email,
+          customer_note: editFormData.customer_note,
+          shipping_carrier: editFormData.shipping_carrier,
+          tracking_number: editFormData.tracking_number,
+          shipping_fee: Number(editFormData.shipping_fee) || 0,
+          discount: Number(editFormData.discount) || 0,
+          cost_amount: Number(editFormData.cost_amount) || 0,
+          subtotal: newSubtotal,
+          total: newTotal,
+          items: editFormData.items
+        } : null);
+      }
+    } catch (err: any) {
+      alert(err.message || 'Lỗi khi cập nhật đơn hàng');
+    } finally {
+      setSavingEdit(false);
+    }
+  };
+
   // Helper cho phân trang thu gọn thông minh
   const getPageNumbers = (currentPage: number, totalPages: number): (number | string)[] => {
     const pages: (number | string)[] = [];
@@ -1564,12 +1675,21 @@ export default function OrderList() {
                               </span>
                             </td>
                             <td className="py-3.5 text-right" onClick={e => e.stopPropagation()}>
-                              <button
-                                onClick={() => handleDelete(order.id)}
-                                className="px-2.5 py-1 rounded-lg border border-red-200 bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700 transition-all font-bold text-xs cursor-pointer inline-flex items-center gap-1 shadow-sm"
-                              >
-                                🗑️ Xóa
-                              </button>
+                              <div className="flex items-center justify-end gap-1.5">
+                                <button
+                                  onClick={() => openEditModal(order)}
+                                  className="px-2 py-1 rounded-lg border border-purple-200 bg-purple-50 text-purple-700 hover:bg-purple-100 transition-all font-bold text-xs cursor-pointer inline-flex items-center gap-1 shadow-sm"
+                                  title="Sửa thông tin đơn hàng này"
+                                >
+                                  ✏️ Sửa
+                                </button>
+                                <button
+                                  onClick={() => handleDelete(order.id)}
+                                  className="px-2.5 py-1 rounded-lg border border-red-200 bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700 transition-all font-bold text-xs cursor-pointer inline-flex items-center gap-1 shadow-sm"
+                                >
+                                  🗑️ Xóa
+                                </button>
+                              </div>
                             </td>
                           </tr>
                         );
@@ -1628,12 +1748,20 @@ export default function OrderList() {
                   <h2 className="text-xs font-bold text-foreground uppercase tracking-wider">
                     Chi tiết đơn hàng
                   </h2>
-                  <button
-                    onClick={() => setSelectedOrder(null)}
-                    className="text-xs text-text-muted hover:text-foreground font-bold transition-colors cursor-pointer"
-                  >
-                    Đóng [x]
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => openEditModal(selectedOrder)}
+                      className="px-2.5 py-1 rounded-lg bg-purple-650 hover:bg-purple-700 text-white font-bold text-xs shadow-sm transition flex items-center gap-1 cursor-pointer"
+                    >
+                      ✏️ Sửa đơn
+                    </button>
+                    <button
+                      onClick={() => setSelectedOrder(null)}
+                      className="text-xs text-text-muted hover:text-foreground font-bold transition-colors cursor-pointer"
+                    >
+                      Đóng [x]
+                    </button>
+                  </div>
                 </div>
 
                 <div className="border-b border-card-border pb-4 space-y-2">
@@ -2167,8 +2295,396 @@ export default function OrderList() {
           >
             Hủy chọn
           </button>
+          </div>
+        )}
+
+        {/* MODAL SỬA ĐƠN HÀNG ĐÃ TẠO */}
+        {showEditModal && editFormData && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 md:p-6 animate-in fade-in duration-200">
+          <div className="bg-card-bg border border-card-border rounded-2xl w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
+            {/* Header */}
+            <div className="p-4 border-b border-card-border flex items-center justify-between bg-block-bg/50">
+              <div>
+                <h3 className="font-bold text-base text-foreground flex items-center gap-2">
+                  <span>✏️</span> Chỉnh sửa Đơn Hàng <span className="font-mono text-purple-650">{editFormData.order_number}</span>
+                </h3>
+                <p className="text-xs text-text-muted mt-0.5">
+                  Cập nhật thông tin khách hàng, chi tiết sản phẩm, giá bán lẻ và kho file thiết kế
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowEditModal(false)}
+                className="w-8 h-8 rounded-full flex items-center justify-center text-text-muted hover:text-foreground hover:bg-block-bg transition cursor-pointer font-bold"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 text-foreground">
+              
+              {/* 1. Thông tin Khách Hàng */}
+              <div className="space-y-3">
+                <h4 className="text-xs font-bold text-purple-650 uppercase tracking-wider border-b border-card-border pb-1">
+                  👤 Thông tin khách hàng
+                </h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Tên khách hàng *</label>
+                    <input
+                      type="text"
+                      value={editFormData.customer_name}
+                      onChange={e => setEditFormData({ ...editFormData, customer_name: e.target.value })}
+                      className="w-full h-9 px-3 rounded-lg border border-card-border bg-background text-xs font-bold"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Số điện thoại *</label>
+                    <input
+                      type="text"
+                      value={editFormData.customer_phone}
+                      onChange={e => setEditFormData({ ...editFormData, customer_phone: e.target.value })}
+                      className="w-full h-9 px-3 rounded-lg border border-card-border bg-background text-xs font-bold"
+                    />
+                  </div>
+                  <div className="space-y-1 sm:col-span-2">
+                    <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Địa chỉ giao hàng</label>
+                    <input
+                      type="text"
+                      value={editFormData.customer_address}
+                      onChange={e => setEditFormData({ ...editFormData, customer_address: e.target.value })}
+                      className="w-full h-9 px-3 rounded-lg border border-card-border bg-background text-xs font-semibold"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* 2. Chi tiết Sản Phẩm & Mẫu In */}
+              <div className="space-y-3">
+                <div className="flex justify-between items-center border-b border-card-border pb-1">
+                  <h4 className="text-xs font-bold text-purple-650 uppercase tracking-wider">
+                    🏷️ Chi tiết sản phẩm & Mẫu in trong đơn
+                  </h4>
+                  <div className="flex items-center gap-2">
+                    <CustomerDesignSelector
+                      partnerPhone={editFormData.customer_phone}
+                      customerName={editFormData.customer_name}
+                      buttonText="🎨 Chọn từ Kho Mẫu"
+                      onSelectDesign={(design: CustomerDesign) => {
+                        const cleanPrice = Number(design.unit_price) > 0 ? Number(design.unit_price) : 2000;
+                        setEditFormData((prev: any) => ({
+                          ...prev,
+                          items: [
+                            ...prev.items,
+                            {
+                              product_label: design.name,
+                              product_type: design.sticker_type || 'sticker_piece',
+                              quantity: 100,
+                              unit: 'cái',
+                              unit_price: cleanPrice,
+                              subtotal: 100 * cleanPrice,
+                              design_url: design.file_url || ''
+                            }
+                          ]
+                        }));
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setEditFormData((prev: any) => ({
+                        ...prev,
+                        items: [
+                          ...prev.items,
+                          {
+                            product_label: 'In tem UV DTF tùy chỉnh',
+                            product_type: 'sticker_piece',
+                            quantity: 100,
+                            unit: 'cái',
+                            unit_price: 2000,
+                            subtotal: 200000,
+                            design_url: ''
+                          }
+                        ]
+                      }))}
+                      className="text-xs text-purple-650 hover:underline font-bold"
+                    >
+                      + Thêm dòng sản phẩm
+                    </button>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  {editFormData.items.map((item: any, idx: number) => (
+                    <div key={idx} className="p-3 bg-block-bg/60 border border-card-border rounded-xl space-y-2 text-xs">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="font-bold text-purple-650">Sản phẩm #{idx + 1}</span>
+                        {editFormData.items.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => setEditFormData((prev: any) => ({
+                              ...prev,
+                              items: prev.items.filter((_: any, i: number) => i !== idx)
+                            }))}
+                            className="text-rose-500 hover:text-rose-700 font-bold"
+                          >
+                            🗑️ Xóa dòng này
+                          </button>
+                        )}
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-6 gap-2">
+                        <div className="md:col-span-2 space-y-1">
+                          <label className="text-[11px] font-semibold text-text-muted">Tên mẫu tem/sản phẩm *</label>
+                          <input
+                            type="text"
+                            value={item.product_label}
+                            onChange={e => {
+                              const val = e.target.value;
+                              setEditFormData((prev: any) => {
+                                const list = [...prev.items];
+                                list[idx] = { ...list[idx], product_label: val };
+                                return { ...prev, items: list };
+                              });
+                            }}
+                            className="w-full h-8 px-2 rounded border border-card-border bg-background font-bold text-xs"
+                          />
+                        </div>
+
+                        <div className="space-y-1">
+                          <label className="text-[11px] font-semibold text-text-muted">Loại sản phẩm</label>
+                          <select
+                            value={item.product_type || 'sticker_piece'}
+                            onChange={e => {
+                              const val = e.target.value;
+                              setEditFormData((prev: any) => {
+                                const list = [...prev.items];
+                                list[idx] = { ...list[idx], product_type: val, unit: val === 'sticker_piece' ? 'chiếc' : (val === 'cuon' ? 'mét' : 'cái') };
+                                return { ...prev, items: list };
+                              });
+                            }}
+                            className="w-full h-8 px-2 rounded border border-card-border bg-background font-semibold text-xs"
+                          >
+                            <option value="sticker_piece">🏷️ Sticker Rời (Chiếc)</option>
+                            <option value="dtf_sheet">📄 Tờ tem / A4 / A3</option>
+                            <option value="cuon">🧵 In Cuộn (Mét dài)</option>
+                            <option value="other">🎨 Khác</option>
+                          </select>
+                        </div>
+
+                        <div className="space-y-1">
+                          <label className="text-[11px] font-semibold text-text-muted">Số lượng ({item.unit || 'cái'})</label>
+                          <input
+                            type="number"
+                            value={item.quantity}
+                            onChange={e => {
+                              const q = Number(e.target.value) || 0;
+                              setEditFormData((prev: any) => {
+                                const list = [...prev.items];
+                                const price = list[idx].unit_price || 0;
+                                list[idx] = { ...list[idx], quantity: q, subtotal: Math.round(q * price) };
+                                return { ...prev, items: list };
+                              });
+                            }}
+                            className="w-full h-8 px-2 rounded border border-card-border bg-background font-bold text-xs"
+                          />
+                        </div>
+
+                        <div className="space-y-1">
+                          <label className="text-[11px] font-semibold text-text-muted">Đơn giá bán lẻ (đ)</label>
+                          <input
+                            type="number"
+                            value={item.unit_price}
+                            onChange={e => {
+                              const p = Number(e.target.value) || 0;
+                              setEditFormData((prev: any) => {
+                                const list = [...prev.items];
+                                const q = list[idx].quantity || 0;
+                                list[idx] = { ...list[idx], unit_price: p, subtotal: Math.round(q * p) };
+                                return { ...prev, items: list };
+                              });
+                            }}
+                            className="w-full h-8 px-2 rounded border border-card-border bg-background font-bold text-xs"
+                          />
+                        </div>
+
+                        <div className="space-y-1">
+                          <label className="text-[11px] font-semibold text-text-muted">Thành tiền (đ)</label>
+                          <input
+                            type="number"
+                            value={item.subtotal}
+                            onChange={e => {
+                              const sub = Number(e.target.value) || 0;
+                              setEditFormData((prev: any) => {
+                                const list = [...prev.items];
+                                list[idx] = { ...list[idx], subtotal: sub };
+                                return { ...prev, items: list };
+                              });
+                            }}
+                            className="w-full h-8 px-2 rounded border border-card-border bg-background font-bold text-xs text-purple-650"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Kích thước & Link file */}
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1 border-t border-card-border/50">
+                        {item.product_type === 'sticker_piece' && (
+                          <div className="flex gap-1 items-center">
+                            <span className="text-[11px] text-text-muted font-bold">Kích thước (cm):</span>
+                            <input
+                              type="number"
+                              placeholder="Rộng"
+                              value={item.width_cm || ''}
+                              onChange={e => {
+                                const w = e.target.value;
+                                setEditFormData((prev: any) => {
+                                  const list = [...prev.items];
+                                  list[idx] = { ...list[idx], width_cm: w };
+                                  return { ...prev, items: list };
+                                });
+                              }}
+                              className="w-14 h-7 px-1 rounded border border-card-border bg-background text-center font-bold text-xs"
+                            />
+                            <span>×</span>
+                            <input
+                              type="number"
+                              placeholder="Cao"
+                              value={item.height_cm || ''}
+                              onChange={e => {
+                                const h = e.target.value;
+                                setEditFormData((prev: any) => {
+                                  const list = [...prev.items];
+                                  list[idx] = { ...list[idx], height_cm: h };
+                                  return { ...prev, items: list };
+                                });
+                              }}
+                              className="w-14 h-7 px-1 rounded border border-card-border bg-background text-center font-bold text-xs"
+                            />
+                          </div>
+                        )}
+                        <div className="sm:col-span-2 flex gap-1 items-center">
+                          <span className="text-[11px] text-text-muted shrink-0">Link File thiết kế:</span>
+                          <input
+                            type="text"
+                            placeholder="Dán link Drive file mẫu in..."
+                            value={item.design_url || ''}
+                            onChange={e => {
+                              const url = e.target.value;
+                              setEditFormData((prev: any) => {
+                                const list = [...prev.items];
+                                list[idx] = { ...list[idx], design_url: url };
+                                return { ...prev, items: list };
+                              });
+                            }}
+                            className="flex-1 h-7 px-2 rounded border border-card-border bg-background text-xs"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* 3. Tổng chi phí & Vận chuyển */}
+              <div className="space-y-3">
+                <h4 className="text-xs font-bold text-purple-650 uppercase tracking-wider border-b border-card-border pb-1">
+                  💰 Thanh toán, Vận chuyển & Ghi chú
+                </h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Phí ship (đ)</label>
+                    <input
+                      type="number"
+                      value={editFormData.shipping_fee}
+                      onChange={e => setEditFormData({ ...editFormData, shipping_fee: e.target.value })}
+                      className="w-full h-9 px-3 rounded-lg border border-card-border bg-background text-xs font-bold"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Chiết khấu (đ)</label>
+                    <input
+                      type="number"
+                      value={editFormData.discount}
+                      onChange={e => setEditFormData({ ...editFormData, discount: e.target.value })}
+                      className="w-full h-9 px-3 rounded-lg border border-card-border bg-background text-xs font-bold"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Giá vốn trả xưởng (đ)</label>
+                    <input
+                      type="number"
+                      value={editFormData.cost_amount}
+                      onChange={e => setEditFormData({ ...editFormData, cost_amount: e.target.value })}
+                      className="w-full h-9 px-3 rounded-lg border border-card-border bg-background text-xs font-bold"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Đơn vị vận chuyển</label>
+                    <input
+                      type="text"
+                      placeholder="VD: SPX Express"
+                      value={editFormData.shipping_carrier}
+                      onChange={e => setEditFormData({ ...editFormData, shipping_carrier: e.target.value })}
+                      className="w-full h-9 px-3 rounded-lg border border-card-border bg-background text-xs font-semibold"
+                    />
+                  </div>
+
+                  <div className="space-y-1 sm:col-span-2">
+                    <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Mã vận đơn</label>
+                    <input
+                      type="text"
+                      placeholder="VD: SPXVN069747945717"
+                      value={editFormData.tracking_number}
+                      onChange={e => setEditFormData({ ...editFormData, tracking_number: e.target.value })}
+                      className="w-full h-9 px-3 rounded-lg border border-card-border bg-background text-xs font-semibold"
+                    />
+                  </div>
+
+                  <div className="space-y-1 sm:col-span-2">
+                    <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Ghi chú đơn hàng</label>
+                    <input
+                      type="text"
+                      placeholder="Ghi chú cho xưởng hoặc ghi chú giao hàng..."
+                      value={editFormData.customer_note}
+                      onChange={e => setEditFormData({ ...editFormData, customer_note: e.target.value })}
+                      className="w-full h-9 px-3 rounded-lg border border-card-border bg-background text-xs font-semibold"
+                    />
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            {/* Footer */}
+            <div className="p-4 border-t border-card-border bg-block-bg/50 flex justify-between items-center">
+              <div className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                Tạm tính sản phẩm: <span className="text-purple-650 font-mono font-extrabold">{formatCurrency(editFormData.items.reduce((s: number, it: any) => s + (Number(it.subtotal) || 0), 0))}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowEditModal(false)}
+                  className="px-4 py-2 rounded-xl border border-card-border font-bold text-xs hover:bg-block-bg transition cursor-pointer"
+                >
+                  Hủy
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSaveEditOrder}
+                  disabled={savingEdit}
+                  className="px-5 py-2 rounded-xl bg-purple-650 hover:bg-purple-700 text-white font-bold text-xs transition cursor-pointer shadow-md disabled:opacity-50"
+                >
+                  {savingEdit ? 'Đang lưu...' : '💾 Lưu thay đổi đơn hàng'}
+                </button>
+              </div>
+            </div>
+
+          </div>
         </div>
       )}
-      </div>
+    </div>
   );
 }
