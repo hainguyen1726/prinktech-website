@@ -233,8 +233,11 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
     const finalNote = cleanNoteLines.join('\n').trim();
 
-    // 7. Chuẩn hóa Tags (VAT 8%)
-    let tags = Array.isArray(oldOrder.tags) ? [...oldOrder.tags] : ['Tem UV DTF', 'Prinktech'];
+    // 7. Chuẩn hóa Tags (VAT 8% & Prinktech)
+    let tags = Array.isArray(oldOrder.tags) ? [...oldOrder.tags] : ['Tem UV DTF', 'prinktech'];
+    if (!tags.some((t: string) => typeof t === 'string' && t.toLowerCase().includes('prinktech'))) {
+      tags.push('prinktech');
+    }
     if (has_vat !== undefined) {
       if (has_vat) {
         // Loại bỏ sạch các tag chứa chữ 'vat' (nhưng viết khác format) để chuẩn hóa về 'VAT 8%' duy nhất

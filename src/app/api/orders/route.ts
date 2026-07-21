@@ -132,11 +132,12 @@ export async function GET(req: NextRequest) {
       created_at: o.created_at
     }));
 
-    // Lọc đơn hàng của Prink Tech: chỉ lấy đơn hàng của khách lẻ (partner_type = 'standard') hoặc đơn hàng có tag 'prinktech'
+    // Lọc đơn hàng của Prink Tech: lấy đơn khách lẻ (partner_type = 'standard'), đơn có tag 'prinktech' (không phân biệt hoa thường), hoặc mã đơn bắt đầu bằng ORD- / RET-
     const prinktechOrdersData = ordersData.filter((o: any) => {
       const isStandard = o.partners?.partner_type === 'standard';
-      const hasTag = Array.isArray(o.tags) && o.tags.includes('prinktech');
-      return isStandard || hasTag;
+      const hasTag = Array.isArray(o.tags) && o.tags.some((t: string) => typeof t === 'string' && t.toLowerCase().includes('prinktech'));
+      const isPrinktechCode = typeof o.order_code === 'string' && (o.order_code.toUpperCase().startsWith('ORD-') || o.order_code.toUpperCase().startsWith('RET-'));
+      return isStandard || hasTag || isPrinktechCode;
     });
 
     // 4. Chuẩn hóa dữ liệu orders
