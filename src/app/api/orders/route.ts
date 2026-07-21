@@ -196,7 +196,10 @@ export async function GET(req: NextRequest) {
         };
       });
 
-      const itemSubtotal = Number(o.total_amount) || 0;
+      // TÍNH TỔNG TIỀN TẠM TÍNH BÁN LẺ DỰA TRÊN CÁC SẢN PHẨM TRONG ĐƠN (RETAIL SUBTOTAL)
+      const calculatedItemsSubtotal = items.reduce((sum: number, it: any) => sum + (Number(it.subtotal) || 0), 0);
+      const itemSubtotal = calculatedItemsSubtotal > 0 ? calculatedItemsSubtotal : (Number(o.total_amount) || 0);
+
       const shippingFee = Number(o.shipping_cost) || 0;
       const discount = Number(o.discount_amount) || 0;
       const total = itemSubtotal + shippingFee - discount;
@@ -211,18 +214,17 @@ export async function GET(req: NextRequest) {
 
       const isRoll = o.sticker_type === 'dtf_roll' || o.sticker_type === 'cuon';
       const rawCost = Number(o.cost_amount) || 0;
+      const actualMeters = Number(o.quantity_actual) || 0;
 
       // Bảo vệ giá vốn cost_amount không bao giờ bị vọt lên 60 triệu cho tem lẻ
       let calculatedCost = 0;
-      if (isRoll) {
-        const meters = Number(o.quantity_actual) || Number(o.quantity_expected) || 1.0;
-        calculatedCost = Math.round(meters * 80000);
+      if (rawCost > 0 && rawCost <= itemSubtotal * 1.5) {
+        calculatedCost = rawCost;
+      } else if (isRoll) {
+        const meters = actualMeters || Number(o.quantity_expected) || 1.0;
+        calculatedCost = Math.round(meters * 150000);
       } else {
-        if (rawCost > 0 && rawCost <= itemSubtotal * 1.2) {
-          calculatedCost = rawCost;
-        } else {
-          calculatedCost = Math.round(itemSubtotal * 0.35);
-        }
+        calculatedCost = Math.round(itemSubtotal * 0.35);
       }
 
       return {
@@ -250,7 +252,7 @@ export async function GET(req: NextRequest) {
         source: orderSource,
         has_vat: Array.isArray(o.tags) && o.tags.includes('VAT 8%'),
         created_at: o.created_at,
-        converted_length: isRoll ? (Number(o.quantity_actual) || 0) : 0,
+        converted_length: actualMeters,
         cost_amount: calculatedCost,
         packaging_fee: (Number(o.packaging_unit_price) || 0) * (Number(o.pack_total_packs) || 0)
       };
