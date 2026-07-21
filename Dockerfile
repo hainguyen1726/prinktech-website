@@ -35,6 +35,9 @@ COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 RUN mkdir -p ./public/temp_bao_gia && chown -R nextjs:nodejs ./public
 COPY --from=builder --chown=nextjs:nodejs /app/src/data ./src/data
 COPY --from=builder --chown=nextjs:nodejs /app/.next ./.next
+COPY --from=builder --chown=nextjs:nodejs /app/.agents ./.agents
+COPY --from=builder --chown=nextjs:nodejs /app/amazon-888-2190cc67d4aa.json ./amazon-888-2190cc67d4aa.json
+COPY --from=builder --chown=nextjs:nodejs /app/logo_prinktech.png ./logo_prinktech.png
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package.json ./package.json
 

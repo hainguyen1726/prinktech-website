@@ -155,7 +155,13 @@ export async function POST(req: NextRequest) {
     const nameSlug = customerName.replace(/\s+/g, '_');
     const excelPath = path.join(tempDir, `1. Bao_gia_in_tem_UV_DTF_${nameSlug}_V2.xlsx`);
     const pdfPath = path.join(tempDir, `2. Bao_gia_in_tem_UV_DTF_${nameSlug}_V2.pdf`);
-    const templateExcelPath = path.join(process.cwd(), '.agents', 'skills', 'antigravity-prinktech-quote', 'resources', 'template_bao_gia.xlsx');
+
+    const templateCandidates = [
+      path.join(process.cwd(), 'src', 'data', 'template_bao_gia.xlsx'),
+      path.join(process.cwd(), 'public', 'template_bao_gia.xlsx'),
+      path.join(process.cwd(), '.agents', 'skills', 'antigravity-prinktech-quote', 'resources', 'template_bao_gia.xlsx'),
+    ];
+    const templateExcelPath = templateCandidates.find(p => fs.existsSync(p)) || templateCandidates[0];
 
     // 5. Kết nối Google Drive & đồng bộ
     console.log('Connecting to Google Drive...');

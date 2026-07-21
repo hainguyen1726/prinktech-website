@@ -143,7 +143,11 @@ export function generatePdfQuote(data: QuoteData, outputPath: string): Promise<v
       const cBorder = '#cbd5e1';
 
       // 1. Header (Logo & Đơn vị phát hành & Khối Tiêu đề)
-      const logoPath = path.join(process.cwd(), 'logo_prinktech.png');
+      const logoCandidates = [
+        path.join(process.cwd(), 'public', 'logo_prinktech.png'),
+        path.join(process.cwd(), 'logo_prinktech.png'),
+      ];
+      const logoPath = logoCandidates.find(p => fs.existsSync(p)) || logoCandidates[0];
       if (fs.existsSync(logoPath)) {
         doc.image(logoPath, 35, 30, { width: 75 });
       }
