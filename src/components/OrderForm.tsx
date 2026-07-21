@@ -811,6 +811,7 @@ export default function OrderForm() {
                     if (design.file_url && !customer.design_url) {
                       setCustomer(prev => ({ ...prev, design_url: design.file_url || '' }));
                     }
+                    const cleanPrice = Number(design.unit_price) > 0 ? Number(design.unit_price) : 15000;
                     setItems(prev => [
                       ...prev,
                       {
@@ -820,8 +821,8 @@ export default function OrderForm() {
                         size_label: design.size_label || 'Tem lẻ',
                         quantity: 1,
                         unit: 'cái',
-                        unit_price: design.unit_price || 15000,
-                        subtotal: design.unit_price || 15000,
+                        unit_price: cleanPrice,
+                        subtotal: cleanPrice,
                         image_url: design.preview_url || null,
                         design_url: design.file_url || null,
                         designs: design.file_url ? [{ name: design.name, url: design.file_url }] : [],

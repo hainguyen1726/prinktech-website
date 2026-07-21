@@ -216,7 +216,11 @@ export async function GET(req: NextRequest) {
         has_vat: Array.isArray(o.tags) && o.tags.includes('VAT 8%'),
         created_at: o.created_at,
         converted_length: o.sticker_type === 'dtf_roll' ? (Number(o.quantity_actual) || 0) : 0,
-        cost_amount: Number(o.cost_amount) || 0,
+        cost_amount: Number(o.cost_amount) > 0 
+          ? Number(o.cost_amount) 
+          : o.sticker_type === 'dtf_roll' 
+            ? Math.round((Number(o.quantity_actual) || 0) * 80000) 
+            : Math.round((itemSubtotal || 0) * 0.35),
         packaging_fee: (Number(o.packaging_unit_price) || 0) * (Number(o.pack_total_packs) || 0)
       };
     });

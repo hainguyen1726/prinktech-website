@@ -60,9 +60,6 @@ if ($null -eq $status -or $status -eq "") {
     Write-Host "Working tree clean. Không có gì thay đổi để commit." -ForegroundColor Yellow
 } else {
     Write-Host "Phát hiện thay đổi. Đang commit & push..." -ForegroundColor Cyan
-    if (-not $CommitMsg.ToLower().Contains("[skip ci]") -and -not $CommitMsg.ToLower().Contains("[ci skip]") -and -not $CommitMsg.ToLower().Contains("[no ci]")) {
-        $CommitMsg = "$CommitMsg [skip ci]"
-    }
     git add .
     git commit -m $CommitMsg
     git push origin master

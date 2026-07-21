@@ -360,8 +360,12 @@ export async function POST(req: NextRequest) {
     const totalQty = itemsList.reduce((s: number, i: any) => s + (i.quantity || 0), 0);
     const totalMeters = itemsList.reduce((s: number, i: any) => s + (i.meters || 0), 0);
     
-    const unitPriceInclVat = Math.round(subtotalAfterVat / (anyMeters ? totalMeters : totalQty));
-    const costAmount = anyMeters ? Math.round(totalMeters * 150000) : 0;
+    const unitPriceInclVat = Math.round(subtotalAfterVat / (anyMeters && totalMeters > 0 ? totalMeters : (totalQty || 1)));
+    
+    // Giá vốn vật tư thực tế xưởng (Film A, B, mực UV): 80.000 đ/m dài khổ 60cm. Đơn tem lẻ: ~35% tổng tiền subtotal.
+    const costAmount = anyMeters && totalMeters > 0 
+      ? Math.round(totalMeters * 80000) 
+      : Math.round(totalSubtotal * 0.35);
 
     const newOrder = {
       order_code: orderCode,

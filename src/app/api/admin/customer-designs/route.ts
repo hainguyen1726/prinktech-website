@@ -18,26 +18,37 @@ export async function GET(req: NextRequest) {
     const partnerId = searchParams.get('partner_id');
     const partnerPhone = searchParams.get('partner_phone');
     const search = searchParams.get('search');
+    const scope = searchParams.get('scope'); // 'all' để xem tất cả khách hàng nếu muốn
+
+    let targetPartnerId: string | null = partnerId || null;
+
+    // Nếu truyền sdt mà chưa truyền partner_id -> Tìm partner
+    if (!targetPartnerId && partnerPhone) {
+      const cleanPhone = partnerPhone.replace(/\D/g, '');
+      if (cleanPhone) {
+        const { data: p } = await supabase
+          .from('partners')
+          .select('id')
+          .or(`phone.ilike.%${cleanPhone}%,phone.eq.${partnerPhone}`)
+          .maybeSingle();
+
+        if (p) {
+          targetPartnerId = p.id;
+        } else {
+          // Khách hàng chưa từng lưu trong hệ thống hoặc chưa có mẫu -> Trả về rỗng ngay, KHÔNG lộ mẫu khách khác!
+          if (scope !== 'all') {
+            return NextResponse.json({ data: [] });
+          }
+        }
+      }
+    }
 
     let query = supabase
       .from('customer_designs')
       .select('*, partners(id, name, phone, address)');
 
-    if (partnerId) {
-      query = query.eq('partner_id', partnerId);
-    }
-
-    if (partnerPhone) {
-      const cleanPhone = partnerPhone.replace(/\s+/g, '');
-      const { data: p } = await supabase
-        .from('partners')
-        .select('id')
-        .or(`phone.eq.${cleanPhone},phone.eq.${partnerPhone}`)
-        .maybeSingle();
-
-      if (p) {
-        query = query.eq('partner_id', p.id);
-      }
+    if (targetPartnerId && scope !== 'all') {
+      query = query.eq('partner_id', targetPartnerId);
     }
 
     if (search) {
@@ -56,7 +67,7 @@ export async function GET(req: NextRequest) {
   }
 }
 
-// POST /api/admin/customer-designs — Thêm hoặc cập nhật mẫu thiết kế vào kho
+// POST /api/admin/customer-designs — Thêm mẫu thiết kế mới vào kho
 export async function POST(req: NextRequest) {
   try {
     const auth = await verifyAdminOrStaff(req);
@@ -85,7 +96,49 @@ export async function POST(req: NextRequest) {
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       }])
-      .select()
+      .select('*, partners(id, name, phone, address)')
+      .single();
+
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    return NextResponse.json({ data });
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message }, { status: 500 });
+  }
+}
+
+// PUT /api/admin/customer-designs — Cập nhật mẫu thiết kế (Link file, đơn giá, tên, note)
+export async function PUT(req: NextRequest) {
+  try {
+    const auth = await verifyAdminOrStaff(req);
+    if (auth.error) {
+      return NextResponse.json({ error: auth.error }, { status: auth.status || 401 });
+    }
+
+    const body = await req.json();
+    const { id, name, size_label, unit_price, file_url, preview_url, note } = body;
+
+    if (!id) {
+      return NextResponse.json({ error: 'id là bắt buộc' }, { status: 400 });
+    }
+
+    const updates: Record<string, any> = {
+      updated_at: new Date().toISOString()
+    };
+    if (name !== undefined) updates.name = name;
+    if (size_label !== undefined) updates.size_label = size_label;
+    if (unit_price !== undefined) updates.unit_price = Number(unit_price) || 0;
+    if (file_url !== undefined) updates.file_url = file_url || null;
+    if (preview_url !== undefined) updates.preview_url = preview_url || null;
+    if (note !== undefined) updates.note = note || null;
+
+    const { data, error } = await supabase
+      .from('customer_designs')
+      .update(updates)
+      .eq('id', id)
+      .select('*, partners(id, name, phone, address)')
       .single();
 
     if (error) {
