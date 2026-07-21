@@ -257,6 +257,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
         note: finalNote,
         updated_at: new Date().toISOString()
       };
+      if (formattedItems) updates.items = formattedItems;
       if (has_vat !== undefined) updates.request_vat = has_vat;
       if (status) updates.status = status;
       if (payment_status) updates.payment_status = payment_status;
@@ -273,6 +274,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
         tags: tags,
         updated_at: new Date().toISOString()
       };
+      if (formattedItems) updates.items = formattedItems;
       if (status) updates.status = mapRetailToLegacyStatus(status);
       if (payment_status) updates.payment_status = payment_status;
       if (formattedDesignFiles) updates.design_files = formattedDesignFiles;

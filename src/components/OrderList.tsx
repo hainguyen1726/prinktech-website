@@ -425,6 +425,25 @@ export default function OrderList() {
           items: editFormData.items
         } : null);
       }
+
+      if (quoteBillOrder && quoteBillOrder.id === editFormData.id) {
+        const newSubtotal = editFormData.items.reduce((s: number, it: any) => s + (Number(it.subtotal) || 0), 0);
+        const newTotal = newSubtotal + (Number(editFormData.shipping_fee) || 0) - (Number(editFormData.discount) || 0);
+        setQuoteBillOrder(prev => prev ? {
+          ...prev,
+          customer_name: editFormData.customer_name,
+          customer_phone: editFormData.customer_phone,
+          customer_address: editFormData.customer_address,
+          customer_email: editFormData.customer_email,
+          customer_note: editFormData.customer_note,
+          shipping_fee: Number(editFormData.shipping_fee) || 0,
+          discount: Number(editFormData.discount) || 0,
+          cost_amount: Number(editFormData.cost_amount) || 0,
+          subtotal: newSubtotal,
+          total: newTotal,
+          items: editFormData.items
+        } : null);
+      }
     } catch (err: any) {
       alert(err.message || 'Lỗi khi cập nhật đơn hàng');
     } finally {

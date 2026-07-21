@@ -155,10 +155,13 @@ export async function GET(req: NextRequest) {
       const shippingCarrier = carrierMatch ? carrierMatch[1].trim() : null;
       const trackingNumber = trackingMatch ? trackingMatch[1].trim() : null;
 
-      let items = [];
+      let items = Array.isArray(o.items) && o.items.length > 0 ? o.items : [];
       if (jsonMatch) {
         try {
-          items = JSON.parse(jsonMatch[1]);
+          const parsed = JSON.parse(jsonMatch[1]);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            items = parsed;
+          }
         } catch (e) {
           console.error('Error parsing items JSON:', e);
         }
