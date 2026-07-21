@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { X, Trash2 } from 'lucide-react';
 import Header from '@/components/Header';
+import CustomerDesignSelector, { CustomerDesign } from '@/components/CustomerDesignSelector';
 import {
   PRODUCTS,
   Product,
@@ -799,9 +800,37 @@ export default function OrderForm() {
 
             {/* Products */}
             <div className="rounded-2xl border border-card-border bg-card-bg p-5 shadow-sm">
-              <h2 className="text-xs font-bold text-text-muted uppercase tracking-wider mb-4">
-                Sản phẩm đặt in
-              </h2>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xs font-bold text-text-muted uppercase tracking-wider">
+                  Sản phẩm đặt in
+                </h2>
+                <CustomerDesignSelector
+                  partnerPhone={customer.phone}
+                  customerName={customer.name}
+                  onSelectDesign={(design: CustomerDesign) => {
+                    if (design.file_url && !customer.design_url) {
+                      setCustomer(prev => ({ ...prev, design_url: design.file_url || '' }));
+                    }
+                    setItems(prev => [
+                      ...prev,
+                      {
+                        id: uid(),
+                        product_type: (design.sticker_type as any) || 'a4',
+                        product_label: design.name,
+                        size_label: design.size_label || 'Tem lẻ',
+                        quantity: 1,
+                        unit: 'cái',
+                        unit_price: design.unit_price || 15000,
+                        subtotal: design.unit_price || 15000,
+                        image_url: design.preview_url || null,
+                        design_url: design.file_url || null,
+                        designs: design.file_url ? [{ name: design.name, url: design.file_url }] : [],
+                        note: design.note || null,
+                      }
+                    ]);
+                  }}
+                />
+              </div>
 
               {items.length === 0 ? (
                 <p className="text-text-muted text-sm text-center py-4 font-medium">Chưa có sản phẩm nào</p>

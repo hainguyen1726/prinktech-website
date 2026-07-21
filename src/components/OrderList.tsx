@@ -12,6 +12,7 @@ import {
   getUnitPrice,
 } from '@/lib/pricing';
 import AdminGuard from '@/components/AdminGuard';
+import CustomerDesignSelector, { CustomerDesign } from '@/components/CustomerDesignSelector';
 
 const getCleanNote = (note: string | null): string => {
   if (!note) return '';
@@ -1702,10 +1703,10 @@ export default function OrderList() {
                   </div>
                 </div>
 
-                {/* Design File (Global) -> Đổi thành Thư mục Google Drive đơn hàng */}
-                {selectedOrder.design_url && (
-                  <div className="border-b border-card-border pb-4">
-                    <h3 className="text-xs font-bold text-text-muted uppercase tracking-wider mb-2">Thư mục lưu trữ đơn hàng</h3>
+                {/* Design File (Global) -> Đổi thành Thư mục Google Drive đơn hàng & Kho thiết kế */}
+                <div className="border-b border-card-border pb-4 space-y-2">
+                  <h3 className="text-xs font-bold text-text-muted uppercase tracking-wider mb-2">Thư mục & Kho file thiết kế</h3>
+                  {selectedOrder.design_url && (
                     <a
                       href={selectedOrder.design_url}
                       target="_blank"
@@ -1714,8 +1715,21 @@ export default function OrderList() {
                     >
                       📁 Mở thư mục đơn hàng trên Google Drive
                     </a>
+                  )}
+                  <div className="pt-1">
+                    <CustomerDesignSelector
+                      partnerPhone={selectedOrder.customer_phone}
+                      customerName={selectedOrder.customer_name}
+                      buttonText="🎨 Tra cứu Kho File Thiết Kế của Khách"
+                      buttonClassName="w-full h-9 rounded-xl border border-purple-200 dark:border-purple-800 bg-purple-50 hover:bg-purple-100 dark:bg-purple-950/30 dark:hover:bg-purple-900/40 text-purple-700 dark:text-purple-300 font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer"
+                      onSelectDesign={(design: CustomerDesign) => {
+                        if (design.file_url) {
+                          window.open(design.file_url, '_blank');
+                        }
+                      }}
+                    />
                   </div>
-                )}
+                </div>
 
                 {/* Báo giá Excel / PDF (chỉ hiển thị nếu có) */}
                 {((selectedOrder as any).quote_excel_url || (selectedOrder as any).quote_pdf_url) && (
