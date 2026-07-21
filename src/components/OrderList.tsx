@@ -2306,7 +2306,7 @@ export default function OrderList() {
             <div className="p-4 border-b border-card-border flex items-center justify-between bg-block-bg/50">
               <div>
                 <h3 className="font-bold text-base text-foreground flex items-center gap-2">
-                  <span>✏️</span> Chỉnh sửa Đơn Hàng <span className="font-mono text-purple-650">{editFormData.order_number}</span>
+                  <span>✏️</span> Chỉnh sửa Đơn Hàng <span className="font-mono text-purple-600">{editFormData.order_number}</span>
                 </h3>
                 <p className="text-xs text-text-muted mt-0.5">
                   Cập nhật thông tin khách hàng, chi tiết sản phẩm, giá bán lẻ và kho file thiết kế
@@ -2326,7 +2326,7 @@ export default function OrderList() {
               
               {/* 1. Thông tin Khách Hàng */}
               <div className="space-y-3">
-                <h4 className="text-xs font-bold text-purple-650 uppercase tracking-wider border-b border-card-border pb-1">
+                <h4 className="text-xs font-bold text-purple-600 uppercase tracking-wider border-b border-card-border pb-1">
                   👤 Thông tin khách hàng
                 </h4>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
@@ -2363,7 +2363,7 @@ export default function OrderList() {
               {/* 2. Chi tiết Sản Phẩm & Mẫu In */}
               <div className="space-y-3">
                 <div className="flex justify-between items-center border-b border-card-border pb-1">
-                  <h4 className="text-xs font-bold text-purple-650 uppercase tracking-wider">
+                  <h4 className="text-xs font-bold text-purple-600 uppercase tracking-wider">
                     🏷️ Chi tiết sản phẩm & Mẫu in trong đơn
                   </h4>
                   <div className="flex items-center gap-2">
@@ -2407,7 +2407,7 @@ export default function OrderList() {
                           }
                         ]
                       }))}
-                      className="text-xs text-purple-650 hover:underline font-bold"
+                      className="text-xs text-purple-600 hover:underline font-bold"
                     >
                       + Thêm dòng sản phẩm
                     </button>
@@ -2418,7 +2418,7 @@ export default function OrderList() {
                   {editFormData.items.map((item: any, idx: number) => (
                     <div key={idx} className="p-3 bg-block-bg/60 border border-card-border rounded-xl space-y-2 text-xs">
                       <div className="flex items-center justify-between gap-2">
-                        <span className="font-bold text-purple-650">Sản phẩm #{idx + 1}</span>
+                        <span className="font-bold text-purple-600">Sản phẩm #{idx + 1}</span>
                         {editFormData.items.length > 1 && (
                           <button
                             type="button"
@@ -2521,7 +2521,7 @@ export default function OrderList() {
                                 return { ...prev, items: list };
                               });
                             }}
-                            className="w-full h-8 px-2 rounded border border-card-border bg-background font-bold text-xs text-purple-650"
+                            className="w-full h-8 px-2 rounded border border-card-border bg-background font-bold text-xs text-purple-600"
                           />
                         </div>
                       </div>
@@ -2587,7 +2587,7 @@ export default function OrderList() {
 
               {/* 3. Tổng chi phí & Vận chuyển */}
               <div className="space-y-3">
-                <h4 className="text-xs font-bold text-purple-650 uppercase tracking-wider border-b border-card-border pb-1">
+                <h4 className="text-xs font-bold text-purple-600 uppercase tracking-wider border-b border-card-border pb-1">
                   💰 Thanh toán, Vận chuyển & Ghi chú
                 </h4>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
@@ -2661,7 +2661,7 @@ export default function OrderList() {
             {/* Footer */}
             <div className="p-4 border-t border-card-border bg-block-bg/50 flex justify-between items-center">
               <div className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                Tạm tính sản phẩm: <span className="text-purple-650 font-mono font-extrabold">{formatCurrency(editFormData.items.reduce((s: number, it: any) => s + (Number(it.subtotal) || 0), 0))}</span>
+                Tạm tính sản phẩm: <span className="text-purple-600 font-mono font-extrabold">{formatCurrency(editFormData.items.reduce((s: number, it: any) => s + (Number(it.subtotal) || 0), 0))}</span>
               </div>
               <div className="flex items-center gap-2">
                 <button
@@ -2675,7 +2675,7 @@ export default function OrderList() {
                   type="button"
                   onClick={handleSaveEditOrder}
                   disabled={savingEdit}
-                  className="px-5 py-2 rounded-xl bg-purple-650 hover:bg-purple-700 text-white font-bold text-xs transition cursor-pointer shadow-md disabled:opacity-50"
+                  className="px-5 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs transition cursor-pointer shadow-md disabled:opacity-50 flex items-center gap-1.5"
                 >
                   {savingEdit ? 'Đang lưu...' : '💾 Lưu thay đổi đơn hàng'}
                 </button>
