@@ -396,7 +396,14 @@ export default function OrderList() {
         })
       });
 
-      const json = await res.json();
+      const contentType = res.headers.get('content-type') || '';
+      let json: any = {};
+      if (contentType.includes('application/json')) {
+        json = await res.json();
+      } else {
+        throw new Error(`Lỗi máy chủ (${res.status}): Không thể xử lý yêu cầu`);
+      }
+
       if (!res.ok || json.error) {
         throw new Error(json.error || 'Cập nhật đơn hàng thất bại');
       }

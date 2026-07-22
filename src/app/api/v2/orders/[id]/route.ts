@@ -11,18 +11,44 @@ const supabase = createClient(
   { db: { schema: 'printing' } }
 );
 
+// Helper tra cứu đơn hàng linh hoạt theo UUID, order_code, hoặc original_legacy_id
+async function resolveOrder(idOrCode: string) {
+  const cleanId = idOrCode?.trim();
+  if (!cleanId) return null;
+
+  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(cleanId);
+  if (isUuid) {
+    const { data } = await supabase.from('v2_orders').select('*').eq('id', cleanId).maybeSingle();
+    if (data) return data;
+  }
+
+  const { data: codeMatch } = await supabase.from('v2_orders').select('*').eq('order_code', cleanId).maybeSingle();
+  if (codeMatch) return codeMatch;
+
+  const { data: legacyMatch } = await supabase.from('v2_orders').select('*').eq('original_legacy_id', cleanId).maybeSingle();
+  if (legacyMatch) return legacyMatch;
+
+  return null;
+}
+
 // GET /api/v2/orders/[id] — Xem chi tiết đơn hàng V2
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
+    const existingOrder = await resolveOrder(id);
+
+    if (!existingOrder) {
+      return NextResponse.json({ error: 'Không tìm thấy đơn hàng' }, { status: 404 });
+    }
+
     const { data, error } = await supabase
       .from('v2_orders')
       .select('*, v2_order_items(*), v2_customers(*)')
-      .eq('id', id)
+      .eq('id', existingOrder.id)
       .single();
 
     if (error || !data) {
-      return NextResponse.json({ error: 'Không tìm thấy đơn hàng' }, { status: 404 });
+      return NextResponse.json({ error: 'Không tìm thấy chi tiết đơn hàng' }, { status: 404 });
     }
 
     return NextResponse.json({ data });
@@ -40,6 +66,12 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     }
 
     const { id } = await params;
+    const existingOrder = await resolveOrder(id);
+    if (!existingOrder) {
+      return NextResponse.json({ error: 'Không tìm thấy đơn hàng cần sửa' }, { status: 404 });
+    }
+
+    const realUuid = existingOrder.id;
     const body = await req.json();
 
     const {
@@ -87,16 +119,17 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     if (items && Array.isArray(items)) {
       const itemsSubtotal = items.reduce((s: number, it: any) => s + (Number(it.subtotal) || 0), 0);
       updates.subtotal = itemsSubtotal;
-      const ship = shipping_fee !== undefined ? Number(shipping_fee) : 0;
-      const disc = discount !== undefined ? Number(discount) : 0;
-      const vatAmt = updates.has_vat ? Math.round(itemsSubtotal * 0.08) : 0;
+      const ship = shipping_fee !== undefined ? Number(shipping_fee) : Number(existingOrder.shipping_fee || 0);
+      const disc = discount !== undefined ? Number(discount) : Number(existingOrder.discount || 0);
+      const isVat = has_vat !== undefined ? Boolean(has_vat) : Boolean(existingOrder.has_vat);
+      const vatAmt = isVat ? Math.round(itemsSubtotal * 0.08) : 0;
       updates.vat_amount = vatAmt;
       updates.total_amount = total_amount !== undefined ? Number(total_amount) : (itemsSubtotal + ship + vatAmt - disc);
 
-      // Cập nhật v2_order_items
-      await supabase.from('v2_order_items').delete().eq('order_id', id);
+      // Cập nhật v2_order_items theo realUuid
+      await supabase.from('v2_order_items').delete().eq('order_id', realUuid);
       const newItems = items.map((it: any) => ({
-        order_id: id,
+        order_id: realUuid,
         product_name: it.product_label || it.product_type || 'Tem UV DTF',
         product_type: it.product_type || 'tem',
         quantity: Number(it.quantity) || 1,
@@ -113,7 +146,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     const { data: updatedOrder, error: updateErr } = await supabase
       .from('v2_orders')
       .update(updates)
-      .eq('id', id)
+      .eq('id', realUuid)
       .select('*, v2_order_items(*)')
       .single();
 
@@ -134,11 +167,15 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     }
 
     const { id } = await params;
-    const { error } = await supabase.from('v2_orders').delete().eq('id', id);
+    const existingOrder = await resolveOrder(id);
+    if (!existingOrder) {
+      return NextResponse.json({ error: 'Không tìm thấy đơn hàng cần xóa' }, { status: 404 });
+    }
 
+    const { error } = await supabase.from('v2_orders').delete().eq('id', existingOrder.id);
     if (error) throw error;
 
-    return NextResponse.json({ message: 'Xóa đơn hàng thành công' });
+    return NextResponse.json({ success: true });
   } catch (err: any) {
     return NextResponse.json({ error: err.message || 'Lỗi server' }, { status: 500 });
   }
