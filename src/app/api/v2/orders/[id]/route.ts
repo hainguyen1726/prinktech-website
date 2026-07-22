@@ -55,6 +55,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       customer_email,
       customer_note,
       items,
+      subtotal,
+      total_amount,
       shipping_fee,
       discount,
       has_vat
@@ -78,6 +80,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     if (shipping_fee !== undefined) updates.shipping_fee = Number(shipping_fee);
     if (discount !== undefined) updates.discount = Number(discount);
     if (has_vat !== undefined) updates.has_vat = Boolean(has_vat);
+    if (subtotal !== undefined) updates.subtotal = Number(subtotal);
+    if (total_amount !== undefined) updates.total_amount = Number(total_amount);
 
     // Cập nhật lại tổng tiền nếu có thay đổi items/ship/discount/vat
     if (items && Array.isArray(items)) {
@@ -87,7 +91,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       const disc = discount !== undefined ? Number(discount) : 0;
       const vatAmt = updates.has_vat ? Math.round(itemsSubtotal * 0.08) : 0;
       updates.vat_amount = vatAmt;
-      updates.total_amount = itemsSubtotal + ship + vatAmt - disc;
+      updates.total_amount = total_amount !== undefined ? Number(total_amount) : (itemsSubtotal + ship + vatAmt - disc);
 
       // Cập nhật v2_order_items
       await supabase.from('v2_order_items').delete().eq('order_id', id);
