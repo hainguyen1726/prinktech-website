@@ -264,7 +264,7 @@ export default function SaleOnlinePage() {
       }
 
       const params = new URLSearchParams(queryParams);
-      const sumRes = await fetch(`/api/admin/sale-online/summary?${params.toString()}`);
+      const sumRes = await fetch(`/api/v2/sale-online/summary?${params.toString()}`);
       if (sumRes.ok) {
         setSummary(await sumRes.json());
       } else {

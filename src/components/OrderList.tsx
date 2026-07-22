@@ -377,7 +377,7 @@ export default function OrderList() {
     if (!editFormData) return;
     setSavingEdit(true);
     try {
-      const res = await fetch(`/api/orders/${editFormData.id}`, {
+      const res = await fetch(`/api/v2/orders/${editFormData.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -471,7 +471,7 @@ export default function OrderList() {
   useEffect(() => {
     const fetchCustomersList = async () => {
       try {
-        const res = await fetch('/api/customers?limit=100');
+        const res = await fetch('/api/v2/customers?limit=100');
         if (res.ok) {
           const data = await res.json();
           setCustomersList(data.data || []);
@@ -641,23 +641,30 @@ export default function OrderList() {
           };
         });
 
-        const res = await fetch('/api/customer-orders/create-flow', {
+        const res = await fetch('/api/v2/orders', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             customer_id: cid,
-            product_type: createFormData.product_type,
-            product_label: createFormData.product_label,
-            size_label: createFormData.size_label,
-            quantity: createFormData.quantity,
-            meters: createFormData.product_type === 'cuon' ? createFormData.meters : undefined,
-            rate_excl_vat: createFormData.rate_excl_vat,
+            customer_name: customerTab === 'new' ? newCustomer.name : undefined,
+            customer_phone: customerTab === 'new' ? newCustomer.phone : undefined,
+            customer_address: customerTab === 'new' ? newCustomer.address : undefined,
+            customer_email: customerTab === 'new' ? newCustomer.email : undefined,
+            customer_note: createFormData.note,
             shipping_fee: createFormData.shipping_fee,
-            note: createFormData.note,
-            design_link: createFormData.design_link,
-            order_source: createFormData.order_source,
-            apply_vat: createFormData.apply_vat,
-            items: items.length > 0 ? items : undefined,
+            design_url: createFormData.design_link,
+            request_vat: createFormData.apply_vat,
+            channel: createFormData.order_source || 'sale_online',
+            items: items.length > 0 ? items : [{
+              product_label: createFormData.product_label || 'Tem UV DTF',
+              product_type: createFormData.product_type,
+              quantity: createFormData.quantity,
+              unit: createFormData.product_type === 'cuon' ? 'mét' : 'cái',
+              unit_price: createFormData.rate_excl_vat,
+              subtotal: createFormData.product_type === 'cuon' 
+                ? Math.round((createFormData.meters || 1) * createFormData.rate_excl_vat)
+                : Math.round((createFormData.quantity || 1) * createFormData.rate_excl_vat)
+            }],
           }),
         });
 
@@ -739,8 +746,8 @@ export default function OrderList() {
       const { from, to } = calculateDateRange(datePreset, customFrom, customTo);
       
       const queryParams: Record<string, string> = {
+        channel: sourceFilter === 'all' ? 'sale_online' : sourceFilter,
         status: statusFilter,
-        source: sourceFilter,
         vat: vatFilter,
         search: searchTerm,
         page: String(page),
@@ -751,7 +758,7 @@ export default function OrderList() {
       if (to) queryParams.to = to;
 
       const params = new URLSearchParams(queryParams);
-      const res = await fetch(`/api/orders?${params.toString()}`);
+      const res = await fetch(`/api/v2/orders?${params.toString()}`);
       if (!res.ok) {
         throw new Error('Không thể tải danh sách đơn hàng');
       }
@@ -784,7 +791,7 @@ export default function OrderList() {
   const handleStatusChange = async (orderId: string, newStatus: string) => {
     setUpdatingId(orderId);
     try {
-      const res = await fetch(`/api/orders/${orderId}`, {
+      const res = await fetch(`/api/v2/orders/${orderId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus }),
@@ -810,7 +817,7 @@ export default function OrderList() {
   const handlePaymentStatusChange = async (orderId: string, newPayStatus: string) => {
     setUpdatingId(orderId);
     try {
-      const res = await fetch(`/api/orders/${orderId}`, {
+      const res = await fetch(`/api/v2/orders/${orderId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ payment_status: newPayStatus }),
@@ -837,7 +844,7 @@ export default function OrderList() {
     setUpdatingId(orderId);
     try {
       const newHasVat = !currentHasVat;
-      const res = await fetch(`/api/orders/${orderId}`, {
+      const res = await fetch(`/api/v2/orders/${orderId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ has_vat: newHasVat }),
@@ -881,7 +888,7 @@ export default function OrderList() {
   const handleShippingUpdate = async (orderId: string) => {
     setUpdatingId(orderId);
     try {
-      const res = await fetch(`/api/orders/${orderId}`, {
+      const res = await fetch(`/api/v2/orders/${orderId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -922,7 +929,7 @@ export default function OrderList() {
       'Bạn có chắc chắn muốn xóa vĩnh viễn đơn hàng này không? Hành động này không thể hoàn tác.',
       async () => {
         try {
-          const res = await fetch(`/api/orders/${orderId}`, { method: 'DELETE' });
+          const res = await fetch(`/api/v2/orders/${orderId}`, { method: 'DELETE' });
           if (!res.ok) throw new Error('Xóa thất bại');
           showToast('Đã xóa đơn hàng thành công!', 'success');
           setOrders(prev => prev.filter(o => o.id !== orderId));
