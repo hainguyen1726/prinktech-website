@@ -38,9 +38,11 @@ export async function GET(req: NextRequest) {
       .range(offset, offset + limit - 1);
 
     // Lọc theo kênh (Channel)
+    // 'sale_online' = filter nội bộ → lấy tất cả đơn KHÔNG phải của xưởng
+    // Xưởng in dùng prefix 'workshop_' cho tất cả channel B2B
     if (channel && channel !== 'all') {
       if (channel === 'sale_online') {
-        query = query.neq('channel', 'workshop_b2b');
+        query = query.not('channel', 'in', '("workshop_b2b","workshop_agent_l1")');
       } else {
         query = query.eq('channel', channel);
       }
