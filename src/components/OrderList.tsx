@@ -1220,25 +1220,22 @@ export default function OrderList() {
                         <label className="block text-xs font-bold text-slate-600">Mẫu thiết kế (Có thể thêm từ Kho Mẫu)</label>
                         <div className="flex items-center gap-2">
                           <CustomerDesignSelector
-                            partnerId={selectedCustomerId || undefined}
-                            partnerPhone={customerTab === 'existing' ? customersList.find(c => c.id === selectedCustomerId)?.phone : newCustomer.phone}
+                            customerId={selectedCustomerId || undefined}
                             customerName={customerTab === 'existing' ? customersList.find(c => c.id === selectedCustomerId)?.name : newCustomer.name}
-                            buttonText="🎨 Chọn từ Kho Mẫu"
                             onSelectDesign={(design: CustomerDesign) => {
-                              const cleanPrice = Number(design.unit_price) > 0 ? Number(design.unit_price) : (Number(createFormData.rate_excl_vat) || 2000);
                               setAdminDesigns(prev => [
                                 ...prev,
                                 {
-                                  name: design.name,
-                                  size_label: design.size_label || 'Tem lẻ',
+                                  name: design.design_name,
+                                  size_label: 'Tem lẻ',
                                   quantity: createFormData.quantity || 100,
-                                  rate_excl_vat: cleanPrice,
-                                  url: design.file_url || '',
-                                  note: design.note || ''
+                                  rate_excl_vat: Number(createFormData.rate_excl_vat) || 2000,
+                                  url: design.drive_file_url || '',
+                                  note: ''
                                 }
                               ]);
-                              if (design.file_url && !createFormData.design_link) {
-                                setCreateFormData(p => ({ ...p, design_link: design.file_url || '' }));
+                              if (design.drive_file_url && !createFormData.design_link) {
+                                setCreateFormData(p => ({ ...p, design_link: design.drive_file_url || '' }));
                               }
                             }}
                           />
