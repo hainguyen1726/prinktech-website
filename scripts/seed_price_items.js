@@ -37,11 +37,11 @@ const priceItemsToSeed = [
     sort_order: 1,
     price_sheet: [
       { min: 1, max: 1.9, price: 290000 },
-      { min: 2, max: 5, price: 250000 },
-      { min: 6, max: 20, price: 190000 },
-      { min: 21, max: 30, price: 170000 },
-      { min: 30, max: 49, price: 160000 },
-      { min: 50, max: null, price: 145000 },
+      { min: 2, max: 4.9, price: 250000 },
+      { min: 5, max: 14.9, price: 220000 },
+      { min: 15, max: 49.9, price: 190000 },
+      { min: 50, max: 80, price: 160000 },
+      { min: 80.1, max: null, price: 145000 },
     ]
   },
   {

@@ -40,12 +40,12 @@ export const PRODUCTS: Product[] = [
     icon: '🧵',
     description: 'Khách tự ghép file, xưởng in theo mét dài khổ rộng 60cm',
     tiers: [
-      { min: 1,    max: 1.9,  price: 290000, label: '1 – 1.9 mét' },
-      { min: 2,    max: 5,    price: 250000, label: '2 – 5 mét' },
-      { min: 6,    max: 20,   price: 190000, label: '6 – 20 mét' },
-      { min: 21,   max: 30,   price: 170000, label: '21 – 30 mét' },
-      { min: 30,   max: 49,   price: 160000, label: '30 – 49 mét' },
-      { min: 50,   max: null, price: 145000, label: 'Từ 50 mét trở lên' },
+      { min: 1,    max: 1.9,  price: 290000, label: 'Dưới 2 mét' },
+      { min: 2,    max: 4.9,  price: 250000, label: 'Từ 2 – 5 mét' },
+      { min: 5,    max: 14.9, price: 220000, label: 'Từ 5 – 15 mét' },
+      { min: 15,   max: 49.9, price: 190000, label: 'Từ 15 – 50 mét' },
+      { min: 50,   max: 80,   price: 160000, label: 'Từ 50 – 80 mét' },
+      { min: 80.1, max: null, price: 145000, label: 'Trên 80 mét' },
     ],
     note: 'Ghép file vào khổ 58cm (film 60cm). Khoảng cách bế tối thiểu 5mm.',
   },
@@ -215,11 +215,14 @@ export function convertPriceItemsToProducts(priceItems: any[]): Product[] {
 
       let label = '';
       if (max === null) {
-        label = min <= 1 ? 'Mọi số lượng' : isMet ? `Từ ${min} mét trở lên` : `≥ ${min.toLocaleString('vi-VN')} ${unit}`;
+        label = min <= 1 ? 'Mọi số lượng' : isMet ? (min >= 80 ? `Trên ${Math.floor(min)} mét` : `Từ ${Math.floor(min)} mét trở lên`) : `≥ ${min.toLocaleString('vi-VN')} ${unit}`;
       } else if (min === max) {
         label = `${min} ${unit}`;
+      } else if (isMet) {
+        if (min < 2) label = 'Dưới 2 mét';
+        else label = `Từ ${Math.floor(min)} – ${Math.ceil(max)} mét`;
       } else {
-        label = isMet ? `Từ ${min} – ${max} m` : `${min} – ${max}`;
+        label = `${min} – ${max}`;
       }
 
       return {
