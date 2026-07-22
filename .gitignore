@@ -53,8 +53,14 @@ check-posts.mjs
 *key*.json
 amazon-*.json
 
-# scratch scripts & generated files
+# archives & tars
+*.tar.gz
+*.zip
+*.tar
+website-prinktech.tar.gz
+
+# scratch & temp files
 scratch/
 bao_gia/
-Bao_gia_in_tem_*.xlsx
-Bao_gia_in_tem_*.pdf
+*.xlsx
+*.pdf

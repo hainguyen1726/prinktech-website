@@ -1,5 +1,8 @@
+# ⚠️ QUY TẮC BẮT BUỘC: ƯU TIÊN CHẠY DEPLOY QUA GIT & GITHUB (.\deploy-via-git.ps1)
+# BỎ QUA FILE NÀY VÀ ƯU TIÊN DÙNG .\deploy-via-git.ps1 ĐỂ GIỮ LỊCH SỬ PHIÊN BẢN VÀ ZERO DOWNTIME, TRỪ KHI KHÁCH HÀNG YÊU CẦU BẰNG VĂN BẢN!
+
 param (
-    [string]$ScriptPath = "/srv/deploy-vps-unified-website.sh"
+    [string]$ScriptPath = "/srv/website-prinktech/deploy-vps-git.sh"
 )
 
 $VPS_IP = "180.93.146.26"
@@ -68,8 +71,8 @@ if ($LASTEXITCODE -ne 0) {
     Error "Không thể upload website-prinktech.tar.gz!"
 }
 
-Write-Host "📤 Tải script deploy → root@${VPS_IP}:/srv/" -ForegroundColor Cyan
-scp -P 22 "$APP_DIR\deploy-vps-unified.sh" "${VPS_USER}@${VPS_IP}:$ScriptPath"
+Write-Host "📤 Tải script Zero-Downtime deploy → root@${VPS_IP}:${ScriptPath}" -ForegroundColor Cyan
+scp -P 22 "$APP_DIR\deploy-vps-git.sh" "${VPS_USER}@${VPS_IP}:$ScriptPath"
 
 if ($LASTEXITCODE -ne 0) {
     Error "Không thể upload script deploy!"

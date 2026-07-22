@@ -1,4 +1,5 @@
 # 🚀 DEPLOY VIA GIT & SSH (PRINK TECH WEBSITE)
+# ⚠️ QUY TẮC BẮT BUỘC KHÓA HỆ THỐNG: LUÔN ƯU TIÊN SỬ DỤNG SCRIPT NÀY (.\deploy-via-git.ps1) ĐỂ PUSH MÃ NGUỒN LÊN GITHUB & DEPLOY VPS ZERO-DOWNTIME, TRỪ KHI KHÁCH HÀNG YÊU CẦU KHÁC BẰNG VĂN BẢN!
 # Chạy từ máy Local (Windows): .\deploy-via-git.ps1
 
 param(

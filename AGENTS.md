@@ -53,3 +53,11 @@ Dự án này đã được Audit SEO hoàn chỉnh vào ngày 10/07/2026. Các 
 4. **Cảnh báo Deploy đa dự án trên VPS**:
    Tất cả các dự án trên VPS dùng chung file `/home/n8n/Caddyfile`. Khi thực hiện deploy, chỉ cập nhật duy nhất block domain `prinktech.netslive.com` và tuyệt đối không làm ảnh hưởng đến block của các dự án khác (`chat.netslive.com`, `mmo.netslive.com`, ...).
 
+## 8. Quy tắc Ưu tiên Triển khai (Deploy) qua Git & GitHub (BẮT BUỘC TRỪ KHI CÓ YÊU CẦU BẰNG VĂN BẢN)
+1. **Ưu tiên Bắt buộc qua Git Push**:
+   - Tất cả các hoạt động Deploy / Cập nhật mã nguồn lên VPS **bắt buộc phải thực hiện theo luồng Git Commit & Push lên GitHub (`.\deploy-via-git.ps1`)** để đảm bảo quản lý phiên bản (Version Control) và có thể rollback chính xác từng Git Commit Hash.
+   - **Tuyệt đối không**: Sử dụng phương pháp upload file nén thủ công (`deploy-local-to-vps.ps1` cũ), trừ khi người dùng đưa ra yêu cầu bằng văn bản cụ thể trong đoạn chat.
+2. **Quy trình Thực thi Deploy Chuẩn**:
+   - Bước 1: Commit mã nguồn bằng Conventional Commit (`git commit -m "..."`).
+   - Bước 2: Push code lên GitHub master (`git push origin master`).
+   - Bước 3: Kích hoạt script Zero-Downtime Blue-Green trên VPS (`deploy-vps-git.sh`).
