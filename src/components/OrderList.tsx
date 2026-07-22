@@ -1478,8 +1478,8 @@ export default function OrderList() {
                   onClick={() => { setDatePreset(p.value); setPage(1); }}
                   className={`px-3 py-1.5 text-xs font-bold rounded-lg border transition ${
                     datePreset === p.value 
-                      ? 'bg-purple-650 text-white border-purple-650 shadow-sm' 
-                      : 'border-slate-200 dark:border-slate-800 text-slate-650 dark:text-slate-300 hover:border-purple-300 hover:text-purple-650'
+                      ? 'bg-purple-600 text-white border-purple-600 shadow-sm' 
+                      : 'border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:border-purple-300 hover:text-purple-600'
                   }`}
                 >
                   {p.label}
@@ -1954,7 +1954,7 @@ export default function OrderList() {
                         pNo === '...' ? 'cursor-default text-text-muted/40 bg-transparent' : 'cursor-pointer'
                       } ${
                         page === pNo 
-                          ? 'bg-purple-650 text-white shadow-sm font-bold border-transparent' 
+                          ? 'bg-purple-600 text-white shadow-sm font-bold border-transparent' 
                           : pNo === '...' ? 'border-transparent' : 'border border-card-border hover:bg-block-bg'
                       }`}
                     >
