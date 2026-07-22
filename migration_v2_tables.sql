@@ -235,6 +235,7 @@ BEGIN
     IF UPPER(COALESCE(o.p_name, '')) LIKE '%AN NGUYÊN TECH%' 
        OR UPPER(COALESCE(o.p_name, '')) LIKE '%IN TEST%' 
        OR UPPER(COALESCE(o.p_name, '')) LIKE '%HAO PHÍ%' 
+       OR UPPER(COALESCE(o.p_name, '')) LIKE '%NGUYỄN MINH HẢI%' 
        OR o.partner_type IN ('agent_level_1', 'agent_level_2', 'partner') THEN
       calc_channel := 'workshop_b2b';
     ELSE
