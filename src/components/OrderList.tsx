@@ -13,6 +13,7 @@ import {
 } from '@/lib/pricing';
 import AdminGuard from '@/components/AdminGuard';
 import CustomerDesignSelector, { CustomerDesign } from '@/components/CustomerDesignSelector';
+import UploadNewDesignModal from '@/components/UploadNewDesignModal';
 import QuoteBillModal from '@/components/QuoteBillModal';
 
 const getCleanNote = (note: string | null): string => {
@@ -316,6 +317,10 @@ export default function OrderList() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [editFormData, setEditFormData] = useState<any>(null);
   const [savingEdit, setSavingEdit] = useState(false);
+
+  // States cho Upload Mẫu Thiết Kế Mới lên Drive
+  const [showUploadModal, setShowUploadModal] = useState(false);
+  const [uploadItemIdx, setUploadItemIdx] = useState<number | null>(null);
 
   // States cho Modal Xem & In Báo Giá (Bill)
   const [quoteBillOrder, setQuoteBillOrder] = useState<Order | null>(null);
@@ -2574,28 +2579,36 @@ export default function OrderList() {
                   </h4>
                   <div className="flex items-center gap-2">
                     <CustomerDesignSelector
-                      partnerPhone={editFormData.customer_phone}
+                      customerId={customersList.find(c => c.phone === editFormData.customer_phone)?.id}
                       customerName={editFormData.customer_name}
-                      buttonText="🎨 Chọn từ Kho Mẫu"
                       onSelectDesign={(design: CustomerDesign) => {
-                        const cleanPrice = Number(design.unit_price) > 0 ? Number(design.unit_price) : 2000;
                         setEditFormData((prev: any) => ({
                           ...prev,
                           items: [
                             ...prev.items,
                             {
-                              product_label: design.name,
-                              product_type: design.sticker_type || 'sticker_piece',
+                              product_label: design.design_name,
+                              product_type: design.product_type || 'sticker_piece',
                               quantity: 100,
                               unit: 'cái',
-                              unit_price: cleanPrice,
-                              subtotal: 100 * cleanPrice,
-                              design_url: design.file_url || ''
+                              unit_price: 2000,
+                              subtotal: 200000,
+                              design_url: design.drive_file_url
                             }
                           ]
                         }));
                       }}
                     />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setUploadItemIdx(null);
+                        setShowUploadModal(true);
+                      }}
+                      className="px-2.5 py-1 text-xs bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-bold shadow-sm transition shrink-0"
+                    >
+                      + 📤 Tải Mẫu Mới
+                    </button>
                     <button
                       type="button"
                       onClick={() => setEditFormData((prev: any) => ({
@@ -2613,9 +2626,9 @@ export default function OrderList() {
                           }
                         ]
                       }))}
-                      className="text-xs text-purple-600 hover:underline font-bold"
+                      className="text-xs text-purple-600 hover:underline font-bold shrink-0"
                     >
-                      + Thêm dòng sản phẩm
+                      + Dòng rỗng
                     </button>
                   </div>
                 </div>
@@ -2768,11 +2781,11 @@ export default function OrderList() {
                             />
                           </div>
                         )}
-                        <div className="sm:col-span-2 flex gap-1 items-center">
-                          <span className="text-[11px] text-text-muted shrink-0">Link File thiết kế:</span>
+                        <div className="sm:col-span-2 flex gap-1.5 items-center">
+                          <span className="text-[11px] text-text-muted shrink-0">Mẫu thiết kế:</span>
                           <input
                             type="text"
-                            placeholder="Dán link Drive file mẫu in..."
+                            placeholder="Link Drive file mẫu in..."
                             value={item.design_url || ''}
                             onChange={e => {
                               const url = e.target.value;
@@ -2782,8 +2795,19 @@ export default function OrderList() {
                                 return { ...prev, items: list };
                               });
                             }}
-                            className="flex-1 h-7 px-2 rounded border border-card-border bg-background text-xs"
+                            className="flex-1 h-7 px-2 rounded border border-card-border bg-background text-xs font-medium"
                           />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setUploadItemIdx(idx);
+                              setShowUploadModal(true);
+                            }}
+                            className="px-2 py-1 text-[11px] font-bold bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 rounded border border-purple-200 dark:border-purple-800 hover:bg-purple-200 shrink-0"
+                            title="Tải mẫu mới cho dòng này"
+                          >
+                            📤 Upload
+                          </button>
                         </div>
                       </div>
                     </div>
