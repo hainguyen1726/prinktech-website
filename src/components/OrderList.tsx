@@ -2112,13 +2112,11 @@ export default function OrderList() {
                   )}
                   <div className="pt-1">
                     <CustomerDesignSelector
-                      partnerPhone={selectedOrder.customer_phone}
+                      customerId={customersList.find(c => c.phone === selectedOrder.customer_phone)?.id}
                       customerName={selectedOrder.customer_name}
-                      buttonText="🎨 Tra cứu Kho File Thiết Kế của Khách"
-                      buttonClassName="w-full h-9 rounded-xl border border-purple-200 dark:border-purple-800 bg-purple-50 hover:bg-purple-100 dark:bg-purple-950/30 dark:hover:bg-purple-900/40 text-purple-700 dark:text-purple-300 font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer"
                       onSelectDesign={(design: CustomerDesign) => {
-                        if (design.file_url) {
-                          window.open(design.file_url, '_blank');
+                        if (design.drive_file_url) {
+                          window.open(design.drive_file_url, '_blank');
                         }
                       }}
                     />
