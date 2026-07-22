@@ -133,3 +133,25 @@ export async function PUT(
     return NextResponse.json({ error: err.message || 'Lỗi server' }, { status: 500 });
   }
 }
+
+// DELETE /api/v2/customers/[id] — Xóa khách hàng V2
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const auth = await verifyAdminOrStaff(req);
+    if (auth.error) {
+      return NextResponse.json({ error: auth.error }, { status: auth.status || 401 });
+    }
+
+    const { id } = await params;
+    const { error } = await supabase.from('v2_customers').delete().eq('id', id);
+
+    if (error) throw error;
+
+    return NextResponse.json({ success: true, message: 'Xóa khách hàng thành công' });
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message || 'Lỗi server' }, { status: 500 });
+  }
+}
