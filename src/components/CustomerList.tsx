@@ -209,8 +209,8 @@ export default function CustomerList() {
 
     setUpdatingCustomer(true);
     try {
-      const res = await fetch(`/api/customers/${editingCustomer.id}`, {
-        method: 'PATCH',
+      const res = await fetch(`/api/v2/customers/${editingCustomer.id}`, {
+        method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: editForm.name.trim(),
@@ -383,7 +383,7 @@ export default function CustomerList() {
         limit: '20',
       });
       
-      const res = await fetch(`/api/customers?${params.toString()}`);
+      const res = await fetch(`/api/v2/customers?${params.toString()}`);
       if (!res.ok) throw new Error('Không thể tải danh sách khách hàng');
       const data = await res.json();
       
@@ -409,7 +409,7 @@ export default function CustomerList() {
       const cust = customers.find(c => c.id === customerId);
       if (cust && !cust.orders) {
         try {
-          const res = await fetch(`/api/customers/${customerId}`);
+          const res = await fetch(`/api/v2/customers/${customerId}`);
           if (res.ok) {
             const data = await res.json();
             setCustomers(prev =>
@@ -441,14 +441,14 @@ export default function CustomerList() {
   const handleUpdateOrderField = async (orderId: string, customerId: string, payload: Record<string, any>) => {
     setSavingOrder(prev => ({ ...prev, [orderId]: true }));
     try {
-      const res = await fetch(`/api/customer-orders/${orderId}`, {
+      const res = await fetch(`/api/v2/orders/${orderId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
       if (!res.ok) throw new Error('Cập nhật thất bại');
       
-      const custRes = await fetch(`/api/customers/${customerId}`);
+      const custRes = await fetch(`/api/v2/customers/${customerId}`);
       if (custRes.ok) {
         const custData = await custRes.json();
         setCustomers(prev =>
