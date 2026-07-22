@@ -352,6 +352,7 @@ export default function OrderList() {
       customer_address: order.customer_address || '',
       customer_email: order.customer_email || '',
       customer_note: getCleanNote(order.customer_note),
+      channel: (order as any).source || (order as any).channel || 'website',
       shipping_carrier: order.shipping_carrier || '',
       tracking_number: order.tracking_number || '',
       shipping_fee: order.shipping_fee || 0,
@@ -391,6 +392,7 @@ export default function OrderList() {
           customer_address: editFormData.customer_address,
           customer_email: editFormData.customer_email,
           customer_note: editFormData.customer_note,
+          channel: editFormData.channel,
           shipping_carrier: editFormData.shipping_carrier,
           tracking_number: editFormData.tracking_number,
           shipping_fee: Number(editFormData.shipping_fee) || 0,
@@ -2554,7 +2556,24 @@ export default function OrderList() {
                       className="w-full h-9 px-3 rounded-lg border border-card-border bg-background text-xs font-bold"
                     />
                   </div>
-                  <div className="space-y-1 sm:col-span-2">
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Nguồn khách (Kênh đơn)</label>
+                    <select
+                      value={editFormData.channel || 'website'}
+                      onChange={e => setEditFormData({ ...editFormData, channel: e.target.value })}
+                      className="w-full h-9 px-2 rounded-lg border border-purple-300 dark:border-purple-800 bg-background text-xs font-bold text-purple-700 dark:text-purple-300"
+                    >
+                      <option value="website">🌐 Website (Khách lẻ)</option>
+                      <option value="facebook">📘 Facebook</option>
+                      <option value="zalo">💬 Zalo</option>
+                      <option value="shopee">🛒 Shopee</option>
+                      <option value="tiktok">🎵 TikTok</option>
+                      <option value="youtube">▶️ YouTube</option>
+                      <option value="workshop_b2b">🏭 Xưởng in B2B / Đại lý</option>
+                      <option value="other">📦 Nguồn khác</option>
+                    </select>
+                  </div>
+                  <div className="space-y-1">
                     <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Địa chỉ giao hàng</label>
                     <input
                       type="text"

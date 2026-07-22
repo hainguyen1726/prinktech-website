@@ -39,7 +39,11 @@ export async function GET(req: NextRequest) {
 
     // Lọc theo kênh (Channel)
     if (channel && channel !== 'all') {
-      query = query.eq('channel', channel);
+      if (channel === 'sale_online') {
+        query = query.neq('channel', 'workshop_b2b');
+      } else {
+        query = query.eq('channel', channel);
+      }
     }
 
     // Lọc theo trạng thái

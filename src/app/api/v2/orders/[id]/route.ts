@@ -91,13 +91,15 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       total_amount,
       shipping_fee,
       discount,
-      has_vat
+      has_vat,
+      channel
     } = body;
 
     const updates: Record<string, any> = {
       updated_at: new Date().toISOString()
     };
 
+    if (channel !== undefined) updates.channel = channel;
     if (status !== undefined) updates.status = status;
     if (payment_status !== undefined) updates.payment_status = payment_status;
     if (shipping_carrier !== undefined) updates.shipping_carrier = shipping_carrier;
