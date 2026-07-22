@@ -70,7 +70,7 @@ export async function GET(req: NextRequest) {
   }
 
   const prev = getPrevRange(from, to);
-  const CHANNELS = ['website', 'shopee', 'facebook', 'tiktok', 'youtube', 'other'];
+  const CHANNELS = ['sale_online', 'website', 'shopee', 'facebook', 'tiktok', 'youtube', 'other'];
 
   const fromTs = `${from}T00:00:00.000Z`;
   const toTs = `${to}T23:59:59.999Z`;
@@ -85,7 +85,11 @@ export async function GET(req: NextRequest) {
     .lte('created_at', toTs)
     .neq('status', 'cancelled');
 
-  if (channel !== 'all') queryCurrent = queryCurrent.eq('channel', channel);
+  if (channel !== 'all') {
+    queryCurrent = queryCurrent.eq('channel', channel);
+  } else {
+    queryCurrent = queryCurrent.neq('channel', 'workshop_b2b');
+  }
 
   // Query kỳ trước
   let queryPrev = printingSupabase
@@ -95,7 +99,11 @@ export async function GET(req: NextRequest) {
     .lte('created_at', prevToTs)
     .neq('status', 'cancelled');
 
-  if (channel !== 'all') queryPrev = queryPrev.eq('channel', channel);
+  if (channel !== 'all') {
+    queryPrev = queryPrev.eq('channel', channel);
+  } else {
+    queryPrev = queryPrev.neq('channel', 'workshop_b2b');
+  }
 
   // Query Chi phí từ Marketing Schema
   const [currOrdersRes, prevOrdersRes, expRes, prevExpRes] = await Promise.all([

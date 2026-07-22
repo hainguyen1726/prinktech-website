@@ -203,6 +203,20 @@ else
     info "Không có container cũ nào đang hoạt động."
 fi
 
+# ============================================
+# 7. DỌN DẸP BỘ NHỚ RAM & DUNG LƯỢNG VPS (POST-DEPLOY CLEANUP)
+# ============================================
+step "7️⃣  DỌN DẸP BỘ NHỚ RAM & DUNG LƯỢNG RÁC DOCKER"
+
+info "Đang dọn dẹp các Docker image rác (dangling images) & build cache dư thừa..."
+docker image prune -f > /dev/null 2>&1 || true
+docker builder prune -f > /dev/null 2>&1 || true
+
+info "Đang giải phóng bộ nhớ đệm RAM (RAM Cache) cho hệ điều hành VPS..."
+sync && echo 3 > /proc/sys/vm/drop_caches > /dev/null 2>&1 || true
+
+success "Đã tối ưu hóa bộ nhớ RAM và dọn dẹp dung lượng đĩa VPS thành công!"
+
 # Ghi nhận deploy thành công vào lịch sử
 DEPLOY_DATE=$(date "+%Y-%m-%d %H:%M:%S")
 echo "[$DEPLOY_DATE] SUCCESS: Deployed version $GIT_COMMIT ($COMMIT_MSG) to $TARGET_COLOR. Active port: $TARGET_PORT." >> deploy_history.log
@@ -214,5 +228,5 @@ echo -e "${GREEN}╚════════════════════
 echo ""
 echo "  🌐 Domain: https://prinktech.netslive.com"
 echo "  📂 Container Active: $TARGET_CONTAINER (Cổng $TARGET_PORT)"
-echo "  ⚡ Trạng thái: ZERO-DOWNTIME DEPLOYED"
+echo "  ⚡ Trạng thái: ZERO-DOWNTIME DEPLOYED & CLEANED"
 echo ""
