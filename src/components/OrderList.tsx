@@ -590,7 +590,7 @@ export default function OrderList() {
 
       setSubmittingForm(true);
       try {
-        const cRes = await fetch('/api/customers', {
+        const cRes = await fetch('/api/v2/customers', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
