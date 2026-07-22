@@ -379,6 +379,8 @@ export default function OrderList() {
         };
       })
     });
+    setEditCustomerSearch('');
+    setEditCustomerDropdownOpen(false);
     setShowEditModal(true);
   };
 
