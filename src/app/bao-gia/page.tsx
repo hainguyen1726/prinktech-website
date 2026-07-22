@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import BaoGiaContent from '@/components/BaoGiaContent';
 
 export const metadata: Metadata = {
@@ -16,6 +17,20 @@ export const metadata: Metadata = {
   },
 };
 
-export default function BaoGiaPage() {
-  return <BaoGiaContent />;
+export const dynamic = 'force-dynamic';
+
+export default async function BaoGiaPage() {
+  let initialPriceItems: any[] = [];
+  try {
+    const { data } = await supabaseAdmin
+      .schema('printing')
+      .from('web_price_items')
+      .select('*')
+      .order('sort_order', { ascending: true });
+    initialPriceItems = data || [];
+  } catch (err) {
+    console.error('Lỗi SSR data trang bao-gia:', err);
+  }
+
+  return <BaoGiaContent initialPriceItems={initialPriceItems} />;
 }

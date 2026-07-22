@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import Link from 'next/link';
 import {
   PRODUCTS,
@@ -11,6 +11,7 @@ import {
   getUnitPrice,
   getActiveTier,
   formatCurrency,
+  convertPriceItemsToProducts,
 } from '@/lib/pricing';
 
 /* ─── Types ─────────────────────────────────────────────── */
@@ -103,8 +104,35 @@ function CartRow({
 }
 
 /* ─── Main Component ─────────────────────────────────────── */
-export default function PricingCalculator() {
-  const [selectedProduct, setSelectedProduct] = useState<Product>(PRODUCTS[0]);
+export default function PricingCalculator({ priceItems }: { priceItems?: any[] }) {
+  const [activeProducts, setActiveProducts] = useState<Product[]>(() => {
+    return priceItems && priceItems.length > 0 ? convertPriceItemsToProducts(priceItems) : PRODUCTS;
+  });
+
+  useEffect(() => {
+    if (priceItems && priceItems.length > 0) {
+      setActiveProducts(convertPriceItemsToProducts(priceItems));
+    } else {
+      fetch('/api/web/price-items')
+        .then(res => res.json())
+        .then(data => {
+          if (data?.priceItems && data.priceItems.length > 0) {
+            setActiveProducts(convertPriceItemsToProducts(data.priceItems));
+          }
+        })
+        .catch(() => {});
+    }
+  }, [priceItems]);
+
+  const [selectedProduct, setSelectedProduct] = useState<Product>(activeProducts[0] || PRODUCTS[0]);
+
+  useEffect(() => {
+    if (activeProducts.length > 0) {
+      const match = activeProducts.find(p => p.type === selectedProduct.type) || activeProducts[0];
+      setSelectedProduct(match);
+    }
+  }, [activeProducts]);
+
   const [quantity, setQuantity] = useState<string>('1');
   const [itemNote, setItemNote] = useState('');
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -285,7 +313,7 @@ export default function PricingCalculator() {
             1 — Chọn loại sản phẩm
           </h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            {PRODUCTS.map(p => (
+            {activeProducts.map(p => (
               <ProductCard
                 key={p.type}
                 product={p}

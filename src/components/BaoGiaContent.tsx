@@ -6,8 +6,74 @@ import { ChevronRight } from 'lucide-react';
 import PricingCalculator from '@/components/PricingCalculator';
 import Header from '@/components/Header';
 
-export default function BaoGiaContent() {
+const DEFAULT_PRICE_ITEMS = [
+  {
+    material_name: 'In theo mét dài (Khổ 60cm)',
+    unit: 'mét',
+    price_sheet: [
+      { min: 1, max: 1.9, price: 290000 },
+      { min: 2, max: 5, price: 250000 },
+      { min: 6, max: 20, price: 190000 },
+      { min: 21, max: 30, price: 170000 },
+      { min: 30, max: 49, price: 160000 },
+      { min: 50, max: null, price: 145000 },
+    ]
+  },
+  {
+    material_name: 'In tờ A4 (20×28cm)',
+    unit: 'tờ',
+    price_sheet: [
+      { min: 1, max: 4, price: 45000 },
+      { min: 5, max: 49, price: 39000 },
+      { min: 50, max: null, price: 28000 },
+    ]
+  },
+  {
+    material_name: 'In tờ A3 (29×40cm)',
+    unit: 'tờ',
+    price_sheet: [
+      { min: 1, max: 4, price: 80000 },
+      { min: 5, max: 49, price: 65000 },
+      { min: 50, max: null, price: 50000 },
+    ]
+  },
+  {
+    material_name: 'Tem nhỏ (dưới 3×3cm) – Cắt bế sẵn',
+    unit: 'chiếc',
+    price_sheet: [
+      { min: 20, max: 49, price: 2500 },
+      { min: 50, max: 100, price: 1600 },
+      { min: 200, max: 999, price: 1100 },
+      { min: 1000, max: null, price: 500 },
+    ]
+  },
+  {
+    material_name: 'Tem trung bình (4×4–5×5cm) – Cắt bế sẵn',
+    unit: 'chiếc',
+    price_sheet: [
+      { min: 20, max: 49, price: 4000 },
+      { min: 50, max: 199, price: 2800 },
+      { min: 200, max: 999, price: 1900 },
+      { min: 1000, max: null, price: 1300 },
+    ]
+  },
+  {
+    material_name: 'Tem lớn (6×6–8×8cm) – Cắt bế sẵn',
+    unit: 'chiếc',
+    price_sheet: [
+      { min: 20, max: 49, price: 7000 },
+      { min: 50, max: 199, price: 4800 },
+      { min: 200, max: 999, price: 3200 },
+      { min: 1000, max: null, price: 2400 },
+    ]
+  }
+];
+
+export default function BaoGiaContent({ initialPriceItems = [] }: { initialPriceItems?: any[] }) {
   const [activeTheme, setActiveTheme] = useState<'tech' | 'creative' | 'elegant'>('elegant');
+  const [priceItems, setPriceItems] = useState<any[]>(() => {
+    return initialPriceItems.length > 0 ? initialPriceItems : DEFAULT_PRICE_ITEMS;
+  });
 
   // Khởi tạo theme từ localStorage ở client-side
   useEffect(() => {
@@ -16,6 +82,22 @@ export default function BaoGiaContent() {
       setActiveTheme(savedTheme);
     }
   }, []);
+
+  // Fetch priceItems if not provided initially
+  useEffect(() => {
+    if (initialPriceItems.length > 0) {
+      setPriceItems(initialPriceItems);
+    } else {
+      fetch('/api/web/price-items')
+        .then(res => res.json())
+        .then(data => {
+          if (data?.priceItems && data.priceItems.length > 0) {
+            setPriceItems(data.priceItems);
+          }
+        })
+        .catch(err => console.error('Lỗi fetch price-items ở bao-gia:', err));
+    }
+  }, [initialPriceItems]);
 
   // Apply theme class to html/body và lưu vào localStorage
   useEffect(() => {
@@ -30,6 +112,8 @@ export default function BaoGiaContent() {
       document.body.classList.add('theme-creative');
     }
   }, [activeTheme]);
+
+  const activeItems = priceItems.length > 0 ? priceItems : DEFAULT_PRICE_ITEMS;
 
   return (
     <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
@@ -56,7 +140,7 @@ export default function BaoGiaContent() {
               </span>
             </h1>
             <p className="text-text-muted mt-2 text-sm">
-              Cập nhật ngày 09/07/2026 • Giá đã bao gồm thuế VAT
+              Cập nhật tức thì từ hệ thống xưởng • Giá đã bao gồm thuế VAT
             </p>
           </div>
           <div className="flex-shrink-0">
@@ -90,169 +174,73 @@ export default function BaoGiaContent() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-card-border/40 text-foreground/90">
-                {/* In tờ A4 */}
-                <tr className="hover:bg-block-bg/20 transition-colors">
-                  <td rowSpan={3} className="px-4 md:px-6 py-4 font-bold text-foreground border border-card-border align-middle">
-                    In tờ A4 (20×28cm)
-                    <span className="block text-[10px] font-normal text-text-muted mt-0.5">Khổ A4 tự dàn trang mẫu in tự do</span>
-                  </td>
-                  <td rowSpan={3} className="px-3 py-4 text-center text-text-muted font-semibold border border-card-border align-middle">
-                    tờ
-                  </td>
-                  <td className="px-4 md:px-6 py-3 border border-card-border">1–4</td>
-                  <td className="px-4 md:px-6 py-3 font-semibold text-foreground border border-card-border tabular-nums text-right">45.000</td>
-                  <td rowSpan={3} className="px-4 md:px-6 py-4 text-xs text-text-muted text-right font-medium border border-card-border align-middle">
-                    ~10 tờ tương đương 1 mét dài
-                  </td>
-                </tr>
-                <tr className="hover:bg-block-bg/20 transition-colors">
-                  <td className="px-4 md:px-6 py-3 border border-card-border">5–49</td>
-                  <td className="px-4 md:px-6 py-3 font-semibold text-foreground border border-card-border tabular-nums text-right">39.000</td>
-                </tr>
-                <tr className="hover:bg-block-bg/20 transition-colors">
-                  <td className="px-4 md:px-6 py-3 border border-card-border">≥ 50</td>
-                  <td className="px-4 md:px-6 py-3 font-semibold text-foreground border border-card-border tabular-nums text-right">28.000</td>
-                </tr>
+                {activeItems.map((item, itemIdx) => {
+                  const priceSheet = Array.isArray(item.price_sheet)
+                    ? item.price_sheet
+                    : (typeof item.price_sheet === 'string' ? JSON.parse(item.price_sheet) : []);
+                  const ranges = priceSheet;
+                  const isHighlight = item.material_name?.toLowerCase().includes('mét');
 
-                {/* In tờ A3 */}
-                <tr className="hover:bg-block-bg/20 transition-colors">
-                  <td rowSpan={3} className="px-4 md:px-6 py-4 font-bold text-foreground border border-card-border align-middle">
-                    In tờ A3 (29×40cm)
-                    <span className="block text-[10px] font-normal text-text-muted mt-0.5">Khổ A3 lớn gấp đôi khổ A4</span>
-                  </td>
-                  <td rowSpan={3} className="px-3 py-4 text-center text-text-muted font-semibold border border-card-border align-middle">
-                    tờ
-                  </td>
-                  <td className="px-4 md:px-6 py-3 border border-card-border">1–4</td>
-                  <td className="px-4 md:px-6 py-3 font-semibold text-foreground border border-card-border tabular-nums text-right">80.000</td>
-                  <td rowSpan={3} className="px-4 md:px-6 py-4 text-xs text-text-muted text-right font-medium border border-card-border align-middle">
-                    ~5 tờ tương đương 1 mét dài
-                  </td>
-                </tr>
-                <tr className="hover:bg-block-bg/20 transition-colors">
-                  <td className="px-4 md:px-6 py-3 border border-card-border">5–49</td>
-                  <td className="px-4 md:px-6 py-3 font-semibold text-foreground border border-card-border tabular-nums text-right">65.000</td>
-                </tr>
-                <tr className="hover:bg-block-bg/20 transition-colors">
-                  <td className="px-4 md:px-6 py-3 border border-card-border">≥ 50</td>
-                  <td className="px-4 md:px-6 py-3 font-semibold text-foreground border border-card-border tabular-nums text-right">50.000</td>
-                </tr>
+                  let subDesc = '';
+                  if (item.material_name.includes('A4')) subDesc = 'Khổ A4 tự dàn trang mẫu in tự do';
+                  else if (item.material_name.includes('A3')) subDesc = 'Khổ A3 lớn gấp đôi khổ A4';
+                  else if (item.material_name.toLowerCase().includes('nhỏ')) subDesc = 'Tem dán nắp chai, nhãn phụ logo nhỏ';
+                  else if (item.material_name.toLowerCase().includes('trung bình')) subDesc = 'Vừa dán cốc giữ nhiệt, chai lọ thủy tinh';
+                  else if (item.material_name.toLowerCase().includes('lớn')) subDesc = 'Phù hợp dán nón bảo hiểm, xe máy, laptop';
+                  else if (isHighlight) subDesc = 'Film cuộn in tràn khổ bế mẫu tự do';
 
-                {/* Tem nhỏ */}
-                <tr className="hover:bg-block-bg/20 transition-colors">
-                  <td rowSpan={4} className="px-4 md:px-6 py-4 font-bold text-foreground border border-card-border align-middle">
-                    Tem nhỏ (&lt; 3×3cm) – Cắt bế sẵn
-                    <span className="block text-[10px] font-normal text-text-muted mt-0.5">Tem dán nắp chai, nhãn phụ logo nhỏ</span>
-                  </td>
-                  <td rowSpan={4} className="px-3 py-4 text-center text-text-muted font-semibold border border-card-border align-middle">
-                    chiếc
-                  </td>
-                  <td className="px-4 md:px-6 py-3 border border-card-border">20–49</td>
-                  <td className="px-4 md:px-6 py-3 font-semibold text-foreground border border-card-border tabular-nums text-right">2.500</td>
-                  <td rowSpan={4} className="px-4 md:px-6 py-4 text-xs text-text-muted text-right font-medium border border-card-border align-middle">
-                    MOQ tối thiểu 20 chiếc
-                  </td>
-                </tr>
-                <tr className="hover:bg-block-bg/20 transition-colors">
-                  <td className="px-4 md:px-6 py-3 border border-card-border">50–100</td>
-                  <td className="px-4 md:px-6 py-3 font-semibold text-foreground border border-card-border tabular-nums text-right">1.600</td>
-                </tr>
-                <tr className="hover:bg-block-bg/20 transition-colors">
-                  <td className="px-4 md:px-6 py-3 border border-card-border">200–999</td>
-                  <td className="px-4 md:px-6 py-3 font-semibold text-foreground border border-card-border tabular-nums text-right">1.100</td>
-                </tr>
-                <tr className="hover:bg-block-bg/20 transition-colors">
-                  <td className="px-4 md:px-6 py-3 border border-card-border">≥ 1.000</td>
-                  <td className="px-4 md:px-6 py-3 font-semibold text-foreground border border-card-border tabular-nums text-right">500</td>
-                </tr>
+                  let noteText = '';
+                  if (item.material_name.includes('A4')) noteText = '~10 tờ tương đương 1 mét dài';
+                  else if (item.material_name.includes('A3')) noteText = '~5 tờ tương đương 1 mét dài';
+                  else if (item.material_name.toLowerCase().includes('tem')) noteText = 'MOQ tối thiểu 20 chiếc';
+                  else if (isHighlight) noteText = 'Khổ in ghép tối đa 58cm. Hỗ trợ bế demi an toàn 5mm.';
 
-                {/* Tem trung bình */}
-                <tr className="hover:bg-block-bg/20 transition-colors">
-                  <td rowSpan={4} className="px-4 md:px-6 py-4 font-bold text-foreground border border-card-border align-middle">
-                    Tem trung bình (4×4–5×5cm) – Cắt bế sẵn
-                    <span className="block text-[10px] font-normal text-text-muted mt-0.5">Vừa dán cốc giữ nhiệt, chai lọ thủy tinh</span>
-                  </td>
-                  <td rowSpan={4} className="px-3 py-4 text-center text-text-muted font-semibold border border-card-border align-middle">
-                    chiếc
-                  </td>
-                  <td className="px-4 md:px-6 py-3 border border-card-border">20–49</td>
-                  <td className="px-4 md:px-6 py-3 font-semibold text-foreground border border-card-border tabular-nums text-right">4.000</td>
-                  <td rowSpan={4} className="px-4 md:px-6 py-4 text-xs text-text-muted text-right font-medium border border-card-border align-middle">
-                    MOQ tối thiểu 20 chiếc
-                  </td>
-                </tr>
-                <tr className="hover:bg-block-bg/20 transition-colors">
-                  <td className="px-4 md:px-6 py-3 border border-card-border">50–199</td>
-                  <td className="px-4 md:px-6 py-3 font-semibold text-foreground border border-card-border tabular-nums text-right">2.800</td>
-                </tr>
-                <tr className="hover:bg-block-bg/20 transition-colors">
-                  <td className="px-4 md:px-6 py-3 border border-card-border">200–999</td>
-                  <td className="px-4 md:px-6 py-3 font-semibold text-foreground border border-card-border tabular-nums text-right">1.900</td>
-                </tr>
-                <tr className="hover:bg-block-bg/20 transition-colors">
-                  <td className="px-4 md:px-6 py-3 border border-card-border">≥ 1.000</td>
-                  <td className="px-4 md:px-6 py-3 font-semibold text-foreground border border-card-border tabular-nums text-right">1.300</td>
-                </tr>
+                  return ranges.map((range: any, rIdx: number) => {
+                    const isFirst = rIdx === 0;
+                    const isMax = range.max === null || range.max === undefined || range.max === '' || Number(range.max) >= 99999 || String(range.max).toLowerCase() === 'max';
 
-                {/* Tem lớn */}
-                <tr className="hover:bg-block-bg/20 transition-colors">
-                  <td rowSpan={4} className="px-4 md:px-6 py-4 font-bold text-foreground border border-card-border align-middle">
-                    Tem lớn (6×6–8×8cm) – Cắt bế sẵn
-                    <span className="block text-[10px] font-normal text-text-muted mt-0.5">Phù hợp dán nón bảo hiểm, xe máy, laptop</span>
-                  </td>
-                  <td rowSpan={4} className="px-3 py-4 text-center text-text-muted font-semibold border border-card-border align-middle">
-                    chiếc
-                  </td>
-                  <td className="px-4 md:px-6 py-3 border border-card-border">20–49</td>
-                  <td className="px-4 md:px-6 py-3 font-semibold text-foreground border border-card-border tabular-nums text-right">7.000</td>
-                  <td rowSpan={4} className="px-4 md:px-6 py-4 text-xs text-text-muted text-right font-medium border border-card-border align-middle">
-                    MOQ tối thiểu 20 chiếc
-                  </td>
-                </tr>
-                <tr className="hover:bg-block-bg/20 transition-colors">
-                  <td className="px-4 md:px-6 py-3 border border-card-border">50–199</td>
-                  <td className="px-4 md:px-6 py-3 font-semibold text-foreground border border-card-border tabular-nums text-right">4.800</td>
-                </tr>
-                <tr className="hover:bg-block-bg/20 transition-colors">
-                  <td className="px-4 md:px-6 py-3 border border-card-border">200–999</td>
-                  <td className="px-4 md:px-6 py-3 font-semibold text-foreground border border-card-border tabular-nums text-right">3.200</td>
-                </tr>
-                <tr className="hover:bg-block-bg/20 transition-colors">
-                  <td className="px-4 md:px-6 py-3 border border-card-border">≥ 1.000</td>
-                  <td className="px-4 md:px-6 py-3 font-semibold text-foreground border border-card-border tabular-nums text-right">2.400</td>
-                </tr>
+                    let rangeText = '';
+                    if (isMax) {
+                      rangeText = item.unit === 'mét' ? `Từ ${range.min}m trở lên` : `≥ ${Number(range.min).toLocaleString('vi-VN')}`;
+                    } else if (Number(range.min) === Number(range.max)) {
+                      rangeText = `${range.min}`;
+                    } else if (item.unit === 'mét') {
+                      rangeText = Number(range.min) < 2 ? `${range.min} – ${range.max}m` : `Từ ${range.min} – ${range.max}m`;
+                    } else {
+                      rangeText = `${range.min}–${range.max}`;
+                    }
 
-                {/* In theo mét dài */}
-                <tr className="bg-[var(--accent-glow)]/20 hover:bg-[var(--accent-glow)]/40 transition-colors">
-                  <td rowSpan={5} className="px-4 md:px-6 py-4 font-bold text-foreground border border-card-border align-middle">
-                    In theo mét dài (Khổ 60cm)
-                    <span className="block text-[10px] font-normal text-text-muted mt-0.5">Film cuộn in tràn khổ bế mẫu tự do</span>
-                  </td>
-                  <td rowSpan={5} className="px-3 py-4 text-center text-text-muted font-semibold border border-card-border align-middle">
-                    mét
-                  </td>
-                  <td className="px-4 md:px-6 py-3 border border-card-border">Dưới 2m</td>
-                  <td className="px-4 md:px-6 py-3 font-semibold text-foreground border border-card-border tabular-nums text-right">290.000</td>
-                  <td rowSpan={5} className="px-4 md:px-6 py-4 text-xs text-text-muted text-right font-medium border border-card-border align-middle">
-                    Khổ in ghép tối đa 58cm. Hỗ trợ bế demi an toàn 5mm.
-                  </td>
-                </tr>
-                <tr className="bg-[var(--accent-glow)]/20 hover:bg-[var(--accent-glow)]/40 transition-colors">
-                  <td className="px-4 md:px-6 py-3 border border-card-border">Từ 2 – 5m</td>
-                  <td className="px-4 md:px-6 py-3 font-semibold text-foreground border border-card-border tabular-nums text-right">250.000</td>
-                </tr>
-                <tr className="bg-[var(--accent-glow)]/20 hover:bg-[var(--accent-glow)]/40 transition-colors">
-                  <td className="px-4 md:px-6 py-3 border border-card-border">Từ 5 – 15m</td>
-                  <td className="px-4 md:px-6 py-3 font-semibold text-foreground border border-card-border tabular-nums text-right">220.000</td>
-                </tr>
-                <tr className="bg-[var(--accent-glow)]/20 hover:bg-[var(--accent-glow)]/40 transition-colors">
-                  <td className="px-4 md:px-6 py-3 border border-card-border">Từ 15 – 50m</td>
-                  <td className="px-4 md:px-6 py-3 font-semibold text-foreground border border-card-border tabular-nums text-right">190.000</td>
-                </tr>
-                <tr className="bg-[var(--accent-glow)]/20 hover:bg-[var(--accent-glow)]/60 transition-colors">
-                  <td className="px-4 md:px-6 py-3 border border-card-border font-bold text-[var(--accent)]">Từ 50m trở lên</td>
-                  <td className="px-4 md:px-6 py-3 font-black text-[var(--accent)] border border-card-border tabular-nums text-right">145.000</td>
-                </tr>
+                    return (
+                      <tr
+                        key={`${itemIdx}-${rIdx}`}
+                        className={isHighlight ? "bg-[var(--accent-glow)]/20 hover:bg-[var(--accent-glow)]/40 transition-colors" : "hover:bg-block-bg/20 transition-colors"}
+                      >
+                        {isFirst && (
+                          <>
+                            <td rowSpan={ranges.length} className="px-4 md:px-6 py-4 font-bold text-foreground border border-card-border align-middle">
+                              {item.material_name}
+                              {subDesc && <span className="block text-[10px] font-normal text-text-muted mt-0.5">{subDesc}</span>}
+                            </td>
+                            <td rowSpan={ranges.length} className="px-3 py-4 text-center text-text-muted font-semibold border border-card-border align-middle">
+                              {item.unit}
+                            </td>
+                          </>
+                        )}
+                        <td className={`px-4 md:px-6 py-3 border border-card-border ${isMax && isHighlight ? 'font-bold text-[var(--accent)]' : ''}`}>
+                          {rangeText}
+                        </td>
+                        <td className={`px-4 md:px-6 py-3 border border-card-border tabular-nums text-right ${isMax && isHighlight ? 'font-black text-[var(--accent)]' : 'font-semibold text-foreground'}`}>
+                          {Number(range.price).toLocaleString('vi-VN')}
+                        </td>
+                        {isFirst && (
+                          <td rowSpan={ranges.length} className="px-4 md:px-6 py-4 text-xs text-text-muted text-right font-medium border border-card-border align-middle">
+                            {noteText}
+                          </td>
+                        )}
+                      </tr>
+                    );
+                  });
+                })}
               </tbody>
             </table>
           </div>
@@ -273,7 +261,7 @@ export default function BaoGiaContent() {
           </div>
           
           <div className="p-1 rounded-3xl border border-card-border bg-block-bg/15">
-            <PricingCalculator />
+            <PricingCalculator priceItems={priceItems} />
           </div>
         </div>
       </main>
