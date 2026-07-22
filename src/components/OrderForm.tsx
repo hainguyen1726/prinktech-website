@@ -805,28 +805,27 @@ export default function OrderForm() {
                   Sản phẩm đặt in
                 </h2>
                 <CustomerDesignSelector
-                  partnerPhone={customer.phone}
+                  customerId={undefined}
                   customerName={customer.name}
                   onSelectDesign={(design: CustomerDesign) => {
-                    if (design.file_url && !customer.design_url) {
-                      setCustomer(prev => ({ ...prev, design_url: design.file_url || '' }));
+                    if (design.drive_file_url && !customer.design_url) {
+                      setCustomer(prev => ({ ...prev, design_url: design.drive_file_url || '' }));
                     }
-                    const cleanPrice = Number(design.unit_price) > 0 ? Number(design.unit_price) : 15000;
                     setItems(prev => [
                       ...prev,
                       {
                         id: uid(),
-                        product_type: (design.sticker_type as any) || 'a4',
-                        product_label: design.name,
-                        size_label: design.size_label || 'Tem lẻ',
+                        product_type: (design.product_type as any) || 'a4',
+                        product_label: design.design_name,
+                        size_label: 'Tem lẻ',
                         quantity: 1,
                         unit: 'cái',
-                        unit_price: cleanPrice,
-                        subtotal: cleanPrice,
-                        image_url: design.preview_url || null,
-                        design_url: design.file_url || null,
-                        designs: design.file_url ? [{ name: design.name, url: design.file_url }] : [],
-                        note: design.note || null,
+                        unit_price: 2000,
+                        subtotal: 2000,
+                        image_url: design.preview_image_url || null,
+                        design_url: design.drive_file_url || null,
+                        designs: design.drive_file_url ? [{ name: design.design_name, url: design.drive_file_url }] : [],
+                        note: null,
                       }
                     ]);
                   }}
