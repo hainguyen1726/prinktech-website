@@ -311,6 +311,8 @@ export default function OrderList() {
   };
 
   const [customersList, setCustomersList] = useState<any[]>([]);
+  const [editCustomerSearch, setEditCustomerSearch] = useState('');
+  const [editCustomerDropdownOpen, setEditCustomerDropdownOpen] = useState(false);
   const [submittingForm, setSubmittingForm] = useState(false);
 
   // States cho Modal Sửa Đơn Hàng Đã Tạo
@@ -2542,34 +2544,59 @@ export default function OrderList() {
                   </h4>
                   {customersList.length > 0 && (
                     <div className="flex items-center gap-1.5">
-                      <span className="text-[11px] text-text-muted hidden sm:inline">Chọn từ DB (`v2_customers`):</span>
-                      <select
-                        value={editFormData.customer_id || ''}
-                        onChange={e => {
-                          const cid = e.target.value;
-                          const selectedCust = customersList.find(c => c.id === cid);
-                          if (selectedCust) {
-                            setEditFormData((prev: any) => ({
-                              ...prev,
-                              customer_id: selectedCust.id,
-                              customer_name: selectedCust.name || prev.customer_name,
-                              customer_phone: selectedCust.phone || prev.customer_phone,
-                              customer_address: selectedCust.address || prev.customer_address,
-                              customer_email: selectedCust.email || prev.customer_email
-                            }));
-                          } else {
-                            setEditFormData((prev: any) => ({ ...prev, customer_id: '' }));
-                          }
-                        }}
-                        className="h-7 px-2 rounded-lg border border-purple-300 dark:border-purple-800 bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 font-bold text-xs max-w-[220px] sm:max-w-xs"
-                      >
-                        <option value="">-- Chọn từ DB Khách hàng --</option>
-                        {customersList.map(c => (
-                          <option key={c.id} value={c.id}>
-                            {c.name} ({c.phone})
-                          </option>
-                        ))}
-                      </select>
+                      <span className="text-[11px] text-text-muted hidden sm:inline">Chọn từ DS khách:</span>
+                      <div className="relative">
+                        <input
+                          type="text"
+                          placeholder="🔍 Tìm tên / SĐT..."
+                          value={editCustomerSearch}
+                          onFocus={() => setEditCustomerDropdownOpen(true)}
+                          onBlur={() => setTimeout(() => setEditCustomerDropdownOpen(false), 180)}
+                          onChange={e => {
+                            setEditCustomerSearch(e.target.value);
+                            setEditCustomerDropdownOpen(true);
+                          }}
+                          className="h-7 px-2 rounded-lg border border-purple-300 dark:border-purple-800 bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 font-bold text-xs w-[200px] sm:w-[240px] placeholder:font-normal placeholder:text-purple-400"
+                        />
+                        {editCustomerDropdownOpen && (
+                          <div className="absolute top-8 right-0 z-50 w-[280px] max-h-48 overflow-y-auto bg-card-bg border border-purple-300 dark:border-purple-700 rounded-xl shadow-xl">
+                            {customersList
+                              .filter(c => {
+                                const q = editCustomerSearch.toLowerCase();
+                                return !q || (c.name || '').toLowerCase().includes(q) || (c.phone || '').includes(q);
+                              })
+                              .slice(0, 30)
+                              .map(c => (
+                                <button
+                                  key={c.id}
+                                  type="button"
+                                  onMouseDown={() => {
+                                    setEditFormData((prev: any) => ({
+                                      ...prev,
+                                      customer_id: c.id,
+                                      customer_name: c.name || prev.customer_name,
+                                      customer_phone: c.phone || prev.customer_phone,
+                                      customer_address: c.address || prev.customer_address,
+                                      customer_email: c.email || prev.customer_email
+                                    }));
+                                    setEditCustomerSearch(`${c.name} (${c.phone})`);
+                                    setEditCustomerDropdownOpen(false);
+                                  }}
+                                  className="w-full text-left px-3 py-1.5 text-xs hover:bg-purple-50 dark:hover:bg-purple-900/40 border-b border-card-border last:border-0 cursor-pointer"
+                                >
+                                  <span className="font-bold text-foreground">{c.name}</span>
+                                  <span className="text-text-muted ml-1.5">{c.phone}</span>
+                                </button>
+                              ))}
+                            {customersList.filter(c => {
+                              const q = editCustomerSearch.toLowerCase();
+                              return !q || (c.name || '').toLowerCase().includes(q) || (c.phone || '').includes(q);
+                            }).length === 0 && (
+                              <div className="px-3 py-2 text-xs text-text-muted italic">Không tìm thấy khách hàng</div>
+                            )}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   )}
                 </div>
