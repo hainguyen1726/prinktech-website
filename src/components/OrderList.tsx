@@ -347,6 +347,7 @@ export default function OrderList() {
     setEditFormData({
       id: order.id,
       order_number: order.order_number,
+      customer_id: (order as any).customer_id || '',
       customer_name: order.customer_name || '',
       customer_phone: order.customer_phone || '',
       customer_address: order.customer_address || '',
@@ -387,6 +388,7 @@ export default function OrderList() {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          customer_id: editFormData.customer_id || null,
           customer_name: editFormData.customer_name,
           customer_phone: editFormData.customer_phone,
           customer_address: editFormData.customer_address,
@@ -494,10 +496,10 @@ export default function OrderList() {
         console.error('Lỗi tải danh sách khách hàng:', err);
       }
     };
-    if (showCreateForm) {
+    if (showCreateForm || showEditModal) {
       fetchCustomersList();
     }
-  }, [showCreateForm]);
+  }, [showCreateForm, showEditModal]);
 
   const handleProductChange = (type: string) => {
     if (type === 'other') {
@@ -2534,9 +2536,43 @@ export default function OrderList() {
               
               {/* 1. Thông tin Khách Hàng */}
               <div className="space-y-3">
-                <h4 className="text-xs font-bold text-purple-600 uppercase tracking-wider border-b border-card-border pb-1">
-                  👤 Thông tin khách hàng
-                </h4>
+                <div className="flex justify-between items-center border-b border-card-border pb-1">
+                  <h4 className="text-xs font-bold text-purple-600 uppercase tracking-wider">
+                    👤 Thông tin khách hàng
+                  </h4>
+                  {customersList.length > 0 && (
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[11px] text-text-muted hidden sm:inline">Chọn từ DB (`v2_customers`):</span>
+                      <select
+                        value={editFormData.customer_id || ''}
+                        onChange={e => {
+                          const cid = e.target.value;
+                          const selectedCust = customersList.find(c => c.id === cid);
+                          if (selectedCust) {
+                            setEditFormData((prev: any) => ({
+                              ...prev,
+                              customer_id: selectedCust.id,
+                              customer_name: selectedCust.name || prev.customer_name,
+                              customer_phone: selectedCust.phone || prev.customer_phone,
+                              customer_address: selectedCust.address || prev.customer_address,
+                              customer_email: selectedCust.email || prev.customer_email
+                            }));
+                          } else {
+                            setEditFormData((prev: any) => ({ ...prev, customer_id: '' }));
+                          }
+                        }}
+                        className="h-7 px-2 rounded-lg border border-purple-300 dark:border-purple-800 bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 font-bold text-xs max-w-[220px] sm:max-w-xs"
+                      >
+                        <option value="">-- Chọn từ DB Khách hàng --</option>
+                        {customersList.map(c => (
+                          <option key={c.id} value={c.id}>
+                            {c.name} ({c.phone})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+                </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
                   <div className="space-y-1">
                     <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Tên khách hàng *</label>

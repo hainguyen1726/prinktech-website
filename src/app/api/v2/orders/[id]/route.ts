@@ -85,6 +85,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       customer_phone,
       customer_address,
       customer_email,
+      customer_id,
       customer_note,
       items,
       subtotal,
@@ -110,6 +111,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     if (customer_phone !== undefined) updates.customer_phone = customer_phone;
     if (customer_address !== undefined) updates.customer_address = customer_address;
     if (customer_email !== undefined) updates.customer_email = customer_email;
+    if (customer_id !== undefined) updates.customer_id = customer_id;
     if (customer_note !== undefined) updates.customer_note = customer_note;
     if (shipping_fee !== undefined) updates.shipping_fee = Number(shipping_fee);
     if (discount !== undefined) updates.discount = Number(discount);
