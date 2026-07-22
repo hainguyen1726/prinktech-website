@@ -98,19 +98,19 @@ function KPICard({ label, value, pct, icon, format = 'currency', color }: {
   const trend = pct === null ? null : pct > 0 ? 'up' : pct < 0 ? 'down' : 'flat';
 
   return (
-    <div className="glass-card bg-white dark:bg-[#0f172a]/60 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 lg:p-5 flex flex-col gap-3 hover:shadow-lg transition-shadow">
+    <div className="glass-card bg-white dark:bg-[#0f172a]/60 border border-slate-200 dark:border-slate-800 rounded-xl p-3.5 lg:p-4 flex flex-col gap-2 hover:shadow-md transition-all">
       <div className="flex items-center justify-between">
-        <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{label}</span>
-        <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: color + '20' }}>
-          <span style={{ color }}>{icon}</span>
+        <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{label}</span>
+        <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0" style={{ background: color + '15' }}>
+          <span style={{ color }} className="scale-90">{icon}</span>
         </div>
       </div>
-      <div className="text-2xl lg:text-3xl font-black text-slate-900 dark:text-white tracking-tight">{displayVal}</div>
+      <div className="text-lg lg:text-xl font-bold text-slate-900 dark:text-white tracking-tight truncate">{displayVal}</div>
       {trend !== null && (
-        <div className={`flex items-center gap-1.5 text-xs font-bold ${trend === 'up' ? 'text-emerald-600' : trend === 'down' ? 'text-red-500' : 'text-slate-400'}`}>
-          {trend === 'up' ? <TrendingUp size={13} /> : trend === 'down' ? <TrendingDown size={13} /> : <Minus size={13} />}
+        <div className={`flex items-center gap-1 text-[11px] font-semibold ${trend === 'up' ? 'text-emerald-600' : trend === 'down' ? 'text-red-500' : 'text-slate-400'}`}>
+          {trend === 'up' ? <TrendingUp size={12} /> : trend === 'down' ? <TrendingDown size={12} /> : <Minus size={12} />}
           <span>{pct !== null ? (pct > 0 ? '+' : '') + pct + '%' : '0%'}</span>
-          <span className="text-slate-400 dark:text-slate-500 font-medium">so kỳ trước</span>
+          <span className="text-slate-400 dark:text-slate-500 font-normal">so kỳ trước</span>
         </div>
       )}
     </div>
