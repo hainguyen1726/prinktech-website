@@ -3,9 +3,11 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Home, Image, Calculator, Search, ShoppingBag } from 'lucide-react';
+import { useLanguage } from '@/context/LanguageContext';
 
 export default function BottomNav() {
   const pathname = usePathname();
+  const { t } = useLanguage();
 
   if (pathname?.startsWith('/admin') || pathname === '/login') {
     return null;
@@ -13,27 +15,27 @@ export default function BottomNav() {
 
   const navItems = [
     {
-      label: 'Trang chủ',
+      label: t('bottomNav.home'),
       path: '/',
       icon: Home,
     },
     {
-      label: 'Thư viện',
+      label: t('common.gallery'),
       path: '/thu-vien-anh',
       icon: Image,
     },
     {
-      label: 'Tính giá',
+      label: t('bottomNav.pricing'),
       path: '/bao-gia',
       icon: Calculator,
     },
     {
-      label: 'Tra cứu',
+      label: t('bottomNav.lookup'),
       path: '/tra-cuu',
       icon: Search,
     },
     {
-      label: 'Đặt hàng',
+      label: t('bottomNav.order'),
       path: '/dat-hang',
       icon: ShoppingBag,
     },

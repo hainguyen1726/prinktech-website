@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { ChevronRight } from 'lucide-react';
 import PricingCalculator from '@/components/PricingCalculator';
 import Header from '@/components/Header';
+import { useLanguage } from '@/context/LanguageContext';
 
 const DEFAULT_PRICE_ITEMS = [
   {
@@ -70,6 +71,7 @@ const DEFAULT_PRICE_ITEMS = [
 ];
 
 export default function BaoGiaContent({ initialPriceItems = [] }: { initialPriceItems?: any[] }) {
+  const { t, locale } = useLanguage();
   const [activeTheme, setActiveTheme] = useState<'tech' | 'creative' | 'elegant'>('elegant');
   const [priceItems, setPriceItems] = useState<any[]>(() => {
     return initialPriceItems.length > 0 ? initialPriceItems : DEFAULT_PRICE_ITEMS;
@@ -115,6 +117,25 @@ export default function BaoGiaContent({ initialPriceItems = [] }: { initialPrice
 
   const activeItems = priceItems.length > 0 ? priceItems : DEFAULT_PRICE_ITEMS;
 
+  const getTranslatedItemName = (name: string) => {
+    if (locale === 'vi') return name;
+    if (name.includes('mét')) return 'Roll film printing (60cm width)';
+    if (name.includes('A4')) return 'A4 Sheet printing (20×28cm)';
+    if (name.includes('A3')) return 'A3 Sheet printing (29×40cm)';
+    if (name.includes('Tem nhỏ')) return 'Small stickers (under 3×3cm) – Pre-cut';
+    if (name.includes('Tem trung bình')) return 'Medium stickers (4×4–5×5cm) – Pre-cut';
+    if (name.includes('Tem lớn')) return 'Large stickers (6×6–8×8cm) – Pre-cut';
+    return name;
+  };
+
+  const getTranslatedUnit = (unit: string) => {
+    if (locale === 'vi') return unit;
+    if (unit === 'mét') return t('quote.meterUnit');
+    if (unit === 'tờ') return t('quote.sheetUnit');
+    if (unit === 'chiếc') return t('quote.pieceUnit');
+    return unit;
+  };
+
   return (
     <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
       
@@ -125,22 +146,22 @@ export default function BaoGiaContent({ initialPriceItems = [] }: { initialPrice
       <main className="max-w-7xl mx-auto px-4 md:px-6 py-8 md:py-12">
         {/* Breadcrumbs */}
         <div className="mb-6 flex items-center gap-2 text-xs text-text-muted font-medium">
-          <Link href="/" className="hover:text-[var(--accent)] transition-colors">Trang chủ</Link>
+          <Link href="/" className="hover:text-[var(--accent)] transition-colors">{t('common.home')}</Link>
           <ChevronRight size={10} className="text-text-muted/65" />
-          <span>Bảng giá & Tính giá</span>
+          <span>{t('quote.title')} & {t('common.pricing')}</span>
         </div>
 
         {/* Page Title */}
         <div className="mb-8 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
           <div>
             <h1 className="text-3xl md:text-4xl font-black tracking-tight text-foreground">
-              Bảng giá in{' '}
+              {t('quote.title')}{' '}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-500 via-fuchsia-500 to-pink-500">
-                UV DTF 3D
+                {t('quote.titleAccent')}
               </span>
             </h1>
             <p className="text-text-muted mt-2 text-sm">
-              Cập nhật tức thì từ hệ thống xưởng • Giá đã bao gồm thuế VAT
+              {t('quote.subTitle')}
             </p>
           </div>
           <div className="flex-shrink-0">
@@ -155,7 +176,7 @@ export default function BaoGiaContent({ initialPriceItems = [] }: { initialPrice
               }}
               className="inline-flex items-center gap-2 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white font-black px-6 py-3 rounded-2xl text-sm shadow-lg shadow-orange-500/25 hover:shadow-orange-500/40 transition-all duration-300 transform hover:-translate-y-0.5 cursor-pointer focus:outline-none"
             >
-              🧮 Tạo bảng tính giá chi tiết →
+              {t('quote.createCalculatorBtn')}
             </a>
           </div>
         </div>
@@ -166,11 +187,11 @@ export default function BaoGiaContent({ initialPriceItems = [] }: { initialPrice
             <table className="w-full text-sm border-collapse border border-card-border">
               <thead>
                 <tr className="bg-block-bg/50 text-foreground text-left">
-                  <th className="px-4 md:px-6 py-4 font-bold border border-card-border">Sản phẩm</th>
-                  <th className="text-center px-3 py-4 font-bold w-20 border border-card-border">ĐVT</th>
-                  <th className="px-4 md:px-6 py-4 font-bold border border-card-border">Số lượng</th>
-                  <th className="px-4 md:px-6 py-4 font-bold border border-card-border text-right">Đơn giá (VNĐ)</th>
-                  <th className="px-4 md:px-6 py-4 font-bold text-right border border-card-border">Ghi chú</th>
+                  <th className="px-4 md:px-6 py-4 font-bold border border-card-border">{t('quote.productHeader')}</th>
+                  <th className="text-center px-3 py-4 font-bold w-20 border border-card-border">{t('quote.unitHeader')}</th>
+                  <th className="px-4 md:px-6 py-4 font-bold border border-card-border">{t('quote.quantityHeader')}</th>
+                  <th className="px-4 md:px-6 py-4 font-bold border border-card-border text-right">{t('quote.priceHeader')}</th>
+                  <th className="px-4 md:px-6 py-4 font-bold text-right border border-card-border">{t('quote.noteHeader')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-card-border/40 text-foreground/90">
@@ -182,18 +203,18 @@ export default function BaoGiaContent({ initialPriceItems = [] }: { initialPrice
                   const isHighlight = item.material_name?.toLowerCase().includes('mét');
 
                   let subDesc = '';
-                  if (item.material_name.includes('A4')) subDesc = 'Khổ A4 tự dàn trang mẫu in tự do';
-                  else if (item.material_name.includes('A3')) subDesc = 'Khổ A3 lớn gấp đôi khổ A4';
-                  else if (item.material_name.toLowerCase().includes('nhỏ')) subDesc = 'Tem dán nắp chai, nhãn phụ logo nhỏ';
-                  else if (item.material_name.toLowerCase().includes('trung bình')) subDesc = 'Vừa dán cốc giữ nhiệt, chai lọ thủy tinh';
-                  else if (item.material_name.toLowerCase().includes('lớn')) subDesc = 'Phù hợp dán nón bảo hiểm, xe máy, laptop';
-                  else if (isHighlight) subDesc = 'Film cuộn in tràn khổ bế mẫu tự do';
+                  if (item.material_name.includes('A4')) subDesc = t('quote.a4SubDesc');
+                  else if (item.material_name.includes('A3')) subDesc = t('quote.a3SubDesc');
+                  else if (item.material_name.toLowerCase().includes('nhỏ')) subDesc = t('quote.smallStickerSubDesc');
+                  else if (item.material_name.toLowerCase().includes('trung bình')) subDesc = t('quote.midStickerSubDesc');
+                  else if (item.material_name.toLowerCase().includes('lớn')) subDesc = t('quote.largeStickerSubDesc');
+                  else if (isHighlight) subDesc = t('quote.meterSubDesc');
 
                   let noteText = '';
-                  if (item.material_name.includes('A4')) noteText = '~10 tờ tương đương 1 mét dài';
-                  else if (item.material_name.includes('A3')) noteText = '~5 tờ tương đương 1 mét dài';
-                  else if (item.material_name.toLowerCase().includes('tem')) noteText = 'MOQ tối thiểu 20 chiếc';
-                  else if (isHighlight) noteText = 'Khổ in ghép tối đa 58cm. Hỗ trợ bế demi an toàn 5mm.';
+                  if (item.material_name.includes('A4')) noteText = t('quote.a4Note');
+                  else if (item.material_name.includes('A3')) noteText = t('quote.a3Note');
+                  else if (item.material_name.toLowerCase().includes('tem')) noteText = t('quote.stickerNote');
+                  else if (isHighlight) noteText = t('quote.meterNote');
 
                   return ranges.map((range: any, rIdx: number) => {
                     const isFirst = rIdx === 0;
@@ -202,14 +223,14 @@ export default function BaoGiaContent({ initialPriceItems = [] }: { initialPrice
                     let rangeText = '';
                     if (item.unit === 'mét') {
                       if (isMax) {
-                        rangeText = `Trên ${Math.floor(range.min)}m`;
+                        rangeText = `${t('quote.over')} ${Math.floor(range.min)}m`;
                       } else if (Number(range.min) < 2) {
-                        rangeText = 'Dưới 2m';
+                        rangeText = `${t('quote.under')} 2m`;
                       } else {
-                        rangeText = `Từ ${Math.floor(range.min)} – ${Math.ceil(range.max)}m`;
+                        rangeText = `${t('quote.from')} ${Math.floor(range.min)} – ${Math.ceil(range.max)}m`;
                       }
                     } else if (isMax) {
-                      rangeText = `≥ ${Number(range.min).toLocaleString('vi-VN')}`;
+                      rangeText = `≥ ${Number(range.min).toLocaleString(locale === 'vi' ? 'vi-VN' : 'en-US')}`;
                     } else if (Number(range.min) === Number(range.max)) {
                       rangeText = `${range.min}`;
                     } else {
@@ -224,11 +245,11 @@ export default function BaoGiaContent({ initialPriceItems = [] }: { initialPrice
                         {isFirst && (
                           <>
                             <td rowSpan={ranges.length} className="px-4 md:px-6 py-4 font-bold text-foreground border border-card-border align-middle">
-                              {item.material_name}
+                              {getTranslatedItemName(item.material_name)}
                               {subDesc && <span className="block text-[10px] font-normal text-text-muted mt-0.5">{subDesc}</span>}
                             </td>
                             <td rowSpan={ranges.length} className="px-3 py-4 text-center text-text-muted font-semibold border border-card-border align-middle">
-                              {item.unit}
+                              {getTranslatedUnit(item.unit)}
                             </td>
                           </>
                         )}
@@ -236,7 +257,7 @@ export default function BaoGiaContent({ initialPriceItems = [] }: { initialPrice
                           {rangeText}
                         </td>
                         <td className={`px-4 md:px-6 py-3 border border-card-border tabular-nums text-right ${isMax && isHighlight ? 'font-black text-[var(--accent)]' : 'font-semibold text-foreground'}`}>
-                          {Number(range.price).toLocaleString('vi-VN')}
+                          {Number(range.price).toLocaleString(locale === 'vi' ? 'vi-VN' : 'en-US')}
                         </td>
                         {isFirst && (
                           <td rowSpan={ranges.length} className="px-4 md:px-6 py-4 text-xs text-text-muted text-right font-medium border border-card-border align-middle">
@@ -251,7 +272,7 @@ export default function BaoGiaContent({ initialPriceItems = [] }: { initialPrice
             </table>
           </div>
           <p className="text-[11px] text-text-muted mt-3 px-1">
-            * Đơn giá chưa gồm phí gia công đặc biệt (phủ nhũ vàng/bạc, in hologram, film dạ quang). Liên hệ Hotline / Zalo: 0822.968.412 để nhận báo giá chi tiết.
+            {t('quote.footerDisclaimer')}
           </p>
         </div>
 
@@ -259,10 +280,10 @@ export default function BaoGiaContent({ initialPriceItems = [] }: { initialPrice
         <div id="calculator" className="border-t border-card-border pt-10">
           <div className="mb-6">
             <h2 className="text-2xl font-black tracking-tight text-foreground">
-              Máy tính báo giá tức thời
+              {t('calculator.sectionTitle')}
             </h2>
             <p className="text-text-muted text-sm mt-1">
-              Chọn quy cách in, nhập số lượng mong muốn và nhận báo giá hoặc xuất PDF ngay lập tức
+              {t('calculator.sectionSubTitle')}
             </p>
           </div>
           

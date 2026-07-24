@@ -90,6 +90,7 @@ export const metadata: Metadata = {
 
 import BottomNav from '@/components/BottomNav';
 import BackToTop from '@/components/BackToTop';
+import { LanguageProvider } from '@/context/LanguageContext';
 
 export default function RootLayout({
   children,
@@ -114,6 +115,10 @@ export default function RootLayout({
                   } else if (savedTheme === 'creative') {
                     document.documentElement.classList.add('theme-creative');
                   }
+                  var savedLang = localStorage.getItem('prinktech-lang');
+                  if (savedLang) {
+                    document.documentElement.lang = savedLang;
+                  }
                 } catch (e) {}
               })();
             `
@@ -134,9 +139,11 @@ export default function RootLayout({
             gtag('config', 'G-HKSYJR8T5S');
           `}
         </Script>
-        {children}
-        <BackToTop />
-        <BottomNav />
+        <LanguageProvider>
+          {children}
+          <BackToTop />
+          <BottomNav />
+        </LanguageProvider>
       </body>
     </html>
   );

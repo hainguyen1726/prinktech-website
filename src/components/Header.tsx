@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Phone, Menu, X, MessageCircle } from 'lucide-react';
+import { useLanguage } from '@/context/LanguageContext';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
 
 interface HeaderProps {
   activeTheme?: 'tech' | 'creative' | 'elegant';
@@ -13,6 +15,7 @@ interface HeaderProps {
 
 export default function Header({ activeTheme: propTheme, setActiveTheme: propSetTheme, hideSwitcher = false }: HeaderProps) {
   const pathname = usePathname();
+  const { t } = useLanguage();
   const [internalTheme, setInternalTheme] = useState<'tech' | 'creative' | 'elegant'>('elegant');
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -65,14 +68,14 @@ export default function Header({ activeTheme: propTheme, setActiveTheme: propSet
   }, [pathname]);
 
   const navLinks = [
-    { name: 'Giới thiệu', href: '/#about', isHash: true },
-    { name: 'Sản phẩm', href: '/san-pham', isHash: false },
-    { name: 'Thư viện ảnh', href: '/thu-vien-anh', isHash: false },
-    { name: 'Tính giá', href: '/bao-gia', isHash: false },
-    { name: 'Tra cứu đơn', href: '/tra-cuu', isHash: false },
-    { name: 'Đặt hàng', href: '/dat-hang', isHash: false },
-    { name: 'Bài viết', href: '/bai-viet', isHash: false },
-    { name: 'Liên hệ', href: '/#contact', isHash: true },
+    { name: t('common.about'), href: '/#about', isHash: true },
+    { name: t('common.products'), href: '/san-pham', isHash: false },
+    { name: t('common.gallery'), href: '/thu-vien-anh', isHash: false },
+    { name: t('common.pricing'), href: '/bao-gia', isHash: false },
+    { name: t('common.lookup'), href: '/tra-cuu', isHash: false },
+    { name: t('common.order'), href: '/dat-hang', isHash: false },
+    { name: t('common.blog'), href: '/bai-viet', isHash: false },
+    { name: t('common.contact'), href: '/#contact', isHash: true },
   ];
 
   const isActive = (href: string) => {
@@ -106,7 +109,7 @@ export default function Header({ activeTheme: propTheme, setActiveTheme: propSet
               const active = isActive(link.href);
               return link.isHash ? (
                 <a
-                  key={link.name}
+                  key={link.href}
                   href={link.href}
                   className={`hover:text-[var(--accent)] transition-colors ${
                     active ? 'text-[var(--accent)] font-bold' : 'text-[var(--foreground)]/80'
@@ -116,7 +119,7 @@ export default function Header({ activeTheme: propTheme, setActiveTheme: propSet
                 </a>
               ) : (
                 <Link
-                  key={link.name}
+                  key={link.href}
                   href={link.href}
                   className={`hover:text-[var(--accent)] transition-colors ${
                     active ? 'text-[var(--accent)] font-black' : 'text-[var(--foreground)]/80'
@@ -130,6 +133,9 @@ export default function Header({ activeTheme: propTheme, setActiveTheme: propSet
 
           {/* Right group */}
           <div className="flex items-center gap-2 md:gap-3">
+            {/* Language Switcher VI | EN */}
+            <LanguageSwitcher />
+
             {/* Compact theme switcher — M1, M2 & M3, ẩn nếu hideSwitcher */}
             {!hideSwitcher && (
               <div className="hidden sm:flex items-center gap-1 bg-black/10 border border-[var(--card-border)] rounded-lg p-1 backdrop-blur-sm">
