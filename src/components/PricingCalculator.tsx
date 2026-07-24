@@ -23,6 +23,103 @@ function uid() {
   return Math.random().toString(36).slice(2, 9);
 }
 
+function getProductTranslation(p: Product, locale: string) {
+  if (locale === 'vi') {
+    return {
+      shortLabel: p.shortLabel,
+      label: p.label,
+      description: p.description,
+      note: p.note || '',
+      unitLabel: p.unitLabel,
+    };
+  }
+
+  const isMet = p.type === 'cuon' || p.shortLabel.toLowerCase().includes('mét') || p.label.toLowerCase().includes('cuộn') || p.unit === 'mét';
+  const isA4 = p.type === 'a4' || p.shortLabel.toUpperCase().includes('A4');
+  const isA3 = p.type === 'a3' || p.shortLabel.toUpperCase().includes('A3');
+  const isTemNho = p.type === 'tem-nho' || p.shortLabel.toLowerCase().includes('nhỏ') || p.shortLabel.includes('3cm');
+  const isTemTB = p.type === 'tem-tb' || p.shortLabel.includes('4–5cm') || p.shortLabel.toLowerCase().includes('trung');
+  const isTemLon = p.type === 'tem-lon' || p.shortLabel.includes('6–8cm') || p.shortLabel.toLowerCase().includes('lớn');
+
+  if (isMet) {
+    return {
+      shortLabel: 'Roll 60cm',
+      label: 'Roll Film Printing (60cm width)',
+      description: 'Custom gang sheet layout, printed per linear meter (60cm width)',
+      note: 'Gang sheet max width 58cm (60cm film). Minimum 5mm kiss-cut spacing.',
+      unitLabel: 'm',
+    };
+  }
+  if (isA4) {
+    return {
+      shortLabel: 'A4 Sheet',
+      label: 'A4 Sheet Printing (20×28cm)',
+      description: 'Pre-printed per A4 sheet, layout optimized by workshop',
+      note: '1 meter roll (60cm width) fits approx 10 A4 sheets',
+      unitLabel: 'sheet',
+    };
+  }
+  if (isA3) {
+    return {
+      shortLabel: 'A3 Sheet',
+      label: 'A3 Sheet Printing (29×40cm)',
+      description: 'Pre-printed per A3 sheet (large size)',
+      note: '1 meter roll (60cm width) fits approx 5 A3 sheets',
+      unitLabel: 'sheet',
+    };
+  }
+  if (isTemNho) {
+    return {
+      shortLabel: 'Small Sticker',
+      label: 'Small Stickers (≤3×3cm) – Die-cut',
+      description: 'Pre-cut small stickers, size ≤3×3cm',
+      note: 'MOQ 20 pcs. Price per pre-cut sticker.',
+      unitLabel: 'pcs',
+    };
+  }
+  if (isTemTB) {
+    return {
+      shortLabel: 'Medium Sticker (4–5cm)',
+      label: 'Medium Stickers (4×4–5×5cm) – Die-cut',
+      description: 'Pre-cut stickers 4×4cm to 5×5cm — Premium 3D emboss',
+      note: 'Tactile 3D relief feel. MOQ 20 pcs.',
+      unitLabel: 'pcs',
+    };
+  }
+  if (isTemLon) {
+    return {
+      shortLabel: 'Large Sticker (6–8cm)',
+      label: 'Large Stickers (6×6–8×8cm) – Die-cut',
+      description: 'Large size 6–8cm, ideal for helmets & suitcases',
+      note: 'Great on helmets, suitcases, tumblers. MOQ 20 pcs.',
+      unitLabel: 'pcs',
+    };
+  }
+
+  return {
+    shortLabel: p.shortLabel,
+    label: p.label,
+    description: p.description,
+    note: p.note || '',
+    unitLabel: p.unitLabel === 'mét' || p.unitLabel === 'mét dài' ? 'm' : p.unitLabel === 'tờ' ? 'sheet' : 'pcs',
+  };
+}
+
+function translateTierLabel(label: string, unit: string, locale: string) {
+  if (locale === 'vi') return label;
+  let translated = label;
+  translated = translated.replace(/Dưới/g, 'Under');
+  translated = translated.replace(/Trên/g, 'Over');
+  translated = translated.replace(/Từ/g, 'From');
+  translated = translated.replace(/trở lên/g, 'and above');
+  translated = translated.replace(/mét/g, 'm');
+  translated = translated.replace(/tờ/g, 'sheets');
+  translated = translated.replace(/chiếc/g, 'pcs');
+  translated = translated.replace(/cái/g, 'pcs');
+  translated = translated.replace(/Mọi số lượng/g, 'All quantities');
+  return translated;
+}
+
 /* ─── Sub-components ─────────────────────────────────────── */
 function ProductCard({
   product,
@@ -33,20 +130,10 @@ function ProductCard({
   active: boolean;
   onClick: () => void;
 }) {
-  const { locale, t } = useLanguage();
+  const { locale } = useLanguage();
+  const trans = getProductTranslation(product, locale);
   const minPrice = Math.min(...product.tiers.filter(t => t.price > 0).map(t => t.price));
   const fromText = locale === 'en' ? 'From' : 'Từ';
-  const unitText = locale === 'en'
-    ? (product.unitLabel === 'mét' ? 'm' : product.unitLabel === 'tờ' ? 'sheet' : 'pcs')
-    : product.unitLabel;
-
-  const shortLabel = locale === 'en'
-    ? (product.shortLabel.includes('mét') ? 'Roll (60cm)' : product.shortLabel.includes('A4') ? 'A4 Sheet' : product.shortLabel.includes('A3') ? 'A3 Sheet' : product.shortLabel.includes('nhỏ') ? 'Small Sticker' : product.shortLabel.includes('trung') ? 'Medium Sticker' : product.shortLabel.includes('lớn') ? 'Large Sticker' : product.shortLabel)
-    : product.shortLabel;
-
-  const description = locale === 'en'
-    ? (product.description.includes('khổ 60cm') ? 'Roll film print with custom gang sheet' : product.description.includes('20×28cm') ? 'A4 free layout arrangement' : product.description.includes('29×40cm') ? 'A3 sheet double the size of A4' : product.description.includes('3×3cm') ? 'Caps & small logo labels' : product.description.includes('5×5cm') ? 'For tumblers, glass & mugs' : product.description.includes('8×8cm') ? 'For helmets, motorbikes & laptops' : product.description)
-    : product.description;
 
   return (
     <button
@@ -61,11 +148,11 @@ function ProductCard({
         <span className="text-2xl shrink-0">{product.icon}</span>
         <div className="min-w-0">
           <p className={`font-semibold text-sm leading-snug ${active ? 'text-[var(--accent)] font-bold' : 'text-foreground'}`}>
-            {shortLabel}
+            {trans.shortLabel}
           </p>
-          <p className="text-xs text-text-muted mt-0.5 line-clamp-2">{description}</p>
+          <p className="text-xs text-text-muted mt-0.5 line-clamp-2">{trans.description}</p>
           <p className="text-xs text-[var(--accent)] font-semibold mt-1.5">
-            {fromText} {formatCurrency(minPrice)}/{unitText}
+            {fromText} {formatCurrency(minPrice)}/{trans.unitLabel}
           </p>
         </div>
       </div>
@@ -80,21 +167,14 @@ function TierBadge({ product, qty }: { product: Product; qty: number }) {
   const { locale } = useLanguage();
   const tier = getActiveTier(product, qty);
   if (!tier || tier.price === 0) return null;
-  const unitText = locale === 'en'
-    ? (product.unitLabel === 'mét' ? 'm' : product.unitLabel === 'tờ' ? 'sheet' : 'pcs')
-    : product.unitLabel;
 
-  let labelText = tier.label;
-  if (locale === 'en') {
-    if (labelText.includes('Trên')) labelText = labelText.replace('Trên', 'Over ');
-    if (labelText.includes('Dưới')) labelText = labelText.replace('Dưới', 'Under ');
-    if (labelText.includes('Từ')) labelText = labelText.replace('Từ', 'From ');
-  }
+  const trans = getProductTranslation(product, locale);
+  const labelText = translateTierLabel(tier.label, product.unit, locale);
 
   return (
     <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-[var(--accent-glow)] border border-[var(--accent)]/30 text-[var(--accent)]">
       <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent)] animate-pulse" />
-      {labelText} — {formatCurrency(tier.price)}/{unitText}
+      {labelText} — {formatCurrency(tier.price)}/{trans.unitLabel}
     </span>
   );
 }
@@ -167,6 +247,7 @@ export default function PricingCalculator({ priceItems }: { priceItems?: any[] }
   const [cart, setCart] = useState<CartItem[]>([]);
   const [printLoading, setPrintLoading] = useState(false);
 
+  const selectedTrans = getProductTranslation(selectedProduct, locale);
 
   const qty = parseFloat(quantity) || 0;
   const unitPrice = getUnitPrice(selectedProduct, qty);
@@ -181,27 +262,13 @@ export default function PricingCalculator({ priceItems }: { priceItems?: any[] }
     if (qty <= 0 || unitPrice === 0) return;
     const tier = getActiveTier(selectedProduct, qty);
 
-    let productLabel = selectedProduct.label;
-    if (locale === 'en') {
-      if (productLabel.includes('mét')) productLabel = 'Roll film printing (60cm width)';
-      else if (productLabel.includes('A4')) productLabel = 'A4 Sheet printing (20×28cm)';
-      else if (productLabel.includes('A3')) productLabel = 'A3 Sheet printing (29×40cm)';
-      else if (productLabel.includes('small') || productLabel.includes('nhỏ')) productLabel = 'Small stickers (under 3×3cm)';
-      else if (productLabel.includes('medium') || productLabel.includes('trung')) productLabel = 'Medium stickers (4×4–5×5cm)';
-      else if (productLabel.includes('large') || productLabel.includes('lớn')) productLabel = 'Large stickers (6×6–8×8cm)';
-    }
-
-    const unitName = locale === 'en'
-      ? (selectedProduct.unit === 'mét' ? 'm' : selectedProduct.unit === 'tờ' ? 'sheet' : 'pcs')
-      : selectedProduct.unit;
-
     const item: CartItem = {
       id: uid(),
       product_type: selectedProduct.type,
-      product_label: productLabel,
-      size_label: tier?.label ?? '',
+      product_label: selectedTrans.label,
+      size_label: tier ? translateTierLabel(tier.label, selectedProduct.unit, locale) : '',
       quantity: qty,
-      unit: unitName,
+      unit: selectedTrans.unitLabel,
       unit_price: unitPrice,
       subtotal,
       image_url: null,
@@ -211,7 +278,7 @@ export default function PricingCalculator({ priceItems }: { priceItems?: any[] }
     setCart(prev => [...prev, item]);
     setQuantity('1');
     setItemNote('');
-  }, [qty, unitPrice, selectedProduct, subtotal, itemNote, locale]);
+  }, [qty, unitPrice, selectedProduct, selectedTrans, subtotal, itemNote, locale]);
 
   const removeItem = useCallback((id: string) => {
     setCart(prev => prev.filter(i => i.id !== id));
@@ -390,7 +457,7 @@ export default function PricingCalculator({ priceItems }: { priceItems?: any[] }
                   className="w-full h-11 px-4 rounded-xl border border-card-border bg-block-bg text-foreground font-semibold focus:outline-none focus:border-[var(--accent)]"
                 />
                 <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-text-muted uppercase">
-                  {locale === 'en' ? (selectedProduct.unitLabel === 'mét' ? 'm' : selectedProduct.unitLabel === 'tờ' ? 'sheet' : 'pcs') : selectedProduct.unitLabel}
+                  {selectedTrans.unitLabel}
                 </span>
               </div>
             </div>
@@ -398,7 +465,7 @@ export default function PricingCalculator({ priceItems }: { priceItems?: any[] }
             <div className="flex items-center gap-3 bg-block-bg px-4 h-11 rounded-xl border border-card-border shrink-0">
               <span className="text-xs font-medium text-text-muted">{t('calculator.unitPriceLabel')}</span>
               <span className="text-sm font-bold text-foreground tabular-nums">
-                {unitPrice > 0 ? `${formatCurrency(unitPrice)}/${locale === 'en' ? (selectedProduct.unitLabel === 'mét' ? 'm' : selectedProduct.unitLabel === 'tờ' ? 'sheet' : 'pcs') : selectedProduct.unitLabel}` : '—'}
+                {unitPrice > 0 ? `${formatCurrency(unitPrice)}/${selectedTrans.unitLabel}` : '—'}
               </span>
             </div>
           </div>
@@ -408,7 +475,7 @@ export default function PricingCalculator({ priceItems }: { priceItems?: any[] }
             <TierBadge product={selectedProduct} qty={qty} />
             {qty < selectedProduct.minQty && (
               <span className="text-xs text-red-500 font-medium">
-                {t('calculator.minQtyWarning', { min: selectedProduct.minQty, unit: locale === 'en' ? (selectedProduct.unitLabel === 'mét' ? 'm' : selectedProduct.unitLabel === 'tờ' ? 'sheet' : 'pcs') : selectedProduct.unitLabel })}
+                {t('calculator.minQtyWarning', { min: selectedProduct.minQty, unit: selectedTrans.unitLabel })}
               </span>
             )}
           </div>
@@ -444,7 +511,7 @@ export default function PricingCalculator({ priceItems }: { priceItems?: any[] }
         {/* Tier table */}
         <div className="rounded-2xl border border-card-border bg-card-bg p-5 shadow-sm">
           <h2 className="text-xs font-bold text-text-muted uppercase tracking-wider mb-4">
-            {t('calculator.tierTableTitle', { product: locale === 'en' ? (selectedProduct.shortLabel.includes('mét') ? 'Roll (60cm)' : selectedProduct.shortLabel.includes('A4') ? 'A4 Sheet' : selectedProduct.shortLabel.includes('A3') ? 'A3 Sheet' : selectedProduct.shortLabel) : selectedProduct.shortLabel })}
+            {t('calculator.tierTableTitle', { product: selectedTrans.shortLabel })}
           </h2>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -458,12 +525,7 @@ export default function PricingCalculator({ priceItems }: { priceItems?: any[] }
               <tbody>
                 {selectedProduct.tiers.map((tier, i) => {
                   const isActive = getActiveTier(selectedProduct, qty)?.min === tier.min;
-                  let tierLabel = tier.label;
-                  if (locale === 'en') {
-                    if (tierLabel.includes('Trên')) tierLabel = tierLabel.replace('Trên', 'Over ');
-                    if (tierLabel.includes('Dưới')) tierLabel = tierLabel.replace('Dưới', 'Under ');
-                    if (tierLabel.includes('Từ')) tierLabel = tierLabel.replace('Từ', 'From ');
-                  }
+                  const tierLabelText = translateTierLabel(tier.label, selectedProduct.unit, locale);
 
                   return (
                     <tr
@@ -471,10 +533,10 @@ export default function PricingCalculator({ priceItems }: { priceItems?: any[] }
                       className={`border-b border-card-border/40 last:border-0 transition-colors ${isActive ? 'bg-[var(--accent-glow)]' : i % 2 === 1 ? 'bg-block-bg/30' : ''}`}
                     >
                       <td className={`py-2.5 pr-4 ${isActive ? 'text-[var(--accent)] font-bold' : 'text-text-muted font-medium'}`}>
-                        {tierLabel}
+                        {tierLabelText}
                       </td>
                       <td className={`py-2.5 text-right tabular-nums ${isActive ? 'text-foreground font-black' : 'text-foreground/80 font-semibold'}`}>
-                        {tier.price > 0 ? `${formatCurrency(tier.price)}/${locale === 'en' ? (selectedProduct.unitLabel === 'mét' ? 'm' : selectedProduct.unitLabel === 'tờ' ? 'sheet' : 'pcs') : selectedProduct.unitLabel}` : '—'}
+                        {tier.price > 0 ? `${formatCurrency(tier.price)}/${selectedTrans.unitLabel}` : '—'}
                       </td>
                       <td className="py-2.5 text-right">
                         {isActive ? (
@@ -489,8 +551,8 @@ export default function PricingCalculator({ priceItems }: { priceItems?: any[] }
               </tbody>
             </table>
           </div>
-          {selectedProduct.note && (
-            <p className="mt-3 text-xs text-text-muted italic">* {selectedProduct.note}</p>
+          {selectedTrans.note && (
+            <p className="mt-3 text-xs text-text-muted italic">* {selectedTrans.note}</p>
           )}
         </div>
 
