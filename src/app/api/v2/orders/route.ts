@@ -38,11 +38,10 @@ export async function GET(req: NextRequest) {
       .range(offset, offset + limit - 1);
 
     // Lọc theo kênh (Channel)
-    // 'sale_online' = filter nội bộ → lấy tất cả đơn KHÔNG phải của xưởng
-    // Xưởng in dùng prefix 'workshop_' cho tất cả channel B2B
+    // 'sale_online' = filter nội bộ → lấy tất cả đơn KHÔNG phải của xưởng B2B (workshop_b2b, workshop_agent_l1, b2b_portal)
     if (channel && channel !== 'all') {
       if (channel === 'sale_online') {
-        query = query.not('channel', 'in', '("workshop_b2b","workshop_agent_l1")');
+        query = query.not('channel', 'in', '("workshop_b2b","workshop_agent_l1","b2b_portal")');
       } else {
         query = query.eq('channel', channel);
       }

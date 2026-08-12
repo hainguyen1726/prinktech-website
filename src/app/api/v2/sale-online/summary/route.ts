@@ -88,7 +88,7 @@ export async function GET(req: NextRequest) {
   if (channel !== 'all') {
     queryCurrent = queryCurrent.eq('channel', channel);
   } else {
-    queryCurrent = queryCurrent.neq('channel', 'workshop_b2b');
+    queryCurrent = queryCurrent.not('channel', 'in', '("workshop_b2b","workshop_agent_l1","b2b_portal")');
   }
 
   // Query kỳ trước
@@ -102,7 +102,7 @@ export async function GET(req: NextRequest) {
   if (channel !== 'all') {
     queryPrev = queryPrev.eq('channel', channel);
   } else {
-    queryPrev = queryPrev.neq('channel', 'workshop_b2b');
+    queryPrev = queryPrev.not('channel', 'in', '("workshop_b2b","workshop_agent_l1","b2b_portal")');
   }
 
   // Query Chi phí từ Marketing Schema

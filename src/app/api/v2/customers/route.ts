@@ -55,7 +55,7 @@ export async function GET(req: NextRequest) {
       // Đơn hàng hợp lệ (loại trừ đơn hủy và đơn xưởng B2B khi tính cho khách lẻ)
       const custOrders = (c.v2_orders || []).filter((o: any) => {
         if (o.status === 'cancelled') return false;
-        if (type === 'retail' && o.channel === 'workshop_b2b') return false;
+        if (type === 'retail' && (o.channel === 'workshop_b2b' || o.channel === 'workshop_agent_l1' || o.channel === 'b2b_portal')) return false;
         return true;
       });
 
