@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { resolveOrderSource, sendMetaCapiEvent } from '@/lib/metaCapi';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
@@ -125,7 +126,7 @@ export async function GET(req: NextRequest) {
       converted_length: Number(o.converted_length) || 0,
       cost_amount: Number(o.cost_amount) || 0,
       packaging_fee: 0,
-      source: 'website',
+      source: o.source || 'website',
       has_vat: o.request_vat || false,
       note: o.note || '',
       tags: [],
@@ -360,6 +361,15 @@ export async function POST(req: NextRequest) {
       vat_tax_code,
       vat_company_address,
       vat_email,
+      event_id,
+      event_source_url,
+      utm_source,
+      utm_medium,
+      utm_campaign,
+      utm_content,
+      fbclid,
+      fbp,
+      fbc,
     } = body;
 
     // Validate bắt buộc
@@ -378,17 +388,30 @@ export async function POST(req: NextRequest) {
 
     const order_number = generateOrderNumber();
     const converted_length = calculateConvertedLength(items);
+    const resolvedSource = resolveOrderSource(utm_source, fbclid);
+    const utmTags = [
+      utm_source ? `src=${utm_source}` : '',
+      utm_medium ? `med=${utm_medium}` : '',
+      utm_campaign ? `camp=${utm_campaign}` : '',
+      utm_content ? `ad=${utm_content}` : '',
+    ].filter(Boolean);
+    const finalNote = [
+      customer_note?.trim(),
+      utmTags.length > 0 ? `[Ads: ${utmTags.join(' | ')}]` : '',
+    ]
+      .filter(Boolean)
+      .join(' ') || null;
 
     const { data, error } = await supabase
       .from('retail_orders')
       .insert({
         order_number,
-        source: 'website',
+        source: resolvedSource,
         customer_name: customer_name.trim(),
         customer_phone: customer_phone.trim(),
         customer_address: customer_address.trim(),
         customer_email: customer_email?.trim() || null,
-        customer_note: customer_note?.trim() || null,
+        customer_note: finalNote,
         items,
         subtotal: subtotal || 0,
         shipping_fee: shipping_fee || 0,
@@ -413,6 +436,32 @@ export async function POST(req: NextRequest) {
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
+
+    const forwardedFor = req.headers.get('x-forwarded-for');
+    const clientIp =
+      forwardedFor?.split(',')[0]?.trim() || req.headers.get('x-real-ip') || null;
+    await sendMetaCapiEvent({
+      eventName: 'Purchase',
+      eventId: event_id || order_number,
+      eventSourceUrl: event_source_url || req.headers.get('referer') || undefined,
+      userData: {
+        firstName: customer_name.trim(),
+        phone: customer_phone.trim(),
+        email: customer_email?.trim() || null,
+        clientIpAddress: clientIp,
+        clientUserAgent: req.headers.get('user-agent') || null,
+        fbp: req.cookies.get('_fbp')?.value || fbp || null,
+        fbc: req.cookies.get('_fbc')?.value || fbc || null,
+        externalId: order_number,
+      },
+      customData: {
+        value: Number(total) || 0,
+        currency: 'VND',
+        content_type: 'product',
+        num_items: items.length,
+        order_id: order_number,
+      },
+    });
 
     return NextResponse.json({ data, order_number }, { status: 201 });
   } catch {

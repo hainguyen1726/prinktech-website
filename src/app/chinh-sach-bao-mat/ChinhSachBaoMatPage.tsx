@@ -329,7 +329,7 @@ export default function ChinhSachBaoMatPage() {
                 </a>{' '}
                 hoặc{' '}
                 <a
-                  href="https://www.facebook.com/prinktechUS"
+                  href="https://www.facebook.com/1254340327752311"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="font-semibold hover:underline transition"
@@ -370,8 +370,8 @@ export default function ChinhSachBaoMatPage() {
                   {
                     icon: '📘', label: 'Facebook',
                     content: (
-                      <a href="https://www.facebook.com/prinktechUS" target="_blank" rel="noopener noreferrer" className="hover:underline transition" style={{ color: 'var(--accent)' }}>
-                        facebook.com/prinktechUS
+                      <a href="https://www.facebook.com/1254340327752311" target="_blank" rel="noopener noreferrer" className="hover:underline transition" style={{ color: 'var(--accent)' }}>
+                        Prink Tech - Printing Solutions
                       </a>
                     )
                   },

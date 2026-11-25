@@ -90,6 +90,7 @@ export const metadata: Metadata = {
 
 import BottomNav from '@/components/BottomNav';
 import BackToTop from '@/components/BackToTop';
+import MetaPixel from '@/components/MetaPixel';
 import { LanguageProvider } from '@/context/LanguageContext';
 
 export default function RootLayout({
@@ -139,6 +140,7 @@ export default function RootLayout({
             gtag('config', 'G-HKSYJR8T5S');
           `}
         </Script>
+        <MetaPixel />
         <LanguageProvider>
           {children}
           <BackToTop />

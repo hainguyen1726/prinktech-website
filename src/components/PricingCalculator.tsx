@@ -14,6 +14,7 @@ import {
   convertPriceItemsToProducts,
 } from '@/lib/pricing';
 import { useLanguage } from '@/context/LanguageContext';
+import { trackContact, trackEvent } from '@/lib/analytics';
 
 /* ─── Types ─────────────────────────────────────────────── */
 type CartItem = OrderItem & { id: string };
@@ -276,6 +277,17 @@ export default function PricingCalculator({ priceItems }: { priceItems?: any[] }
       note: itemNote.trim() || null,
     };
     setCart(prev => [...prev, item]);
+    trackEvent({
+      eventName: 'AddToCart',
+      params: {
+        content_name: selectedTrans.label,
+        content_type: 'product',
+        value: subtotal,
+        currency: 'VND',
+        num_items: qty,
+      },
+      sendServerCapi: true,
+    });
     setQuantity('1');
     setItemNote('');
   }, [qty, unitPrice, selectedProduct, selectedTrans, subtotal, itemNote, locale]);
@@ -663,8 +675,8 @@ export default function PricingCalculator({ priceItems }: { priceItems?: any[] }
         {/* Contact */}
         <div className="rounded-xl border border-card-border bg-block-bg p-3.5 text-xs text-text-muted space-y-1 shadow-sm">
           <p className="text-foreground font-bold">{t('common.supportTitle')}</p>
-          <p>💬 Zalo / WhatsApp: <a href="https://zalo.me/0822968412" target="_blank" rel="noopener noreferrer" className="text-[var(--accent)] font-bold hover:underline">0822.968.412</a></p>
-          <p>📞 Hotline: <a href="tel:0822968412" className="text-slate-500 font-bold hover:underline">0822.968.412</a></p>
+          <p>💬 Zalo / WhatsApp: <a href="https://zalo.me/0822968412" target="_blank" rel="noopener noreferrer" onClick={() => trackContact('zalo', 'pricing_calculator')} className="text-[var(--accent)] font-bold hover:underline">0822.968.412</a></p>
+          <p>📞 Hotline: <a href="tel:0822968412" onClick={() => trackContact('phone', 'pricing_calculator')} className="text-slate-500 font-bold hover:underline">0822.968.412</a></p>
           <p className="text-[10px] text-text-muted/80">{t('common.vatExcludeNotice')}</p>
         </div>
       </div>

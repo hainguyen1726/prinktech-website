@@ -33,9 +33,7 @@ const localBusinessSchema = {
   priceRange: '$$',
   sameAs: [
     'https://zalo.me/0822968412',
-    'https://www.facebook.com/prinktech',
-    'https://www.linkedin.com/company/prinktech',
-    'https://twitter.com/prinktech',
+    'https://www.facebook.com/1254340327752311',
   ],
 };
 

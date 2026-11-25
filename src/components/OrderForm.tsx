@@ -6,6 +6,7 @@ import { useSearchParams } from 'next/navigation';
 import { X, Trash2 } from 'lucide-react';
 import Header from '@/components/Header';
 import CustomerDesignSelector, { CustomerDesign } from '@/components/CustomerDesignSelector';
+import { createEventId, getAttributionParams, trackEvent } from '@/lib/analytics';
 import {
   PRODUCTS,
   Product,
@@ -344,13 +345,29 @@ export default function OrderForm() {
     }
   };
 
-  // Pre-fill cart từ trang tính giá (nếu có)
+  // Pre-fill cart từ trang tính giá (nếu có) + bắn InitiateCheckout
   useEffect(() => {
     const quote = searchParams.get('quote');
     if (quote) {
       try {
         const parsed = JSON.parse(decodeURIComponent(quote));
-        if (Array.isArray(parsed)) setItems(parsed.map(i => ({ ...i, id: uid() })));
+        if (Array.isArray(parsed)) {
+          const loaded = parsed.map(i => ({ ...i, id: uid() }));
+          setItems(loaded);
+          if (loaded.length > 0) {
+            const val = loaded.reduce((s, item) => s + (Number(item.subtotal) || 0), 0);
+            trackEvent({
+              eventName: 'InitiateCheckout',
+              params: {
+                value: val,
+                currency: 'VND',
+                num_items: loaded.length,
+                content_type: 'product',
+              },
+              sendServerCapi: true,
+            });
+          }
+        }
       } catch { /* bỏ qua */ }
     }
   }, [searchParams]);
@@ -374,6 +391,9 @@ export default function OrderForm() {
   const handleSubmit = async () => {
     if (!isValid) return;
     setSubmitting(true);
+    const eventId = createEventId('purchase');
+    const attribution = getAttributionParams();
+
     try {
       const res = await fetch('/api/orders', {
         method: 'POST',
@@ -397,10 +417,36 @@ export default function OrderForm() {
           vat_tax_code: customer.request_vat ? customer.vat_tax_code.trim() : null,
           vat_company_address: customer.request_vat ? customer.vat_company_address.trim() : null,
           vat_email: customer.request_vat ? customer.vat_email.trim() : null,
+          event_id: eventId,
+          event_source_url: typeof window !== 'undefined' ? window.location.href : undefined,
+          utm_source: attribution.utm_source || null,
+          utm_medium: attribution.utm_medium || null,
+          utm_campaign: attribution.utm_campaign || null,
+          utm_content: attribution.utm_content || null,
+          fbclid: attribution.fbclid || null,
+          fbp: attribution.fbp || null,
+          fbc: attribution.fbc || null,
         }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Lỗi không xác định');
+      trackEvent({
+        eventName: 'Purchase',
+        eventId,
+        params: {
+          value: total,
+          currency: 'VND',
+          content_type: 'product',
+          num_items: items.length,
+          order_id: data.order_number,
+        },
+        userData: {
+          name: customer.name,
+          phone: customer.phone,
+          email: customer.email,
+        },
+        sendServerCapi: false, // Đã gửi trực tiếp từ server trong POST /api/orders với cùng eventId
+      });
       setResult({ success: true, order_number: data.order_number });
     } catch (e) {
       setResult({ success: false, error: (e as Error).message });

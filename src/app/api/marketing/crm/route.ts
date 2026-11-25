@@ -138,7 +138,7 @@ export async function POST(request: NextRequest) {
       // -------------------------------------------------------------
       if (type === 'inbox') {
         const pageAccessToken = tokenItem.value;
-        const url = `https://graph.facebook.com/v20.0/${fb_conversation_id}/messages`;
+        const url = `https://graph.facebook.com/v25.0/${fb_conversation_id}/messages`;
         
         await fetch(url, {
           method: 'POST',
@@ -151,7 +151,7 @@ export async function POST(request: NextRequest) {
       } else {
         // Gửi trả lời comment trên Facebook
         const pageAccessToken = tokenItem.value;
-        const url = `https://graph.facebook.com/v20.0/${fb_conversation_id}/comments`;
+        const url = `https://graph.facebook.com/v25.0/${fb_conversation_id}/comments`;
         
         await fetch(url, {
           method: 'POST',
@@ -253,7 +253,7 @@ export async function PUT(request: NextRequest) {
 // -------------------------------------------------------------
 async function handleRealCrmSync(pageId: string, pageAccessToken: string) {
   // Lấy các cuộc trò chuyện Inbox gần nhất từ Page
-  const inboxUrl = `https://graph.facebook.com/v20.0/${pageId}/conversations` +
+  const inboxUrl = `https://graph.facebook.com/v25.0/${pageId}/conversations` +
     `?fields=id,participants,updated_time,unread_count,messages.limit(20){id,message,from,created_time}` +
     `&access_token=${pageAccessToken}` +
     `&limit=50`;

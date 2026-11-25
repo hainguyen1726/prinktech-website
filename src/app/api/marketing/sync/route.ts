@@ -52,7 +52,7 @@ async function handleRealSync(adAccountId: string, accessToken: string, startDat
   try {
     // Định dạng adAccountId (Đảm bảo không có chữ 'act_' thừa)
     const cleanAdId = adAccountId.replace('act_', '');
-    const url = `https://graph.facebook.com/v20.0/act_${cleanAdId}/insights` +
+    const url = `https://graph.facebook.com/v25.0/act_${cleanAdId}/insights` +
       `?level=campaign` +
       `&time_increment=1` + // Chia nhỏ số liệu theo từng ngày (1 ngày 1 dòng)
       `&time_range={"since":"${startDate}","until":"${endDate}"}` +

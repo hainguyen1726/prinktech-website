@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Facebook, MessageCircle, MapPin, Calculator, BookOpen, Layers, Award,
   Sparkles, ShieldCheck, CheckCircle2, ChevronRight, Zap, RefreshCw, Send, Lock, HelpCircle, Play, ExternalLink, Video, Eye, X } from 'lucide-react';
 import Header from '@/components/Header';
+import { trackContact } from '@/lib/analytics';
 
 interface Product {
   id: string;
@@ -268,9 +269,9 @@ export default function WebsiteContent({
             </span>
           </h1>
           <p className="text-base text-[var(--text-muted)] max-w-xl leading-relaxed">
-            PrinK Tech cung cấp công nghệ in ấn UV DTF hiện đại đột phá. Tem dán dập nổi 3D, phủ bóng gương sắc nét bám dính siêu chắc trên mọi vật liệu cứng. Thiết kế website demo tích hợp 3 mẫu layout độc quyền.
+            PrinK Tech cung cấp công nghệ in ấn UV DTF dập nổi 3D phủ bóng gương: chống nước, chống trầy xước, bám dính siêu chắc trên ly cốc, bình giữ nhiệt, mũ bảo hiểm, hộp mỹ phẩm &amp; đồ da. Nhận in lẻ từ 1 tờ A4 (45.000đ) đến in cuộn giá xưởng — giao nhanh toàn quốc.
           </p>
-          <div className="flex flex-wrap gap-4 pt-2">
+          <div className="flex flex-wrap gap-3.5 pt-2">
             <Link
               href="/bao-gia"
               className={`px-6 py-3 rounded-xl font-bold text-sm tracking-wide transition flex items-center ${
@@ -280,13 +281,24 @@ export default function WebsiteContent({
               }`}
               style={{ borderRadius: 'var(--btn-radius)' }}
             >
-              Xem báo giá & Tính giá ngay
+              Xem báo giá &amp; Tính giá ngay
             </Link>
+            <a
+              href="https://m.me/1254340327752311"
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => trackContact('messenger', 'hero')}
+              className="px-5 py-3 rounded-xl btn-secondary font-bold text-sm transition flex items-center gap-2"
+              style={{ borderRadius: 'var(--btn-radius)' }}
+            >
+              <Facebook size={16} className="text-blue-500" /> Chat Messenger
+            </a>
             <a
               href="https://zalo.me/0822968412"
               target="_blank"
               rel="noopener noreferrer"
-              className="px-6 py-3 rounded-xl btn-secondary font-bold text-sm transition flex items-center gap-2"
+              onClick={() => trackContact('zalo', 'hero')}
+              className="px-5 py-3 rounded-xl btn-secondary font-bold text-sm transition flex items-center gap-2"
               style={{ borderRadius: 'var(--btn-radius)' }}
             >
               <MessageCircle size={16} className="text-[var(--accent)]" /> Chat Zalo tư vấn
@@ -968,15 +980,17 @@ export default function WebsiteContent({
                 href="https://zalo.me/0822968412"
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={() => trackContact('zalo', 'footer')}
                 className="w-10 h-10 rounded-xl bg-sky-500/10 border border-sky-500/30 hover:bg-sky-500/20 hover:border-sky-400 text-sky-400 hover:text-sky-300 flex items-center justify-center transition focus:outline-none focus:ring-2 focus:ring-sky-500/40"
                 aria-label="Liên hệ Zalo của xưởng (mở trong cửa sổ mới)"
               >
                 <MessageCircle size={18} aria-hidden="true" />
               </a>
               <a
-                href="https://www.facebook.com/prinktechUS"
+                href="https://www.facebook.com/1254340327752311"
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={() => trackContact('messenger', 'footer')}
                 className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/30 hover:bg-blue-500/20 hover:border-blue-400 text-blue-400 hover:text-blue-300 flex items-center justify-center transition focus:outline-none focus:ring-2 focus:ring-blue-500/40"
                 aria-label="Fanpage Facebook PrinK Tech (mở trong cửa sổ mới)"
               >

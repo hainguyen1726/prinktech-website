@@ -6,6 +6,7 @@ import { ChevronRight } from 'lucide-react';
 import PricingCalculator from '@/components/PricingCalculator';
 import Header from '@/components/Header';
 import { useLanguage } from '@/context/LanguageContext';
+import { trackEvent } from '@/lib/analytics';
 
 const DEFAULT_PRICE_ITEMS = [
   {
@@ -77,12 +78,21 @@ export default function BaoGiaContent({ initialPriceItems = [] }: { initialPrice
     return initialPriceItems.length > 0 ? initialPriceItems : DEFAULT_PRICE_ITEMS;
   });
 
-  // Khởi tạo theme từ localStorage ở client-side
+  // Khởi tạo theme từ localStorage ở client-side + bắn ViewContent cho trang bảng giá
   useEffect(() => {
     const savedTheme = localStorage.getItem('prinktech-theme') || 'elegant';
     if (savedTheme === 'tech' || savedTheme === 'creative' || savedTheme === 'elegant') {
       setActiveTheme(savedTheme);
     }
+    trackEvent({
+      eventName: 'ViewContent',
+      params: {
+        content_name: 'Bảng giá in UV DTF 3D',
+        content_category: 'pricing',
+        currency: 'VND',
+      },
+      sendServerCapi: true,
+    });
   }, []);
 
   // Fetch priceItems if not provided initially

@@ -98,7 +98,9 @@ echo "NEXT_PUBLIC_APP_VERSION=$GIT_COMMIT" >> .env
 info "Đang build Docker image cho tag $GIT_COMMIT và khởi chạy dịch vụ $TARGET_SERVICE..."
 # Thiết lập biến env cho docker-compose build
 export GIT_COMMIT_HASH="$GIT_COMMIT"
-docker compose build --build-arg NEXT_PUBLIC_SUPABASE_URL="$(grep NEXT_PUBLIC_SUPABASE_URL .env | cut -d '=' -f2)" --build-arg NEXT_PUBLIC_SUPABASE_ANON_KEY="$(grep NEXT_PUBLIC_SUPABASE_ANON_KEY .env | cut -d '=' -f2)" "$TARGET_SERVICE"
+PIXEL_ID=$(grep -E '^NEXT_PUBLIC_META_PIXEL_ID=' .env | cut -d '=' -f2- || true)
+PIXEL_ID=${PIXEL_ID:-2297118074425178}
+docker compose build --build-arg NEXT_PUBLIC_SUPABASE_URL="$(grep NEXT_PUBLIC_SUPABASE_URL .env | cut -d '=' -f2)" --build-arg NEXT_PUBLIC_SUPABASE_ANON_KEY="$(grep NEXT_PUBLIC_SUPABASE_ANON_KEY .env | cut -d '=' -f2)" --build-arg NEXT_PUBLIC_META_PIXEL_ID="$PIXEL_ID" "$TARGET_SERVICE"
 
 # Xóa container target cũ (nếu có) để tránh xung đột tên container
 docker rm -f "$TARGET_CONTAINER" 2>/dev/null || true
