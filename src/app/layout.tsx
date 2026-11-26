@@ -26,7 +26,7 @@ const SITE_NAME = 'PrinK Tech - Xưởng In UV DTF Nổi 3D';
 const TITLE = 'PrinK Tech | In UV DTF Nổi 3D & Tem Decal Cao Cấp - Giao Toàn Quốc';
 const DESCRIPTION =
   'Xưởng in UV DTF PrinK Tech chuyên in tem dán nổi 3D, decal UV DTF dập nổi phủ bóng gương, bám dính siêu chắc trên ly cốc, bình giữ nhiệt, mũ bảo hiểm, đồ da. Nhận in lẻ & in sỉ số lượng lớn. Giao hàng toàn quốc.';
-const OG_IMAGE = `${BASE_URL}/logo-prink-tech-1.png`;
+const OG_IMAGE = `${BASE_URL}/images/samples/sample-25.jpg`;
 
 export const metadata: Metadata = {
   metadataBase: new URL(BASE_URL),
@@ -58,8 +58,8 @@ export const metadata: Metadata = {
     images: [
       {
         url: OG_IMAGE,
-        width: 1200,
-        height: 630,
+        width: 800,
+        height: 800,
         alt: 'PrinK Tech - In UV DTF Nổi 3D & Tem Decal Cao Cấp',
       },
     ],
